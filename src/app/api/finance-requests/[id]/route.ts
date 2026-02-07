@@ -45,8 +45,10 @@ export async function GET(
           select: {
             id: true,
             fileName: true,
+            fileType: true,
             fileUrl: true,
             fileSize: true,
+            category: true,
             uploadedAt: true,
           },
           orderBy: { uploadedAt: 'desc' }

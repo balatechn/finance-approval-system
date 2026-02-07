@@ -1,0 +1,58 @@
+   Γû▓ Next.js 14.1.0
+   - Environments: .env
+
+   Creating an optimized production build ...
+Compiler edge-server unexpectedly exited with code: null and signal: SIGTERM
+ Γ£ô Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/13) ...
+
+   Generating static pages (3/13) 
+
+   Generating static pages (6/13) 
+
+   Generating static pages (9/13) 
+
+ Γ£ô Generating static pages (13/13) 
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                     Size     First Load JS
+Γöî ╬╗ /                                           137 B          84.4 kB
+Γö£ Γùï /_not-found                                 882 B          85.1 kB
+Γö£ ╬╗ /api/attachments                            0 B                0 B
+Γö£ ╬╗ /api/auth/[...nextauth]                     0 B                0 B
+Γö£ ╬╗ /api/cron/check-sla                         0 B                0 B
+Γö£ ╬╗ /api/dashboard                              0 B                0 B
+Γö£ ╬╗ /api/finance-requests                       0 B                0 B
+Γö£ ╬╗ /api/finance-requests/[id]                  0 B                0 B
+Γö£ ╬╗ /api/finance-requests/[id]/approve          0 B                0 B
+Γö£ ╬╗ /api/finance-requests/[id]/disburse         0 B                0 B
+Γö£ ╬╗ /api/notifications                          0 B                0 B
+Γö£ ╬╗ /api/reports                                0 B                0 B
+Γö£ ╬╗ /api/settings                               0 B                0 B
+Γö£ ╬╗ /api/users                                  0 B                0 B
+Γö£ ╬╗ /api/users/[id]                             0 B                0 B
+Γö£ Γùï /dashboard                                  5.3 kB          120 kB
+Γö£ Γùï /dashboard/approvals                        5.17 kB         120 kB
+Γö£ ╬╗ /dashboard/approvals/[referenceNumber]      4.74 kB         139 kB
+Γö£ Γùï /dashboard/reports                          7.14 kB         145 kB
+Γö£ Γùï /dashboard/requests                         2.78 kB         141 kB
+Γö£ ╬╗ /dashboard/requests/[referenceNumber]       5.04 kB         139 kB
+Γö£ ╬╗ /dashboard/requests/[referenceNumber]/edit  8.41 kB         183 kB
+Γö£ Γùï /dashboard/requests/new                     6.56 kB         172 kB
+Γö£ Γùï /dashboard/settings                         4.87 kB        98.9 kB
+Γö£ Γùï /dashboard/users                            4.22 kB         145 kB
+Γöö Γùï /login                                      8.12 kB         143 kB
++ First Load JS shared by all                   84.2 kB
+  Γö£ chunks/69-7814a6ed565fb981.js               28.9 kB
+  Γö£ chunks/fd9d1056-9145d0954af0c4c2.js         53.4 kB
+  Γöö other shared chunks (total)                 1.97 kB
+
+
+╞Æ Middleware                                    74.8 kB
+
+Γùï  (Static)   prerendered as static content
+╬╗  (Dynamic)  server-rendered on demand using Node.js
+

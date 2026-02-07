@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { ArrowLeft, Upload, X, Info, AlertTriangle, MessageSquare } from "lucide-react"
+import { ArrowLeft, Upload, X, Info, AlertTriangle, MessageSquare, FileText, Eye, Trash2 } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -67,6 +67,11 @@ export default function EditRequestPage() {
   const [requestData, setRequestData] = useState<any>(null)
   const [sentBackComments, setSentBackComments] = useState<SentBackComment[]>([])
   const isDraftRef = useRef(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [filePreviews, setFilePreviews] = useState<{ file: File; preview: string; type: string }[]>([])
+  const [previewFile, setPreviewFile] = useState<{ url: string; type: string; name: string } | null>(null)
+  const [existingAttachments, setExistingAttachments] = useState<any[]>([])
   const [departments] = useState([
     { id: "1", name: "Engineering" },
     { id: "2", name: "Sales" },
@@ -143,6 +148,7 @@ export default function EditRequestPage() {
 
         const data = await response.json()
         setRequestData(data)
+        if (data.attachments) setExistingAttachments(data.attachments)
 
         // Check edit permissions: admin can edit any, owner can edit pre-approval
         const isAdmin = session?.user?.role === "ADMIN"
@@ -223,6 +229,57 @@ export default function EditRequestPage() {
     fetchRequest()
   }, [referenceNumber, router, toast, reset])
 
+  // File handling
+  const handleFileSelect = useCallback((files: FileList | null) => {
+    if (!files) return
+    const newFiles = Array.from(files).filter(f => {
+      const allowed = ['image/', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats', 'application/vnd.ms-excel']
+      return allowed.some(t => f.type.startsWith(t)) && f.size <= 5 * 1024 * 1024
+    })
+    const newPreviews = newFiles.map(file => {
+      let preview = ''
+      if (file.type.startsWith('image/')) preview = URL.createObjectURL(file)
+      return { file, preview, type: file.type }
+    })
+    setSelectedFiles(prev => [...prev, ...newFiles])
+    setFilePreviews(prev => [...prev, ...newPreviews])
+  }, [])
+
+  const removeFile = useCallback((index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index))
+    setFilePreviews(prev => {
+      if (prev[index]?.preview) URL.revokeObjectURL(prev[index].preview)
+      return prev.filter((_, i) => i !== index)
+    })
+  }, [])
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    handleFileSelect(e.dataTransfer.files)
+  }, [handleFileSelect])
+
+  const uploadFiles = async (financeRequestId: string) => {
+    if (selectedFiles.length === 0) return
+    const formData = new FormData()
+    formData.append('financeRequestId', financeRequestId)
+    formData.append('category', 'QUOTATION')
+    selectedFiles.forEach(file => formData.append('files', file))
+    try {
+      await fetch('/api/attachments', { method: 'POST', body: formData })
+    } catch (err) {
+      console.error('Failed to upload files:', err)
+    }
+  }
+
+  const deleteExistingAttachment = async (attachmentId: string) => {
+    try {
+      await fetch(`/api/attachments?id=${attachmentId}`, { method: 'DELETE' })
+      setExistingAttachments(prev => prev.filter(a => a.id !== attachmentId))
+    } catch (err) {
+      console.error('Failed to delete attachment:', err)
+    }
+  }
+
   const onSubmit = async (data: CreateFinanceRequestInput) => {
     try {
       setIsSubmitting(true)
@@ -253,6 +310,11 @@ export default function EditRequestPage() {
       if (!response.ok) {
         const errorData = await response.json()
         throw new Error(errorData.error || "Failed to update request")
+      }
+
+      // Upload new attachments if any
+      if (selectedFiles.length > 0) {
+        await uploadFiles(requestData.id)
       }
 
       toast({
@@ -775,6 +837,126 @@ export default function EditRequestPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Attachments / Upload */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Attachments</CardTitle>
+            <CardDescription>
+              Upload Quote / Proforma Invoice / Tax Invoice / Supporting Documents (Max 5MB each)
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Existing attachments */}
+            {existingAttachments.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-gray-700">Current Attachments</p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {existingAttachments.map((attachment) => {
+                    const isImage = attachment.fileUrl?.startsWith('data:image/') || /\.(jpg|jpeg|png|gif|webp)$/i.test(attachment.fileName)
+                    const isPdf = attachment.fileUrl?.startsWith('data:application/pdf') || /\.pdf$/i.test(attachment.fileName)
+                    return (
+                      <div key={attachment.id} className="relative flex items-start gap-3 rounded-lg border bg-white p-3">
+                        <div className="flex-shrink-0 h-14 w-14 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                          {isImage ? (
+                            <img src={attachment.fileUrl} alt={attachment.fileName} className="h-full w-full object-cover cursor-pointer"
+                              onClick={() => setPreviewFile({ url: attachment.fileUrl, type: 'image', name: attachment.fileName })} />
+                          ) : isPdf ? (
+                            <FileText className="h-7 w-7 text-red-500" />
+                          ) : (
+                            <FileText className="h-7 w-7 text-blue-500" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{attachment.fileName}</p>
+                          <p className="text-xs text-muted-foreground">{(attachment.fileSize / 1024).toFixed(1)} KB</p>
+                          {(isImage || isPdf) && (
+                            <button type="button" className="text-xs text-primary hover:underline flex items-center gap-1 mt-1"
+                              onClick={() => setPreviewFile({ url: attachment.fileUrl, type: isPdf ? 'pdf' : 'image', name: attachment.fileName })}>
+                              <Eye className="h-3 w-3" /> View
+                            </button>
+                          )}
+                        </div>
+                        <button type="button" className="absolute top-2 right-2 rounded-full p-1 text-gray-400 hover:text-red-500 hover:bg-red-50"
+                          onClick={() => deleteExistingAttachment(attachment.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+                <Separator />
+              </div>
+            )}
+
+            {/* Drop zone for new files */}
+            <div className="relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-8 transition-colors hover:border-primary/50 hover:bg-gray-100 cursor-pointer"
+              onDragOver={(e) => e.preventDefault()} onDrop={handleDrop} onClick={() => fileInputRef.current?.click()}>
+              <Upload className="h-10 w-10 text-gray-400 mb-3" />
+              <p className="text-sm font-medium text-gray-700">Drag & drop files here, or click to browse</p>
+              <p className="text-xs text-muted-foreground mt-1">PDF, Images, Word, Excel — up to 5MB per file</p>
+              <input ref={fileInputRef} type="file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" className="hidden"
+                onChange={(e) => handleFileSelect(e.target.files)} />
+            </div>
+
+            {/* New files with previews */}
+            {filePreviews.length > 0 && (
+              <div className="space-y-3">
+                <p className="text-sm font-medium text-gray-700">{filePreviews.length} new file{filePreviews.length > 1 ? 's' : ''} to upload</p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {filePreviews.map((item, index) => (
+                    <div key={index} className="group relative flex items-start gap-3 rounded-lg border bg-white p-3 hover:shadow-sm transition-shadow">
+                      <div className="flex-shrink-0 h-14 w-14 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                        {item.type.startsWith('image/') && item.preview ? (
+                          <img src={item.preview} alt={item.file.name} className="h-full w-full object-cover cursor-pointer"
+                            onClick={(e) => { e.stopPropagation(); setPreviewFile({ url: item.preview, type: item.type, name: item.file.name }) }} />
+                        ) : item.type === 'application/pdf' ? (
+                          <FileText className="h-7 w-7 text-red-500" />
+                        ) : (
+                          <FileText className="h-7 w-7 text-blue-500" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{item.file.name}</p>
+                        <p className="text-xs text-muted-foreground">{(item.file.size / 1024).toFixed(1)} KB</p>
+                      </div>
+                      <button type="button" className="absolute top-2 right-2 rounded-full p-1 text-gray-400 hover:text-red-500 hover:bg-red-50"
+                        onClick={(e) => { e.stopPropagation(); removeFile(index) }}>
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Preview Modal */}
+        {previewFile && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setPreviewFile(null)}>
+            <div className="relative max-h-[90vh] max-w-[90vw] bg-white rounded-xl overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between border-b px-4 py-3">
+                <p className="text-sm font-medium truncate max-w-md">{previewFile.name}</p>
+                <button type="button" className="rounded-full p-1 hover:bg-gray-100" onClick={() => setPreviewFile(null)}>
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="p-4 flex items-center justify-center max-h-[80vh] overflow-auto">
+                {previewFile.type === 'image' || previewFile.type.startsWith('image/') ? (
+                  <img src={previewFile.url} alt={previewFile.name} className="max-h-[75vh] max-w-full object-contain" />
+                ) : previewFile.type === 'pdf' || previewFile.type === 'application/pdf' ? (
+                  <iframe src={previewFile.url} className="h-[75vh] w-[70vw]" title={previewFile.name} />
+                ) : (
+                  <div className="text-center py-12">
+                    <FileText className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+                    <p className="text-muted-foreground">Preview not available</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Info Box */}
         <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">

@@ -19,6 +19,8 @@ import {
   AlertTriangle,
   MessageSquare,
   RotateCcw,
+  Eye,
+  X,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -110,6 +112,7 @@ export default function RequestDetailPage() {
   const [loading, setLoading] = useState(true)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [previewFile, setPreviewFile] = useState<{ url: string; type: string; name: string } | null>(null)
 
   const referenceNumber = params.referenceNumber as string
 
@@ -526,34 +529,114 @@ export default function RequestDetailPage() {
           {request.attachments && request.attachments.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Attachments</CardTitle>
+                <CardTitle>Attachments ({request.attachments.length})</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  {request.attachments.map((attachment) => (
-                    <div
-                      key={attachment.id}
-                      className="flex items-center justify-between rounded-lg border p-3"
-                    >
-                      <div className="flex items-center gap-3">
-                        <FileText className="h-5 w-5 text-muted-foreground" />
-                        <div>
-                          <p className="font-medium">{attachment.fileName}</p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {request.attachments.map((attachment) => {
+                    const isImage = attachment.fileUrl?.startsWith('data:image/') || 
+                      /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(attachment.fileName)
+                    const isPdf = attachment.fileUrl?.startsWith('data:application/pdf') ||
+                      /\.pdf$/i.test(attachment.fileName)
+                    
+                    return (
+                      <div
+                        key={attachment.id}
+                        className="group relative flex items-start gap-3 rounded-lg border bg-white p-3 hover:shadow-sm transition-shadow"
+                      >
+                        {/* Thumbnail */}
+                        <div className="flex-shrink-0 h-16 w-16 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                          {isImage ? (
+                            <img
+                              src={attachment.fileUrl}
+                              alt={attachment.fileName}
+                              className="h-full w-full object-cover cursor-pointer"
+                              onClick={() => setPreviewFile({ url: attachment.fileUrl, type: 'image', name: attachment.fileName })}
+                            />
+                          ) : isPdf ? (
+                            <FileText className="h-8 w-8 text-red-500" />
+                          ) : (
+                            <FileText className="h-8 w-8 text-blue-500" />
+                          )}
+                        </div>
+
+                        {/* File info */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{attachment.fileName}</p>
                           <p className="text-xs text-muted-foreground">
                             {(attachment.fileSize / 1024).toFixed(1)} KB
                           </p>
+                          <div className="flex gap-2 mt-1.5">
+                            {(isImage || isPdf) && (
+                              <button
+                                className="text-xs text-primary hover:underline flex items-center gap-1"
+                                onClick={() => setPreviewFile({ 
+                                  url: attachment.fileUrl, 
+                                  type: isPdf ? 'pdf' : 'image', 
+                                  name: attachment.fileName 
+                                })}
+                              >
+                                <Eye className="h-3 w-3" /> View
+                              </button>
+                            )}
+                            <a
+                              href={attachment.fileUrl}
+                              download={attachment.fileName}
+                              className="text-xs text-gray-500 hover:underline flex items-center gap-1"
+                            >
+                              <Download className="h-3 w-3" /> Download
+                            </a>
+                          </div>
                         </div>
                       </div>
-                      <Button variant="ghost" size="sm" asChild>
-                        <a href={attachment.fileUrl} download>
-                          <Download className="h-4 w-4" />
-                        </a>
-                      </Button>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </CardContent>
             </Card>
+          )}
+
+          {/* Attachment Preview Modal */}
+          {previewFile && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+              onClick={() => setPreviewFile(null)}
+            >
+              <div
+                className="relative max-h-[90vh] max-w-[90vw] bg-white rounded-xl overflow-hidden shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between border-b px-4 py-3">
+                  <p className="text-sm font-medium truncate max-w-md">{previewFile.name}</p>
+                  <button
+                    className="rounded-full p-1 hover:bg-gray-100"
+                    onClick={() => setPreviewFile(null)}
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                <div className="p-4 flex items-center justify-center max-h-[80vh] overflow-auto">
+                  {previewFile.type === 'image' ? (
+                    <img
+                      src={previewFile.url}
+                      alt={previewFile.name}
+                      className="max-h-[75vh] max-w-full object-contain"
+                    />
+                  ) : previewFile.type === 'pdf' ? (
+                    <iframe
+                      src={previewFile.url}
+                      className="h-[75vh] w-[70vw]"
+                      title={previewFile.name}
+                    />
+                  ) : (
+                    <div className="text-center py-12">
+                      <FileText className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+                      <p className="text-muted-foreground">Preview not available for this file type</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           )}
 
           {/* Remarks */}
