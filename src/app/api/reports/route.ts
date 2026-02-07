@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (!hasPermission(user.role, 'VIEW_REPORTS')) {
+    if (!hasPermission(user.role, 'reports:all')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -207,13 +207,19 @@ async function generateSLAReport(whereClause: any) {
     recentBreaches: slaLogs
       .filter((s) => s.isBreached)
       .slice(0, 20)
-      .map((s) => ({
-        referenceNumber: s.financeRequest.referenceNumber,
-        department: s.financeRequest.department,
-        level: s.level,
-        slaHours: s.slaHours,
-        breachedAt: s.breachedAt,
-      })),
+      .map((s) => {
+        const createdTime = s.createdAt.getTime();
+        const breachedTime = s.breachedAt ? s.breachedAt.getTime() : Date.now();
+        const actualHours = (breachedTime - createdTime) / (1000 * 60 * 60);
+        return {
+          referenceNumber: s.financeRequest.referenceNumber,
+          department: s.financeRequest.department,
+          level: s.level,
+          expectedHours: s.slaHours,
+          actualHours,
+          breachedAt: s.breachedAt,
+        };
+      }),
     generatedAt: new Date().toISOString(),
   };
 }

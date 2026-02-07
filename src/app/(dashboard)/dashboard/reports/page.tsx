@@ -445,7 +445,7 @@ export default function ReportsPage() {
                           <td className="py-2">{item.requester}</td>
                           <td className="py-2">{item.department}</td>
                           <td className="py-2 text-right">
-                            ₹{item.totalAmountINR?.toLocaleString("en-IN") || 0}
+                            ₹{item.totalAmount?.toLocaleString("en-IN") || 0}
                           </td>
                           <td className="py-2">{item.status?.replace(/_/g, " ")}</td>
                         </tr>
@@ -456,11 +456,146 @@ export default function ReportsPage() {
               </div>
             )}
 
-            {/* Other report types can be added similarly */}
-            {!["summary", "sla", "detailed"].includes(selectedReport || "") && (
-              <pre className="max-h-96 overflow-auto rounded-lg bg-muted p-4 text-sm">
-                {JSON.stringify(reportData, null, 2)}
-              </pre>
+            {selectedReport === "status" && reportData.statusBreakdown && (
+              <div>
+                <h4 className="mb-3 font-medium">Status &amp; Approval Level Breakdown</h4>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="pb-2 text-left font-medium">Status</th>
+                        <th className="pb-2 text-left font-medium">Current Level</th>
+                        <th className="pb-2 text-right font-medium">Count</th>
+                        <th className="pb-2 text-right font-medium">Total Amount</th>
+                        <th className="pb-2 text-right font-medium">Avg Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {reportData.statusBreakdown.map((item: any, i: number) => (
+                        <tr key={i} className="border-b">
+                          <td className="py-2">{item.status?.replace(/_/g, " ")}</td>
+                          <td className="py-2">{item.currentLevel?.replace(/_/g, " ") || "—"}</td>
+                          <td className="py-2 text-right">{item.count}</td>
+                          <td className="py-2 text-right">₹{item.totalAmount?.toLocaleString("en-IN") || 0}</td>
+                          <td className="py-2 text-right">₹{item.avgAmount?.toLocaleString("en-IN") || 0}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {selectedReport === "department" && (
+              <div className="space-y-6">
+                <div>
+                  <h4 className="mb-3 font-medium">Department Summary</h4>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="pb-2 text-left font-medium">Department</th>
+                          <th className="pb-2 text-right font-medium">Requests</th>
+                          <th className="pb-2 text-right font-medium">Total Amount</th>
+                          <th className="pb-2 text-right font-medium">Avg Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {reportData.departmentSummary?.map((item: any) => (
+                          <tr key={item.department} className="border-b">
+                            <td className="py-2 font-medium">{item.department}</td>
+                            <td className="py-2 text-right">{item.count}</td>
+                            <td className="py-2 text-right">₹{item.totalAmount?.toLocaleString("en-IN") || 0}</td>
+                            <td className="py-2 text-right">₹{item.avgAmount?.toLocaleString("en-IN") || 0}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {reportData.departmentStatusMatrix && reportData.departmentStatusMatrix.length > 0 && (
+                  <div>
+                    <h4 className="mb-3 font-medium">Department × Status Matrix</h4>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="pb-2 text-left font-medium">Department</th>
+                            <th className="pb-2 text-left font-medium">Status</th>
+                            <th className="pb-2 text-right font-medium">Count</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {reportData.departmentStatusMatrix.map((item: any, i: number) => (
+                            <tr key={i} className="border-b">
+                              <td className="py-2">{item.department}</td>
+                              <td className="py-2">{item.status?.replace(/_/g, " ")}</td>
+                              <td className="py-2 text-right">{item.count}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {selectedReport === "payment" && (
+              <div className="space-y-6">
+                <div>
+                  <h4 className="mb-3 font-medium">Payment Mode &amp; Type Breakdown</h4>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="pb-2 text-left font-medium">Payment Mode</th>
+                          <th className="pb-2 text-left font-medium">Payment Type</th>
+                          <th className="pb-2 text-right font-medium">Count</th>
+                          <th className="pb-2 text-right font-medium">Total Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {reportData.paymentModeBreakdown?.map((item: any, i: number) => (
+                          <tr key={i} className="border-b">
+                            <td className="py-2">{item.paymentMode?.replace(/_/g, " ")}</td>
+                            <td className="py-2">{item.paymentType?.replace(/_/g, " ")}</td>
+                            <td className="py-2 text-right">{item.count}</td>
+                            <td className="py-2 text-right">₹{item.totalAmount?.toLocaleString("en-IN") || 0}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {reportData.topVendors && reportData.topVendors.length > 0 && (
+                  <div>
+                    <h4 className="mb-3 font-medium">Top Vendors by Amount</h4>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="pb-2 text-left font-medium">Vendor</th>
+                            <th className="pb-2 text-right font-medium">Transactions</th>
+                            <th className="pb-2 text-right font-medium">Total Amount</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {reportData.topVendors.map((item: any) => (
+                            <tr key={item.vendorName} className="border-b">
+                              <td className="py-2 font-medium">{item.vendorName}</td>
+                              <td className="py-2 text-right">{item.count}</td>
+                              <td className="py-2 text-right">₹{item.totalAmount?.toLocaleString("en-IN") || 0}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </CardContent>
         </Card>
