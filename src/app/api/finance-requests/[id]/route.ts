@@ -91,6 +91,13 @@ export async function GET(
 
     const response = {
       ...financeRequest,
+      // Convert Prisma Decimal fields to numbers for frontend
+      amount: financeRequest.amount ? Number(financeRequest.amount) : 0,
+      totalAmount: financeRequest.totalAmount ? Number(financeRequest.totalAmount) : 0,
+      totalAmountINR: financeRequest.totalAmount ? Number(financeRequest.totalAmount) : 0,
+      gstAmount: financeRequest.gstAmount ? Number(financeRequest.gstAmount) : 0,
+      gstPercentage: financeRequest.gstPercentage ? Number(financeRequest.gstPercentage) : 0,
+      otherTaxes: financeRequest.otherTaxes ? Number(financeRequest.otherTaxes) : 0,
       requester: financeRequest.requestor,
       approvalSteps: transformedSteps,
     };

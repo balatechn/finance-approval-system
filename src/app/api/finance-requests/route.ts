@@ -109,6 +109,12 @@ export async function GET(request: NextRequest) {
     // Transform requestor to requester for frontend compatibility
     const transformedRequests = requests.map((r: any) => ({
       ...r,
+      totalAmount: Number(r.totalAmount) || 0,
+      totalAmountINR: Number(r.totalAmount) || 0,
+      amount: Number(r.amount) || 0,
+      gstAmount: r.gstAmount ? Number(r.gstAmount) : 0,
+      gstPercentage: r.gstPercentage ? Number(r.gstPercentage) : 0,
+      otherTaxes: r.otherTaxes ? Number(r.otherTaxes) : 0,
       requester: r.requestor,
     }));
 
