@@ -29,33 +29,50 @@ export async function GET(request: NextRequest) {
     if (startDate) dateFilter.gte = new Date(startDate);
     if (endDate) dateFilter.lte = new Date(endDate);
 
-    const whereClause: any = {};
+    const whereClause: any = { isDeleted: false };
     if (Object.keys(dateFilter).length > 0) whereClause.createdAt = dateFilter;
     if (department) whereClause.department = department;
 
     let reportData: any;
 
-    switch (reportType) {
-      case 'summary':
-        reportData = await generateSummaryReport(whereClause);
-        break;
-      case 'status':
-        reportData = await generateStatusReport(whereClause);
-        break;
-      case 'department':
-        reportData = await generateDepartmentReport(whereClause);
-        break;
-      case 'sla':
-        reportData = await generateSLAReport(whereClause);
-        break;
-      case 'payment':
-        reportData = await generatePaymentReport(whereClause);
-        break;
-      case 'detailed':
-        reportData = await generateDetailedReport(whereClause);
-        break;
-      default:
-        return NextResponse.json({ error: 'Invalid report type' }, { status: 400 });
+    try {
+      switch (reportType) {
+        case 'departments': {
+          const depts = await prisma.financeRequest.findMany({
+            where: { isDeleted: false },
+            select: { department: true },
+            distinct: ['department'],
+            orderBy: { department: 'asc' },
+          });
+          return NextResponse.json({ departments: depts.map(d => d.department) });
+        }
+        case 'summary':
+          reportData = await generateSummaryReport(whereClause);
+          break;
+        case 'status':
+          reportData = await generateStatusReport(whereClause);
+          break;
+        case 'department':
+          reportData = await generateDepartmentReport(whereClause);
+          break;
+        case 'sla':
+          reportData = await generateSLAReport(whereClause);
+          break;
+        case 'payment':
+          reportData = await generatePaymentReport(whereClause);
+          break;
+        case 'detailed':
+          reportData = await generateDetailedReport(whereClause);
+          break;
+        default:
+          return NextResponse.json({ error: 'Invalid report type' }, { status: 400 });
+      }
+    } catch (reportError: any) {
+      console.error(`Error in ${reportType} report:`, reportError);
+      return NextResponse.json(
+        { error: `Failed to generate ${reportType} report: ${reportError.message || 'Unknown error'}` },
+        { status: 500 }
+      );
     }
 
     if (format === 'csv') {
@@ -69,9 +86,12 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(reportData);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error generating report:', error);
-    return NextResponse.json({ error: 'Failed to generate report' }, { status: 500 });
+    return NextResponse.json(
+      { error: `Failed to generate report: ${error.message || 'Unknown error'}` },
+      { status: 500 }
+    );
   }
 }
 

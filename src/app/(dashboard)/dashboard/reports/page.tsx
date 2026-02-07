@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import {
   BarChart3,
@@ -73,6 +73,19 @@ export default function ReportsPage() {
   const [format, setFormat] = useState("json")
   const [loading, setLoading] = useState(false)
   const [reportData, setReportData] = useState<any>(null)
+  const [departments, setDepartments] = useState<string[]>([])
+
+  // Fetch unique departments from existing requests
+  useEffect(() => {
+    fetch("/api/reports?type=departments")
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (data?.departments) {
+          setDepartments(data.departments)
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   const generateReport = async () => {
     if (!selectedReport) {
@@ -99,7 +112,8 @@ export default function ReportsPage() {
       const response = await fetch(`/api/reports?${params}`)
 
       if (!response.ok) {
-        throw new Error("Failed to generate report")
+        const errorData = await response.json().catch(() => null)
+        throw new Error(errorData?.error || `Server error (${response.status})`)
       }
 
       if (format === "csv") {
@@ -126,10 +140,11 @@ export default function ReportsPage() {
           variant: "success",
         })
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Report generation error:', error)
       toast({
         title: "Error",
-        description: "Failed to generate report",
+        description: error?.message || "Failed to generate report",
         variant: "destructive",
       })
     } finally {
@@ -219,12 +234,9 @@ export default function ReportsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Departments</SelectItem>
-                  <SelectItem value="Engineering">Engineering</SelectItem>
-                  <SelectItem value="Sales">Sales</SelectItem>
-                  <SelectItem value="Marketing">Marketing</SelectItem>
-                  <SelectItem value="Finance">Finance</SelectItem>
-                  <SelectItem value="HR">HR</SelectItem>
-                  <SelectItem value="Operations">Operations</SelectItem>
+                  {departments.map((dept) => (
+                    <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
