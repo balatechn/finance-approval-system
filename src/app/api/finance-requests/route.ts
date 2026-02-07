@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
     if (data.isTDSApplicable && data.tdsPercentage) {
       tdsAmount = new Decimal(data.totalAmount).mul(data.tdsPercentage).div(100);
     }
-    const totalAmount = new Decimal(data.totalAmount).add(gstAmount).sub(tdsAmount);
+    const totalAmountCalc = new Decimal(data.totalAmount).add(gstAmount).sub(tdsAmount);
 
     // Generate reference number
     const referenceNumber = generateReferenceNumber('FIN');
@@ -168,33 +168,37 @@ export async function POST(request: NextRequest) {
     const finalStatus = isDraft ? 'DRAFT' : 'SUBMITTED';
 
     // Create the finance request
+    const createData: any = {
+      referenceNumber,
+      requestorId: user.id,
+      department: data.department,
+      costCenter: data.costCenter,
+      paymentType: data.paymentType,
+      amount: new Decimal(data.totalAmount),
+      currency: data.currency || 'INR',
+      purpose: data.purpose,
+      vendorName: data.vendorName,
+      paymentMode: data.paymentMode || 'NEFT',
+      gstApplicable: data.isGSTApplicable || false,
+      totalAmount: totalAmountCalc,
+      status: finalStatus,
+      submittedAt: finalStatus === 'SUBMITTED' ? new Date() : null,
+    };
+
+    // Add optional fields only if they have values
+    if (data.entity) createData.entity = data.entity;
+    if (data.vendorCode) createData.vendorCode = data.vendorCode;
+    if (data.bankName) createData.vendorBankName = data.bankName;
+    if (data.bankAccountNumber) createData.vendorBankAccount = data.bankAccountNumber;
+    if (data.ifscCode) createData.vendorBankIfsc = data.ifscCode;
+    if (data.upiId) createData.vendorUpiId = data.upiId;
+    if (data.invoiceNumber) createData.invoiceNumber = data.invoiceNumber;
+    if (data.invoiceDate) createData.invoiceDate = new Date(data.invoiceDate);
+    if (data.gstPercentage) createData.gstPercentage = new Decimal(data.gstPercentage);
+    if (gstAmount.gt(0)) createData.gstAmount = gstAmount;
+
     const financeRequest = await prisma.financeRequest.create({
-      data: {
-        referenceNumber,
-        requestorId: user.id,
-        department: data.department,
-        costCenter: data.costCenter,
-        entity: data.entity,
-        paymentType: data.paymentType as any,
-        amount: new Decimal(data.totalAmount),
-        currency: data.currency,
-        purpose: data.purpose,
-        vendorName: data.vendorName,
-        vendorCode: data.vendorCode,
-        vendorBankName: data.bankName,
-        vendorBankAccount: data.bankAccountNumber,
-        vendorBankIfsc: data.ifscCode,
-        vendorUpiId: data.upiId,
-        paymentMode: data.paymentMode as any,
-        invoiceNumber: data.invoiceNumber,
-        invoiceDate: data.invoiceDate ? new Date(data.invoiceDate) : null,
-        gstApplicable: data.isGSTApplicable,
-        gstPercentage: data.gstPercentage ? new Decimal(data.gstPercentage) : null,
-        gstAmount: gstAmount,
-        totalAmount: totalAmount,
-        status: finalStatus as any,
-        submittedAt: finalStatus === 'SUBMITTED' ? new Date() : null,
-      },
+      data: createData,
     });
 
     // If submitted, create approval steps
@@ -205,17 +209,17 @@ export async function POST(request: NextRequest) {
       await prisma.financeRequest.update({
         where: { id: financeRequest.id },
         data: {
-          status: 'PENDING_FINANCE_VETTING',
-          currentApprovalLevel: 'FINANCE_VETTING',
+          status: 'PENDING_FINANCE_VETTING' as any,
+          currentApprovalLevel: 'FINANCE_VETTING' as any,
         },
       });
     }
 
     return NextResponse.json(financeRequest, { status: 201 });
-  } catch (error) {
-    console.error('Error creating finance request:', error);
+  } catch (error: any) {
+    console.error('Error creating finance request:', error?.message, error?.stack);
     return NextResponse.json(
-      { error: 'Failed to create finance request' },
+      { error: 'Failed to create finance request', details: error?.message },
       { status: 500 }
     );
   }
