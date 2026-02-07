@@ -9,8 +9,9 @@ import { loginSchema, type LoginInput } from "@/lib/validations/finance-request"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
+import Image from "next/image"
+import { Lock, Mail } from "lucide-react"
 
 function LoginForm() {
   const router = useRouter()
@@ -23,7 +24,6 @@ function LoginForm() {
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -72,97 +72,110 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-      <Card className="w-full max-w-md mx-4">
-        <CardHeader className="space-y-1 text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary">
-            <svg
-              className="h-6 w-6 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
+      {/* Animated gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#070B47] via-[#0f1565] to-[#1a1f7a]" />
+      
+      {/* Floating orbs for depth */}
+      <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full bg-[#2a30a0]/30 blur-[100px] animate-pulse" />
+      <div className="absolute bottom-[-15%] right-[-10%] w-[600px] h-[600px] rounded-full bg-[#4a50c0]/20 blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+      <div className="absolute top-[40%] left-[60%] w-[300px] h-[300px] rounded-full bg-[#6366f1]/15 blur-[80px] animate-pulse" style={{ animationDelay: '4s' }} />
+
+      {/* Subtle grid pattern overlay */}
+      <div className="absolute inset-0 opacity-[0.03]" style={{
+        backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)',
+        backgroundSize: '60px 60px'
+      }} />
+
+      {/* Glass card */}
+      <div className="relative z-10 w-full max-w-[440px] mx-4">
+        {/* Logo */}
+        <div className="flex justify-center mb-8">
+          <div className="relative h-16 w-64">
+            <Image
+              src="/national-logo.webp"
+              alt="National Group India"
+              fill
+              className="object-contain brightness-0 invert drop-shadow-lg"
+              priority
+            />
           </div>
-          <CardTitle className="text-2xl font-bold">Finance Approval System</CardTitle>
-          <CardDescription>
-            Enter your credentials to access the system
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email" required>Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="your.email@company.com"
-                {...register("email")}
-                error={errors.email?.message}
-                disabled={isLoading}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="password" required>Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                {...register("password")}
-                error={errors.password?.message}
-                disabled={isLoading}
-              />
+        </div>
+
+        {/* Glass card container */}
+        <div className="backdrop-blur-xl bg-white/[0.08] border border-white/[0.15] rounded-3xl p-8 shadow-[0_8px_64px_rgba(0,0,0,0.3)] relative overflow-hidden">
+          {/* Inner glass highlight */}
+          <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
+          
+          <div className="relative z-10">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <h1 className="text-2xl font-semibold text-white tracking-tight">
+                Finance Approval System
+              </h1>
+              <p className="text-white/50 text-sm mt-2">
+                Sign in to access your account
+              </p>
             </div>
 
-            <Button type="submit" className="w-full" loading={isLoading}>
-              Sign In
-            </Button>
-          </form>
+            {/* Form */}
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-white/70 text-xs font-medium uppercase tracking-wider">
+                  Email
+                </Label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="your.email@company.com"
+                    {...register("email")}
+                    disabled={isLoading}
+                    className="pl-11 h-12 bg-white/[0.06] border-white/[0.1] text-white placeholder:text-white/25 rounded-xl focus:bg-white/[0.1] focus:border-white/[0.25] focus:ring-1 focus:ring-white/[0.15] transition-all duration-300"
+                  />
+                </div>
+                {errors.email?.message && (
+                  <p className="text-red-400 text-xs mt-1">{errors.email.message}</p>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-white/70 text-xs font-medium uppercase tracking-wider">
+                  Password
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Enter your password"
+                    {...register("password")}
+                    disabled={isLoading}
+                    className="pl-11 h-12 bg-white/[0.06] border-white/[0.1] text-white placeholder:text-white/25 rounded-xl focus:bg-white/[0.1] focus:border-white/[0.25] focus:ring-1 focus:ring-white/[0.15] transition-all duration-300"
+                  />
+                </div>
+                {errors.password?.message && (
+                  <p className="text-red-400 text-xs mt-1">{errors.password.message}</p>
+                )}
+              </div>
 
-          <div className="mt-6 border-t pt-4">
-            <p className="text-sm text-muted-foreground text-center mb-3">
-              Demo Accounts (Password: Password@123)
-            </p>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="rounded bg-muted p-2 cursor-pointer hover:bg-muted/80" onClick={() => { setValue("email", "employee@nationalgroupindia.com"); setValue("password", "Password@123"); }}>
-                <p className="font-medium">Employee</p>
-                <p className="text-muted-foreground text-[10px]">employee@nationalgroup...</p>
-              </div>
-              <div className="rounded bg-muted p-2 cursor-pointer hover:bg-muted/80" onClick={() => { setValue("email", "karthik@nationalgroupindia.com"); setValue("password", "Password@123"); }}>
-                <p className="font-medium">Finance (Karthik)</p>
-                <p className="text-muted-foreground text-[10px]">karthik@nationalgroup...</p>
-              </div>
-              <div className="rounded bg-muted p-2 cursor-pointer hover:bg-muted/80" onClick={() => { setValue("email", "farooq@nationalgroupindia.com"); setValue("password", "Password@123"); }}>
-                <p className="font-medium">FC (Farooq)</p>
-                <p className="text-muted-foreground text-[10px]">farooq@nationalgroup...</p>
-              </div>
-              <div className="rounded bg-muted p-2 cursor-pointer hover:bg-muted/80" onClick={() => { setValue("email", "faisal@nationalgroupindia.com"); setValue("password", "Password@123"); }}>
-                <p className="font-medium">Director (Faisal)</p>
-                <p className="text-muted-foreground text-[10px]">faisal@nationalgroup...</p>
-              </div>
-              <div className="rounded bg-muted p-2 cursor-pointer hover:bg-muted/80" onClick={() => { setValue("email", "shahil@nationalgroupindia.com"); setValue("password", "Password@123"); }}>
-                <p className="font-medium">MD (Shahil)</p>
-                <p className="text-muted-foreground text-[10px]">shahil@nationalgroup...</p>
-              </div>
-              <div className="rounded bg-muted p-2 cursor-pointer hover:bg-muted/80" onClick={() => { setValue("email", "bala@nationalgroupindia.com"); setValue("password", "Password@123"); }}>
-                <p className="font-medium">Admin (Bala)</p>
-                <p className="text-muted-foreground text-[10px]">bala@nationalgroup...</p>
-              </div>
-              <div className="rounded bg-muted p-2 cursor-pointer hover:bg-muted/80" onClick={() => { setValue("email", "prasanna@nationalgroupindia.com"); setValue("password", "Password@123"); }}>
-                <p className="font-medium">Finance (Prasanna)</p>
-                <p className="text-muted-foreground text-[10px]">prasanna@nationalgroup...</p>
-              </div>
-            </div>
+              <Button 
+                type="submit" 
+                className="w-full h-12 rounded-xl bg-white/[0.15] hover:bg-white/[0.25] text-white font-medium text-sm border border-white/[0.2] backdrop-blur-sm transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.01] active:scale-[0.99]" 
+                loading={isLoading}
+              >
+                Sign In
+              </Button>
+            </form>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Footer text */}
+        <p className="text-center text-white/20 text-xs mt-6">
+          National Group India &copy; {new Date().getFullYear()}
+        </p>
+      </div>
     </div>
   )
 }
@@ -170,8 +183,8 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="animate-pulse text-xl text-gray-500">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-[#070B47]">
+        <div className="animate-pulse text-xl text-white/50">Loading...</div>
       </div>
     }>
       <LoginForm />
