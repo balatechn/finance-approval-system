@@ -4,6 +4,7 @@ import { getCurrentUser } from '@/lib/auth/session';
 import { approvalActionSchema } from '@/lib/validations/finance-request';
 import { canApproveLevel } from '@/lib/auth/permissions';
 import { ApprovalLevel, RequestStatus } from '@prisma/client';
+import { sendApprovalDecisionEmails } from '@/lib/email/email-service';
 
 export const dynamic = 'force-dynamic';
 
@@ -147,6 +148,28 @@ export async function POST(
       user.name,
       comments || ''
     );
+
+    // Send email notifications via SendGrid
+    const amount = financeRequest.requestor ? `INR ${Number(financeRequest.totalAmount).toLocaleString('en-IN')}` : '';
+    const isFinalApproval = action === 'APPROVED' && newStatus === 'APPROVED';
+
+    try {
+      await sendApprovalDecisionEmails(
+        financeRequest.requestor.email,
+        financeRequest.requestor.name,
+        financeRequest.referenceNumber,
+        amount,
+        financeRequest.purpose,
+        action as 'APPROVED' | 'REJECTED' | 'SENT_BACK',
+        currentStep.level,
+        user.name,
+        comments || '',
+        nextLevel,
+        isFinalApproval
+      );
+    } catch (emailError) {
+      console.error('Failed to send email notification:', emailError);
+    }
 
     return NextResponse.json({
       message: `Request ${action.toLowerCase()} successfully`,

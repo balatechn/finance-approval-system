@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth/session';
 import { disbursementSchema } from '@/lib/validations/finance-request';
+import { sendDisbursementEmail } from '@/lib/email/email-service';
 
 export const dynamic = 'force-dynamic';
 
@@ -122,6 +123,25 @@ export async function POST(
         message: `Your request ${financeRequest.referenceNumber} has been disbursed. Payment Reference: ${paymentReferenceNumber}`,
       },
     });
+
+    // Send disbursement email
+    try {
+      const requestor = await prisma.user.findUnique({
+        where: { id: financeRequest.requestorId },
+        select: { email: true, name: true },
+      });
+      if (requestor) {
+        await sendDisbursementEmail(
+          requestor.email,
+          requestor.name,
+          financeRequest.referenceNumber,
+          `INR ${Number(financeRequest.totalAmount).toLocaleString('en-IN')}`,
+          paymentReferenceNumber
+        );
+      }
+    } catch (emailError) {
+      console.error('Failed to send disbursement email:', emailError);
+    }
 
     return NextResponse.json({
       message: 'Disbursement processed successfully',

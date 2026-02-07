@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth/session';
+import { sendRequestSubmittedEmails, sendRequestResubmittedEmails } from '@/lib/email/email-service';
 
 export const dynamic = 'force-dynamic';
 import { hasPermission } from '@/lib/auth/permissions';
@@ -200,6 +201,19 @@ export async function PATCH(
       // Create approval steps
       await createApprovalStepsForRequest(updatedRequest.id, updatedRequest.paymentType, user.id);
 
+      // Send submission email notifications
+      try {
+        await sendRequestSubmittedEmails(
+          user.email,
+          user.name,
+          existingRequest.referenceNumber,
+          `INR ${Number(updatedRequest.totalAmount).toLocaleString('en-IN')}`,
+          updatedRequest.purpose
+        );
+      } catch (emailError) {
+        console.error('Failed to send submission emails:', emailError);
+      }
+
       return NextResponse.json(updatedRequest);
     }
 
@@ -252,6 +266,19 @@ export async function PATCH(
           message: `Your request ${existingRequest.referenceNumber} has been resubmitted for approval.`,
         },
       });
+
+      // Send resubmission email notifications
+      try {
+        await sendRequestResubmittedEmails(
+          user.email,
+          user.name,
+          existingRequest.referenceNumber,
+          `INR ${Number(updatedRequest.totalAmount).toLocaleString('en-IN')}`,
+          updatedRequest.purpose
+        );
+      } catch (emailError) {
+        console.error('Failed to send resubmission emails:', emailError);
+      }
 
       return NextResponse.json(updatedRequest);
     }

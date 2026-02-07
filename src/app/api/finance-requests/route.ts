@@ -4,6 +4,7 @@ import { getCurrentUser } from '@/lib/auth/session';
 import { createFinanceRequestSchema } from '@/lib/validations/finance-request';
 import { generateReferenceNumber } from '@/lib/utils';
 import { ApprovalLevel, RequestStatus, Role } from '@prisma/client';
+import { sendRequestSubmittedEmails } from '@/lib/email/email-service';
 
 export const dynamic = 'force-dynamic';
 
@@ -215,6 +216,19 @@ export async function POST(request: NextRequest) {
           currentApprovalLevel: 'FINANCE_VETTING' as any,
         },
       });
+
+      // Send email notifications
+      try {
+        await sendRequestSubmittedEmails(
+          user.email,
+          user.name,
+          referenceNumber,
+          `INR ${totalAmountCalc.toLocaleString('en-IN')}`,
+          data.purpose
+        );
+      } catch (emailError) {
+        console.error('Failed to send submission emails:', emailError);
+      }
     }
 
     return NextResponse.json(financeRequest, { status: 201 });

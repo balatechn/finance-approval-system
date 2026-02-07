@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { ApprovalLevel, RequestStatus } from '@prisma/client';
 import {
-  sendEmail,
-  getSLABreachEmail,
+  sendSLABreachEmail,
   createNotification,
   getApproversForLevel,
 } from '@/lib/email/email-service';
@@ -97,33 +96,26 @@ async function checkSLABreaches() {
 
       // Send notifications to approvers
       const approvers = await getApproversForLevel(
-        step.level,
-        step.financeRequest.requestorId,
-        step.financeRequest.department
+        step.level
       );
 
       for (const approver of approvers) {
         const hoursOverdue = hoursElapsed - slaHours;
-        const emailData = getSLABreachEmail(
+
+        await sendSLABreachEmail(
+          approver.email,
           approver.name || 'Approver',
           step.financeRequest.referenceNumber,
           step.level,
           hoursOverdue
         );
 
-        await sendEmail({
-          to: approver.email,
-          subject: emailData.subject,
-          html: emailData.html,
-        });
-
         await createNotification(
           approver.id,
           'SLA Breach Alert',
           `Request ${step.financeRequest.referenceNumber} is overdue by ${hoursOverdue.toFixed(1)} hours`,
           'SLA_BREACH',
-          step.financeRequestId,
-          false // Already sent email
+          step.financeRequestId
         );
 
         notificationsSent++;
@@ -135,8 +127,7 @@ async function checkSLABreaches() {
         'Request Delayed',
         `Your request ${step.financeRequest.referenceNumber} is delayed at ${step.level} stage`,
         'SLA_WARNING',
-        step.financeRequestId,
-        true
+        step.financeRequestId
       );
     }
 
@@ -144,9 +135,7 @@ async function checkSLABreaches() {
     const warningThreshold = slaHours * 0.8;
     if (hoursElapsed > warningThreshold && hoursElapsed <= slaHours) {
       const approvers = await getApproversForLevel(
-        step.level,
-        step.financeRequest.requestorId,
-        step.financeRequest.department
+        step.level
       );
 
       for (const approver of approvers) {
@@ -166,8 +155,7 @@ async function checkSLABreaches() {
             'SLA Warning',
             `Request ${step.financeRequest.referenceNumber} needs attention - SLA deadline approaching`,
             'SLA_WARNING',
-            step.financeRequestId,
-            true
+            step.financeRequestId
           );
         }
       }
