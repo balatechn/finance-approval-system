@@ -66,6 +66,26 @@ async function main() {
   // Hash password
   const hashedPassword = await bcrypt.hash('Password@123', 12);
 
+  // Update old users to new emails (handles migration from old seed data)
+  const emailMigrations = [
+    { oldEmail: 'md@nationalconsultingindia.com', newEmail: 'shahil@nationalgroupindia.com', newName: 'Shahil' },
+    { oldEmail: 'director@nationalconsultingindia.com', newEmail: 'faisal@nationalgroupindia.com', newName: 'Faisal' },
+    { oldEmail: 'fc@nationalconsultingindia.com', newEmail: 'farooq@nationalgroupindia.com', newName: 'Farooq' },
+    { oldEmail: 'finance@nationalconsultingindia.com', newEmail: 'karthik@nationalgroupindia.com', newName: 'Karthik' },
+    { oldEmail: 'employee@nationalconsultingindia.com', newEmail: 'employee@nationalgroupindia.com', newName: 'Employee Demo' },
+  ];
+
+  for (const migration of emailMigrations) {
+    const existing = await prisma.user.findUnique({ where: { email: migration.oldEmail } });
+    if (existing) {
+      await prisma.user.update({
+        where: { email: migration.oldEmail },
+        data: { email: migration.newEmail, name: migration.newName, password: hashedPassword },
+      });
+      console.log(`  Migrated ${migration.oldEmail} → ${migration.newEmail}`);
+    }
+  }
+
   // Create Admin User
   const admin = await prisma.user.upsert({
     where: { email: 'bala@nationalgroupindia.com' },
@@ -84,11 +104,11 @@ async function main() {
 
   // Create Managing Director
   const md = await prisma.user.upsert({
-    where: { email: 'md@nationalconsultingindia.com' },
+    where: { email: 'shahil@nationalgroupindia.com' },
     update: {},
     create: {
-      email: 'md@nationalconsultingindia.com',
-      name: 'Rajesh Kumar',
+      email: 'shahil@nationalgroupindia.com',
+      name: 'Shahil',
       password: hashedPassword,
       role: Role.MD,
       department: 'Management',
@@ -100,11 +120,11 @@ async function main() {
 
   // Create Director
   const director = await prisma.user.upsert({
-    where: { email: 'director@nationalconsultingindia.com' },
+    where: { email: 'faisal@nationalgroupindia.com' },
     update: {},
     create: {
-      email: 'director@nationalconsultingindia.com',
-      name: 'Anita Sharma',
+      email: 'faisal@nationalgroupindia.com',
+      name: 'Faisal',
       password: hashedPassword,
       role: Role.DIRECTOR,
       department: 'Management',
@@ -116,11 +136,11 @@ async function main() {
 
   // Create Finance Controller
   const financeController = await prisma.user.upsert({
-    where: { email: 'fc@nationalconsultingindia.com' },
+    where: { email: 'farooq@nationalgroupindia.com' },
     update: {},
     create: {
-      email: 'fc@nationalconsultingindia.com',
-      name: 'Vikram Patel',
+      email: 'farooq@nationalgroupindia.com',
+      name: 'Farooq',
       password: hashedPassword,
       role: Role.FINANCE_CONTROLLER,
       department: 'Finance',
@@ -130,13 +150,13 @@ async function main() {
   });
   console.log('✅ Finance Controller created');
 
-  // Create Finance Team Member
+  // Create Finance Team Member (Vetting & Disbursement)
   const financeTeam = await prisma.user.upsert({
-    where: { email: 'finance@nationalconsultingindia.com' },
+    where: { email: 'karthik@nationalgroupindia.com' },
     update: {},
     create: {
-      email: 'finance@nationalconsultingindia.com',
-      name: 'Priya Mehta',
+      email: 'karthik@nationalgroupindia.com',
+      name: 'Karthik',
       password: hashedPassword,
       role: Role.FINANCE_TEAM,
       department: 'Finance',
@@ -144,15 +164,31 @@ async function main() {
       isActive: true,
     },
   });
-  console.log('✅ Finance Team member created');
+  console.log('✅ Finance Team member (Karthik) created');
 
-  // Create Employee
-  const employee = await prisma.user.upsert({
-    where: { email: 'employee@nationalconsultingindia.com' },
+  // Create Finance Team Member 2 (Disbursement)
+  const financeTeam2 = await prisma.user.upsert({
+    where: { email: 'prasanna@nationalgroupindia.com' },
     update: {},
     create: {
-      email: 'employee@nationalconsultingindia.com',
-      name: 'John Smith',
+      email: 'prasanna@nationalgroupindia.com',
+      name: 'Prasanna',
+      password: hashedPassword,
+      role: Role.FINANCE_TEAM,
+      department: 'Finance',
+      employeeId: 'EMP007',
+      isActive: true,
+    },
+  });
+  console.log('✅ Finance Team member (Prasanna) created');
+
+  // Create Employee (demo)
+  const employee = await prisma.user.upsert({
+    where: { email: 'employee@nationalgroupindia.com' },
+    update: {},
+    create: {
+      email: 'employee@nationalgroupindia.com',
+      name: 'Employee Demo',
       password: hashedPassword,
       role: Role.EMPLOYEE,
       department: 'Sales',
@@ -189,11 +225,12 @@ async function main() {
   console.log('Test Accounts:');
   console.log('─────────────────────────────────────────');
   console.log('Admin:              bala@nationalgroupindia.com');
-  console.log('MD:                 md@nationalconsultingindia.com');
-  console.log('Director:           director@nationalconsultingindia.com');
-  console.log('Finance Controller: fc@nationalconsultingindia.com');
-  console.log('Finance Team:       finance@nationalconsultingindia.com');
-  console.log('Employee:           employee@nationalconsultingindia.com');
+  console.log('MD:                 shahil@nationalgroupindia.com');
+  console.log('Director:           faisal@nationalgroupindia.com');
+  console.log('Finance Controller: farooq@nationalgroupindia.com');
+  console.log('Finance (Vetting):  karthik@nationalgroupindia.com');
+  console.log('Finance (Disbmnt):  prasanna@nationalgroupindia.com');
+  console.log('Employee:           employee@nationalgroupindia.com');
   console.log('Password:           Password@123');
   console.log('─────────────────────────────────────────');
 }

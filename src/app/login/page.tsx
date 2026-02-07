@@ -131,29 +131,33 @@ function LoginForm() {
               Demo Accounts (Password: Password@123)
             </p>
             <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="rounded bg-muted p-2 cursor-pointer hover:bg-muted/80" onClick={() => { setValue("email", "employee@nationalconsultingindia.com"); setValue("password", "Password@123"); }}>
+              <div className="rounded bg-muted p-2 cursor-pointer hover:bg-muted/80" onClick={() => { setValue("email", "employee@nationalgroupindia.com"); setValue("password", "Password@123"); }}>
                 <p className="font-medium">Employee</p>
-                <p className="text-muted-foreground text-[10px]">employee@national...</p>
+                <p className="text-muted-foreground text-[10px]">employee@nationalgroup...</p>
               </div>
-              <div className="rounded bg-muted p-2 cursor-pointer hover:bg-muted/80" onClick={() => { setValue("email", "finance@nationalconsultingindia.com"); setValue("password", "Password@123"); }}>
-                <p className="font-medium">Finance Team</p>
-                <p className="text-muted-foreground text-[10px]">finance@national...</p>
+              <div className="rounded bg-muted p-2 cursor-pointer hover:bg-muted/80" onClick={() => { setValue("email", "karthik@nationalgroupindia.com"); setValue("password", "Password@123"); }}>
+                <p className="font-medium">Finance (Karthik)</p>
+                <p className="text-muted-foreground text-[10px]">karthik@nationalgroup...</p>
               </div>
-              <div className="rounded bg-muted p-2 cursor-pointer hover:bg-muted/80" onClick={() => { setValue("email", "fc@nationalconsultingindia.com"); setValue("password", "Password@123"); }}>
-                <p className="font-medium">Finance Controller</p>
-                <p className="text-muted-foreground text-[10px]">fc@national...</p>
+              <div className="rounded bg-muted p-2 cursor-pointer hover:bg-muted/80" onClick={() => { setValue("email", "farooq@nationalgroupindia.com"); setValue("password", "Password@123"); }}>
+                <p className="font-medium">FC (Farooq)</p>
+                <p className="text-muted-foreground text-[10px]">farooq@nationalgroup...</p>
               </div>
-              <div className="rounded bg-muted p-2 cursor-pointer hover:bg-muted/80" onClick={() => { setValue("email", "director@nationalconsultingindia.com"); setValue("password", "Password@123"); }}>
-                <p className="font-medium">Director</p>
-                <p className="text-muted-foreground text-[10px]">director@national...</p>
+              <div className="rounded bg-muted p-2 cursor-pointer hover:bg-muted/80" onClick={() => { setValue("email", "faisal@nationalgroupindia.com"); setValue("password", "Password@123"); }}>
+                <p className="font-medium">Director (Faisal)</p>
+                <p className="text-muted-foreground text-[10px]">faisal@nationalgroup...</p>
               </div>
-              <div className="rounded bg-muted p-2 cursor-pointer hover:bg-muted/80" onClick={() => { setValue("email", "md@nationalconsultingindia.com"); setValue("password", "Password@123"); }}>
-                <p className="font-medium">MD</p>
-                <p className="text-muted-foreground text-[10px]">md@national...</p>
+              <div className="rounded bg-muted p-2 cursor-pointer hover:bg-muted/80" onClick={() => { setValue("email", "shahil@nationalgroupindia.com"); setValue("password", "Password@123"); }}>
+                <p className="font-medium">MD (Shahil)</p>
+                <p className="text-muted-foreground text-[10px]">shahil@nationalgroup...</p>
               </div>
               <div className="rounded bg-muted p-2 cursor-pointer hover:bg-muted/80" onClick={() => { setValue("email", "bala@nationalgroupindia.com"); setValue("password", "Password@123"); }}>
-                <p className="font-medium">Admin</p>
+                <p className="font-medium">Admin (Bala)</p>
                 <p className="text-muted-foreground text-[10px]">bala@nationalgroup...</p>
+              </div>
+              <div className="rounded bg-muted p-2 cursor-pointer hover:bg-muted/80" onClick={() => { setValue("email", "prasanna@nationalgroupindia.com"); setValue("password", "Password@123"); }}>
+                <p className="font-medium">Finance (Prasanna)</p>
+                <p className="text-muted-foreground text-[10px]">prasanna@nationalgroup...</p>
               </div>
             </div>
           </div>
