@@ -203,10 +203,9 @@ async function getPendingApprovals(user: any) {
       whereClause.department = user.department;
       break;
     case 'FINANCE_TEAM':
-      whereClause.OR = [
-        { status: 'PENDING_FINANCE_VETTING' },
-        { status: 'APPROVED' }, // For disbursement
-      ];
+      whereClause.status = {
+        in: ['PENDING_FINANCE_VETTING', 'APPROVED'],
+      };
       break;
     case 'FINANCE_HEAD':
       whereClause.status = 'PENDING_FINANCE_APPROVAL';
@@ -218,6 +217,7 @@ async function getPendingApprovals(user: any) {
           'PENDING_HOD',
           'PENDING_FINANCE_VETTING',
           'PENDING_FINANCE_APPROVAL',
+          'APPROVED',
         ],
       };
       break;
@@ -252,11 +252,15 @@ async function getPendingApprovals(user: any) {
     orderBy: { createdAt: 'asc' },
     take: 10,
   });
-  return approvals.map((r: any) => ({
-    ...r,
-    totalAmountINR: Number(r.totalAmount),
-    requester: r.requestor,
-  }));
+  return approvals.map((r: any) => {
+    const activeStep = r.approvalSteps?.[0];
+    return {
+      ...r,
+      totalAmountINR: Number(r.totalAmount),
+      requester: r.requestor,
+      isOverdue: activeStep?.slaBreached || false,
+    };
+  });
 }
 
 async function getSLAAlerts(user: any) {

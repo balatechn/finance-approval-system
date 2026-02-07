@@ -18,22 +18,17 @@ export async function POST(
     }
 
     const body = await request.json();
-    body.financeRequestId = params.id;
 
-    // Validate
-    const validationResult = approvalActionSchema.safeParse(body);
-    if (!validationResult.success) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: validationResult.error.flatten() },
-        { status: 400 }
-      );
-    }
-
-    const { action, comments } = validationResult.data;
-
-    // Get the finance request with current approval step
-    const financeRequest = await prisma.financeRequest.findUnique({
-      where: { id: params.id, isDeleted: false },
+    // Look up by referenceNumber or id
+    const identifier = params.id;
+    const financeRequest = await prisma.financeRequest.findFirst({
+      where: {
+        isDeleted: false,
+        OR: [
+          { referenceNumber: identifier },
+          { id: identifier },
+        ],
+      },
       include: {
         approvalSteps: {
           where: { isActive: true },
@@ -46,6 +41,19 @@ export async function POST(
     if (!financeRequest) {
       return NextResponse.json({ error: 'Request not found' }, { status: 404 });
     }
+
+    body.financeRequestId = financeRequest.id;
+
+    // Validate
+    const validationResult = approvalActionSchema.safeParse(body);
+    if (!validationResult.success) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: validationResult.error.flatten() },
+        { status: 400 }
+      );
+    }
+
+    const { action, comments } = validationResult.data;
 
     const currentStep = financeRequest.approvalSteps[0];
     if (!currentStep) {
@@ -71,7 +79,7 @@ export async function POST(
     await prisma.approvalAction_Record.create({
       data: {
         approvalStepId: currentStep.id,
-        financeRequestId: params.id,
+        financeRequestId: financeRequest.id,
         actorId: user.id,
         action: action,
         comments: comments || null,
@@ -95,7 +103,7 @@ export async function POST(
     if (!slaCompliant) {
       await prisma.sLALog.updateMany({
         where: {
-          financeRequestId: params.id,
+          financeRequestId: financeRequest.id,
           level: currentStep.level,
           isBreached: false,
         },
@@ -111,7 +119,7 @@ export async function POST(
     let nextLevel: ApprovalLevel | null = null;
 
     if (action === 'APPROVED') {
-      const result = await processApproval(params.id, currentStep.level, financeRequest.paymentType);
+      const result = await processApproval(financeRequest.id, currentStep.level, financeRequest.paymentType);
       newStatus = result.newStatus;
       nextLevel = result.nextLevel;
     } else if (action === 'REJECTED') {
@@ -123,7 +131,7 @@ export async function POST(
 
     // Update finance request status
     await prisma.financeRequest.update({
-      where: { id: params.id },
+      where: { id: financeRequest.id },
       data: {
         status: newStatus,
         currentApprovalLevel: nextLevel,

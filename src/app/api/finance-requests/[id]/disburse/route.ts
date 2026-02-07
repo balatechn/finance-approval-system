@@ -23,7 +23,24 @@ export async function POST(
     }
 
     const body = await request.json();
-    body.financeRequestId = params.id;
+
+    // Look up by referenceNumber or id
+    const identifier = params.id;
+    const financeRequest = await prisma.financeRequest.findFirst({
+      where: {
+        isDeleted: false,
+        OR: [
+          { referenceNumber: identifier },
+          { id: identifier },
+        ],
+      },
+    });
+
+    if (!financeRequest) {
+      return NextResponse.json({ error: 'Request not found' }, { status: 404 });
+    }
+
+    body.financeRequestId = financeRequest.id;
 
     // Validate
     const validationResult = disbursementSchema.safeParse(body);
@@ -35,15 +52,6 @@ export async function POST(
     }
 
     const { paymentReferenceNumber, actualPaymentDate, disbursementRemarks } = validationResult.data;
-
-    // Get the finance request
-    const financeRequest = await prisma.financeRequest.findUnique({
-      where: { id: params.id, isDeleted: false },
-    });
-
-    if (!financeRequest) {
-      return NextResponse.json({ error: 'Request not found' }, { status: 404 });
-    }
 
     // Check if request is approved
     if (financeRequest.status !== 'APPROVED') {
@@ -58,7 +66,7 @@ export async function POST(
     // Update approval step for disbursement
     await prisma.approvalStep.updateMany({
       where: {
-        financeRequestId: params.id,
+        financeRequestId: financeRequest.id,
         level: 'DISBURSEMENT',
       },
       data: {
@@ -72,7 +80,7 @@ export async function POST(
     // Create action record
     const disbursementStep = await prisma.approvalStep.findFirst({
       where: {
-        financeRequestId: params.id,
+        financeRequestId: financeRequest.id,
         level: 'DISBURSEMENT',
       },
     });
@@ -81,7 +89,7 @@ export async function POST(
       await prisma.approvalAction_Record.create({
         data: {
           approvalStepId: disbursementStep.id,
-          financeRequestId: params.id,
+          financeRequestId: financeRequest.id,
           actorId: user.id,
           action: 'APPROVED',
           comments: disbursementRemarks || 'Payment processed',
@@ -92,7 +100,7 @@ export async function POST(
 
     // Update finance request
     const updatedRequest = await prisma.financeRequest.update({
-      where: { id: params.id },
+      where: { id: financeRequest.id },
       data: {
         status: 'DISBURSED',
         paymentReferenceNumber,
@@ -106,7 +114,7 @@ export async function POST(
     await prisma.notification.create({
       data: {
         userId: financeRequest.requestorId,
-        financeRequestId: params.id,
+        financeRequestId: financeRequest.id,
         type: 'DISBURSEMENT',
         title: 'Payment Completed',
         message: `Your request ${financeRequest.referenceNumber} has been disbursed. Payment Reference: ${paymentReferenceNumber}`,

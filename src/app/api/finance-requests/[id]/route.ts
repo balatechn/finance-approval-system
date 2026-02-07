@@ -113,8 +113,15 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const existingRequest = await prisma.financeRequest.findUnique({
-      where: { id: params.id, isDeleted: false },
+    const identifier = params.id;
+    const existingRequest = await prisma.financeRequest.findFirst({
+      where: {
+        isDeleted: false,
+        OR: [
+          { referenceNumber: identifier },
+          { id: identifier },
+        ],
+      },
     });
 
     if (!existingRequest) {
@@ -132,7 +139,7 @@ export async function PATCH(
     // If submitting a draft
     if (body.status === 'SUBMITTED' && existingRequest.status === 'DRAFT') {
       const updatedRequest = await prisma.financeRequest.update({
-        where: { id: params.id },
+        where: { id: existingRequest.id },
         data: {
           ...body,
           status: 'PENDING_MANAGER',
@@ -149,7 +156,7 @@ export async function PATCH(
 
     // Regular update
     const updatedRequest = await prisma.financeRequest.update({
-      where: { id: params.id },
+      where: { id: existingRequest.id },
       data: body,
     });
 
@@ -174,16 +181,23 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const existingRequest = await prisma.financeRequest.findUnique({
-      where: { id: params.id, isDeleted: false },
+    const deleteIdentifier = params.id;
+    const existingDeleteRequest = await prisma.financeRequest.findFirst({
+      where: {
+        isDeleted: false,
+        OR: [
+          { referenceNumber: deleteIdentifier },
+          { id: deleteIdentifier },
+        ],
+      },
     });
 
-    if (!existingRequest) {
+    if (!existingDeleteRequest) {
       return NextResponse.json({ error: 'Request not found' }, { status: 404 });
     }
 
     // Only allow deletion of drafts by the requestor
-    if (existingRequest.status !== 'DRAFT' || existingRequest.requestorId !== user.id) {
+    if (existingDeleteRequest.status !== 'DRAFT' || existingDeleteRequest.requestorId !== user.id) {
       return NextResponse.json(
         { error: 'Only draft requests can be deleted by the requestor' },
         { status: 403 }
@@ -191,7 +205,7 @@ export async function DELETE(
     }
 
     await prisma.financeRequest.update({
-      where: { id: params.id },
+      where: { id: existingDeleteRequest.id },
       data: { isDeleted: true },
     });
 
