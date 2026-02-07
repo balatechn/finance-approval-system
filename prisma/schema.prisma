@@ -1,0 +1,420 @@
+// Prisma Schema for Finance Approval System
+// Database: Neon PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum Role {
+  EMPLOYEE
+  MANAGER
+  DEPARTMENT_HEAD
+  FINANCE_TEAM
+  FINANCE_HEAD
+  ADMIN
+}
+
+enum RequestStatus {
+  DRAFT
+  SUBMITTED
+  PENDING_MANAGER
+  PENDING_HOD
+  PENDING_FINANCE_VETTING
+  PENDING_FINANCE_APPROVAL
+  APPROVED
+  REJECTED
+  SENT_BACK
+  DISBURSED
+}
+
+enum ApprovalAction {
+  APPROVED
+  REJECTED
+  SENT_BACK
+}
+
+enum PaymentType {
+  CRITICAL
+  NON_CRITICAL
+  PETTY_CASH
+  INVOICE
+  ADVANCE
+  REIMBURSEMENT
+  VENDOR_PAYMENT
+  SALARY
+  BONUS
+  OTHER
+}
+
+enum PaymentMode {
+  NEFT
+  RTGS
+  UPI
+  CHEQUE
+  BANK_TRANSFER
+  CASH
+  DEMAND_DRAFT
+}
+
+enum Currency {
+  INR
+  USD
+  EUR
+  GBP
+}
+
+enum ApprovalLevel {
+  MANAGER           // Level 1
+  DEPARTMENT_HEAD   // Level 2
+  FINANCE_VETTING   // Level 3
+  FINANCE_APPROVAL  // Level 4
+  DISBURSEMENT      // Level 5
+}
+
+// ============================================================================
+// USER & AUTHENTICATION
+// ============================================================================
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  emailVerified   DateTime?
+  name            String
+  password        String?
+  image           String?
+  role            Role      @default(EMPLOYEE)
+  department      String?
+  employeeId      String?   @unique
+  managerId       String?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  manager                User?             @relation("ManagerEmployee", fields: [managerId], references: [id])
+  directReports          User[]            @relation("ManagerEmployee")
+  financeRequests        FinanceRequest[]  @relation("Requestor")
+  approvalActions        ApprovalAction_Record[]
+  notifications          Notification[]
+  accounts               Account[]
+  sessions               Session[]
+
+  @@index([email])
+  @@index([department])
+  @@index([managerId])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ============================================================================
+// FINANCE REQUEST
+// ============================================================================
+
+model FinanceRequest {
+  id                    String        @id @default(cuid())
+  referenceNumber       String        @unique
+  
+  // Request Metadata
+  requestorId           String
+  requestDate           DateTime      @default(now())
+  department            String
+  costCenter            String
+  entity                String?       // Business Unit
+  
+  // Payment Details
+  paymentType           PaymentType   @default(NON_CRITICAL)
+  amount                Decimal       @db.Decimal(15, 2)
+  currency              Currency      @default(INR)
+  purpose               String        @db.Text
+  
+  // Vendor Information
+  vendorName            String
+  vendorCode            String?
+  vendorType            String?       // Vendor / Employee / Consultant / Other
+  vendorEmail           String?
+  vendorPhone           String?
+  vendorBankName        String?
+  vendorBankAccount     String?
+  vendorBankIfsc        String?
+  vendorBankBranch      String?
+  vendorUpiId           String?
+  paymentMode           PaymentMode   @default(NEFT)
+  
+  // Dates
+  invoiceDate           DateTime?
+  invoiceNumber         String?
+  expectedPaymentDate   DateTime?
+  actualPaymentDate     DateTime?
+  
+  // GST Details
+  gstApplicable         Boolean       @default(false)
+  gstPercentage         Decimal?      @db.Decimal(5, 2)
+  gstAmount             Decimal?      @db.Decimal(15, 2)
+  otherTaxes            Decimal?      @db.Decimal(15, 2)
+  totalAmount           Decimal       @db.Decimal(15, 2)
+  
+  // Status
+  status                RequestStatus @default(DRAFT)
+  currentApprovalLevel  ApprovalLevel?
+  
+  // Declaration
+  declarationConfirmed  Boolean       @default(false)
+  
+  // Disbursement
+  paymentReferenceNumber String?
+  disbursementRemarks    String?
+  
+  // Audit
+  isDeleted             Boolean       @default(false)
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  submittedAt           DateTime?
+  completedAt           DateTime?
+
+  // Relations
+  requestor             User                    @relation("Requestor", fields: [requestorId], references: [id])
+  attachments           Attachment[]
+  approvalSteps         ApprovalStep[]
+  approvalActions       ApprovalAction_Record[]
+  slaLogs               SLALog[]
+  notifications         Notification[]
+
+  @@index([referenceNumber])
+  @@index([requestorId])
+  @@index([status])
+  @@index([department])
+  @@index([createdAt])
+  @@index([paymentType])
+}
+
+// ============================================================================
+// APPROVAL WORKFLOW
+// ============================================================================
+
+model ApprovalStep {
+  id                String        @id @default(cuid())
+  financeRequestId  String
+  level             ApprovalLevel
+  sequence          Int
+  
+  // Approver Assignment
+  assignedToId      String?
+  assignedToRole    Role
+  
+  // Status
+  status            String        @default("PENDING") // PENDING, COMPLETED, SKIPPED
+  isActive          Boolean       @default(false)
+  
+  // SLA
+  slaHours          Int           @default(24)
+  slaDueAt          DateTime?
+  slaBreached       Boolean       @default(false)
+  
+  // Timestamps
+  startedAt         DateTime?
+  completedAt       DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  // Relations
+  financeRequest    FinanceRequest          @relation(fields: [financeRequestId], references: [id])
+  actions           ApprovalAction_Record[]
+
+  @@unique([financeRequestId, level])
+  @@index([financeRequestId])
+  @@index([assignedToId])
+  @@index([status])
+  @@index([slaDueAt])
+}
+
+model ApprovalAction_Record {
+  id              String         @id @default(cuid())
+  approvalStepId  String
+  financeRequestId String
+  
+  // Action Details
+  actorId         String
+  action          ApprovalAction
+  comments        String?        @db.Text
+  
+  // SLA Tracking
+  slaCompliant    Boolean        @default(true)
+  responseTimeHours Decimal?     @db.Decimal(10, 2)
+  
+  // Timestamps
+  createdAt       DateTime       @default(now())
+
+  // Relations
+  approvalStep    ApprovalStep   @relation(fields: [approvalStepId], references: [id])
+  financeRequest  FinanceRequest @relation(fields: [financeRequestId], references: [id])
+  actor           User           @relation(fields: [actorId], references: [id])
+
+  @@index([approvalStepId])
+  @@index([financeRequestId])
+  @@index([actorId])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// ATTACHMENTS
+// ============================================================================
+
+model Attachment {
+  id              String         @id @default(cuid())
+  financeRequestId String
+  
+  fileName        String
+  fileType        String
+  fileSize        Int
+  fileUrl         String
+  category        String         // INVOICE, QUOTATION, APPROVAL_EMAIL, OTHER
+  
+  uploadedById    String
+  uploadedAt      DateTime       @default(now())
+  isDeleted       Boolean        @default(false)
+
+  // Relations
+  financeRequest  FinanceRequest @relation(fields: [financeRequestId], references: [id])
+
+  @@index([financeRequestId])
+}
+
+// ============================================================================
+// SLA TRACKING
+// ============================================================================
+
+model SLALog {
+  id              String         @id @default(cuid())
+  financeRequestId String
+  
+  level           ApprovalLevel
+  slaHours        Int
+  slaDueAt        DateTime
+  breachedAt      DateTime?
+  isBreached      Boolean        @default(false)
+  escalated       Boolean        @default(false)
+  escalatedAt     DateTime?
+  escalatedTo     String?
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  financeRequest  FinanceRequest @relation(fields: [financeRequestId], references: [id])
+
+  @@index([financeRequestId])
+  @@index([slaDueAt])
+  @@index([isBreached])
+}
+
+// ============================================================================
+// NOTIFICATIONS
+// ============================================================================
+
+model Notification {
+  id              String         @id @default(cuid())
+  userId          String
+  financeRequestId String?
+  
+  type            String         // APPROVAL_REQUEST, SLA_WARNING, REJECTION, APPROVAL, SENT_BACK, DISBURSEMENT
+  title           String
+  message         String         @db.Text
+  
+  isRead          Boolean        @default(false)
+  emailSent       Boolean        @default(false)
+  emailSentAt     DateTime?
+  
+  createdAt       DateTime       @default(now())
+
+  // Relations
+  user            User           @relation(fields: [userId], references: [id])
+  financeRequest  FinanceRequest? @relation(fields: [financeRequestId], references: [id])
+
+  @@index([userId])
+  @@index([financeRequestId])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// CONFIGURATION
+// ============================================================================
+
+model Department {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  code            String   @unique
+  headId          String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model CostCenter {
+  id              String   @id @default(cuid())
+  name            String
+  code            String   @unique
+  departmentCode  String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Entity {
+  id              String   @id @default(cuid())
+  name            String
+  code            String   @unique
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model SystemConfig {
+  id              String   @id @default(cuid())
+  key             String   @unique
+  value           String
+  description     String?
+  updatedAt       DateTime @updatedAt
+}

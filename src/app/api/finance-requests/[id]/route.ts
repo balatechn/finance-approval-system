@@ -1,0 +1,293 @@
+import { NextRequest, NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+import { getCurrentUser } from '@/lib/auth/session';
+import { hasPermission } from '@/lib/auth/permissions';
+
+// GET /api/finance-requests/[id] - Get single finance request
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const financeRequest = await prisma.financeRequest.findUnique({
+      where: { id: params.id, isDeleted: false },
+      include: {
+        requestor: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            department: true,
+            employeeId: true,
+            manager: {
+              select: { id: true, name: true, email: true }
+            }
+          }
+        },
+        attachments: {
+          where: { isDeleted: false },
+          orderBy: { uploadedAt: 'desc' }
+        },
+        approvalSteps: {
+          include: {
+            actions: {
+              include: {
+                actor: {
+                  select: { id: true, name: true, email: true, role: true }
+                }
+              },
+              orderBy: { createdAt: 'asc' }
+            }
+          },
+          orderBy: { sequence: 'asc' }
+        },
+        slaLogs: {
+          orderBy: { createdAt: 'desc' }
+        },
+        notifications: {
+          where: { userId: user.id },
+          orderBy: { createdAt: 'desc' },
+          take: 10
+        }
+      },
+    });
+
+    if (!financeRequest) {
+      return NextResponse.json({ error: 'Request not found' }, { status: 404 });
+    }
+
+    // Check access permissions
+    const canView = checkViewPermission(user, financeRequest);
+    if (!canView) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    return NextResponse.json(financeRequest);
+  } catch (error) {
+    console.error('Error fetching finance request:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch finance request' },
+      { status: 500 }
+    );
+  }
+}
+
+// PATCH /api/finance-requests/[id] - Update finance request
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const existingRequest = await prisma.financeRequest.findUnique({
+      where: { id: params.id, isDeleted: false },
+    });
+
+    if (!existingRequest) {
+      return NextResponse.json({ error: 'Request not found' }, { status: 404 });
+    }
+
+    // Check edit permissions
+    const canEdit = checkEditPermission(user, existingRequest);
+    if (!canEdit) {
+      return NextResponse.json({ error: 'Cannot edit this request' }, { status: 403 });
+    }
+
+    const body = await request.json();
+
+    // If submitting a draft
+    if (body.status === 'SUBMITTED' && existingRequest.status === 'DRAFT') {
+      const updatedRequest = await prisma.financeRequest.update({
+        where: { id: params.id },
+        data: {
+          ...body,
+          status: 'PENDING_MANAGER',
+          currentApprovalLevel: 'MANAGER',
+          submittedAt: new Date(),
+        },
+      });
+
+      // Create approval steps
+      await createApprovalStepsForRequest(updatedRequest.id, updatedRequest.paymentType, user.id);
+
+      return NextResponse.json(updatedRequest);
+    }
+
+    // Regular update
+    const updatedRequest = await prisma.financeRequest.update({
+      where: { id: params.id },
+      data: body,
+    });
+
+    return NextResponse.json(updatedRequest);
+  } catch (error) {
+    console.error('Error updating finance request:', error);
+    return NextResponse.json(
+      { error: 'Failed to update finance request' },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE /api/finance-requests/[id] - Soft delete finance request
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const existingRequest = await prisma.financeRequest.findUnique({
+      where: { id: params.id, isDeleted: false },
+    });
+
+    if (!existingRequest) {
+      return NextResponse.json({ error: 'Request not found' }, { status: 404 });
+    }
+
+    // Only allow deletion of drafts by the requestor
+    if (existingRequest.status !== 'DRAFT' || existingRequest.requestorId !== user.id) {
+      return NextResponse.json(
+        { error: 'Only draft requests can be deleted by the requestor' },
+        { status: 403 }
+      );
+    }
+
+    await prisma.financeRequest.update({
+      where: { id: params.id },
+      data: { isDeleted: true },
+    });
+
+    return NextResponse.json({ message: 'Request deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting finance request:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete finance request' },
+      { status: 500 }
+    );
+  }
+}
+
+// Helper functions
+function checkViewPermission(user: any, request: any): boolean {
+  // Requestor can view their own
+  if (request.requestorId === user.id) return true;
+
+  // Role-based access
+  switch (user.role) {
+    case 'ADMIN':
+    case 'FINANCE_HEAD':
+    case 'FINANCE_TEAM':
+      return true;
+    case 'DEPARTMENT_HEAD':
+      return request.department === user.department;
+    case 'MANAGER':
+      // Can view if they are the manager of the requestor
+      return request.requestor?.managerId === user.id;
+    default:
+      return false;
+  }
+}
+
+function checkEditPermission(user: any, request: any): boolean {
+  // Only drafts can be edited by requestor
+  if (request.status === 'DRAFT' && request.requestorId === user.id) {
+    return true;
+  }
+
+  // Sent back requests can be edited by requestor
+  if (request.status === 'SENT_BACK' && request.requestorId === user.id) {
+    return true;
+  }
+
+  // Finance can edit financial fields during vetting
+  if (
+    request.status === 'PENDING_FINANCE_VETTING' &&
+    (user.role === 'FINANCE_TEAM' || user.role === 'FINANCE_HEAD')
+  ) {
+    return true;
+  }
+
+  // Admin can edit
+  if (user.role === 'ADMIN') return true;
+
+  return false;
+}
+
+async function createApprovalStepsForRequest(
+  financeRequestId: string,
+  paymentType: string,
+  requestorId: string
+) {
+  const requestor = await prisma.user.findUnique({
+    where: { id: requestorId },
+  });
+
+  const slaHours: Record<string, number> = {
+    MANAGER: 24,
+    DEPARTMENT_HEAD: 24,
+    FINANCE_VETTING: paymentType === 'CRITICAL' ? 24 : 72,
+    FINANCE_APPROVAL: 24,
+    DISBURSEMENT: 24,
+  };
+
+  const levels = [
+    'MANAGER',
+    'DEPARTMENT_HEAD',
+    'FINANCE_VETTING',
+    'FINANCE_APPROVAL',
+    'DISBURSEMENT',
+  ] as const;
+
+  const roleMapping: Record<string, string> = {
+    MANAGER: 'MANAGER',
+    DEPARTMENT_HEAD: 'DEPARTMENT_HEAD',
+    FINANCE_VETTING: 'FINANCE_TEAM',
+    FINANCE_APPROVAL: 'FINANCE_HEAD',
+    DISBURSEMENT: 'FINANCE_TEAM',
+  };
+
+  const now = new Date();
+
+  for (let i = 0; i < levels.length; i++) {
+    const level = levels[i];
+    const isFirst = i === 0;
+
+    await prisma.approvalStep.create({
+      data: {
+        financeRequestId,
+        level,
+        sequence: i + 1,
+        assignedToRole: roleMapping[level] as any,
+        status: 'PENDING',
+        isActive: isFirst,
+        slaHours: slaHours[level],
+        slaDueAt: isFirst ? new Date(now.getTime() + slaHours[level] * 60 * 60 * 1000) : null,
+        startedAt: isFirst ? now : null,
+      },
+    });
+
+    if (isFirst) {
+      await prisma.sLALog.create({
+        data: {
+          financeRequestId,
+          level,
+          slaHours: slaHours[level],
+          slaDueAt: new Date(now.getTime() + slaHours[level] * 60 * 60 * 1000),
+        },
+      });
+    }
+  }
+}
