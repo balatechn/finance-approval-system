@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/table"
 import { StatusBadge } from "@/components/status-badge"
 import { formatCurrency, formatDate } from "@/lib/utils"
-import { RequestStatus } from "@prisma/client"
 
 interface FinanceRequest {
   id: string
@@ -33,7 +32,7 @@ interface FinanceRequest {
   totalAmount: number
   currency: string
   totalAmountINR: number
-  status: RequestStatus
+  status: string
   currentApprovalLevel: string | null
   createdAt: string
   requester: {
