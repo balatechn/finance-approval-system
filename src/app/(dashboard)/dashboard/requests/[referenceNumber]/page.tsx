@@ -15,6 +15,9 @@ import {
   CreditCard,
   User,
   Calendar,
+  AlertTriangle,
+  MessageSquare,
+  RotateCcw,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -176,6 +179,17 @@ export default function RequestDetailPage() {
 
   const canEdit = request.status === "DRAFT" || request.status === "SENT_BACK"
   const canDelete = request.status === "DRAFT"
+  const isSentBack = request.status === "SENT_BACK"
+
+  // Extract sent-back comments from approval steps
+  const sentBackComments = request.approvalSteps
+    .filter((step) => step.status === "COMPLETED" && step.comments)
+    .map((step) => ({
+      approverName: step.approverName || "Approver",
+      level: step.level,
+      comments: step.comments!,
+      completedAt: step.completedAt,
+    }))
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -204,7 +218,15 @@ export default function RequestDetailPage() {
             <Printer className="mr-2 h-4 w-4" />
             Print
           </Button>
-          {canEdit && (
+          {isSentBack && (
+            <Link href={`/dashboard/requests/${referenceNumber}/edit`}>
+              <Button size="sm" className="bg-amber-600 hover:bg-amber-700">
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Edit & Resubmit
+              </Button>
+            </Link>
+          )}
+          {canEdit && !isSentBack && (
             <Link href={`/dashboard/requests/${referenceNumber}/edit`}>
               <Button variant="outline" size="sm">
                 <Edit className="mr-2 h-4 w-4" />
@@ -225,6 +247,49 @@ export default function RequestDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Sent Back Banner */}
+      {isSentBack && (
+        <Card className="border-amber-300 bg-amber-50">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-amber-800">
+              <AlertTriangle className="h-5 w-5" />
+              Request Sent Back for More Information
+            </CardTitle>
+            <CardDescription className="text-amber-700">
+              An approver has sent this request back requesting additional details or corrections.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {sentBackComments.length > 0 ? (
+              <div className="space-y-3">
+                {sentBackComments.map((comment, index) => (
+                  <div key={index} className="rounded-lg border border-amber-200 bg-white p-3">
+                    <div className="flex items-start gap-2">
+                      <MessageSquare className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-amber-900">
+                          {comment.approverName} ({comment.level.replace(/_/g, " ")})
+                        </p>
+                        <p className="mt-1 text-sm text-amber-800">{comment.comments}</p>
+                        {comment.completedAt && (
+                          <p className="mt-1 text-xs text-amber-600">
+                            {new Date(comment.completedAt).toLocaleString()}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-amber-700">
+                Please review your request and click "Edit & Resubmit" to make changes.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main Content */}

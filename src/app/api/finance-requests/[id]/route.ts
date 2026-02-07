@@ -140,10 +140,11 @@ export async function PATCH(
 
     // If submitting a draft
     if (body.status === 'SUBMITTED' && existingRequest.status === 'DRAFT') {
+      const { status, saveAsDraft, ...updateFields } = body;
       const updatedRequest = await prisma.financeRequest.update({
         where: { id: existingRequest.id },
         data: {
-          ...body,
+          ...updateFields,
           status: 'PENDING_FINANCE_VETTING',
           currentApprovalLevel: 'FINANCE_VETTING',
           submittedAt: new Date(),
@@ -156,10 +157,64 @@ export async function PATCH(
       return NextResponse.json(updatedRequest);
     }
 
-    // Regular update
+    // If resubmitting a sent-back request
+    if (body.status === 'RESUBMITTED' && existingRequest.status === 'SENT_BACK') {
+      const { status, saveAsDraft, ...updateFields } = body;
+
+      // Delete old approval steps, actions, and SLA logs
+      const oldSteps = await prisma.approvalStep.findMany({
+        where: { financeRequestId: existingRequest.id },
+        select: { id: true },
+      });
+      const oldStepIds = oldSteps.map(s => s.id);
+
+      if (oldStepIds.length > 0) {
+        await prisma.approvalAction_Record.deleteMany({
+          where: { approvalStepId: { in: oldStepIds } },
+        });
+      }
+
+      await prisma.approvalStep.deleteMany({
+        where: { financeRequestId: existingRequest.id },
+      });
+
+      await prisma.sLALog.deleteMany({
+        where: { financeRequestId: existingRequest.id },
+      });
+
+      // Update the request with new data and restart workflow
+      const updatedRequest = await prisma.financeRequest.update({
+        where: { id: existingRequest.id },
+        data: {
+          ...updateFields,
+          status: 'PENDING_FINANCE_VETTING',
+          currentApprovalLevel: 'FINANCE_VETTING',
+          completedAt: null,
+        },
+      });
+
+      // Create fresh approval steps
+      await createApprovalStepsForRequest(updatedRequest.id, updatedRequest.paymentType, user.id);
+
+      // Notify the requestor
+      await prisma.notification.create({
+        data: {
+          userId: user.id,
+          financeRequestId: existingRequest.id,
+          type: 'RESUBMITTED',
+          title: 'Request Resubmitted',
+          message: `Your request ${existingRequest.referenceNumber} has been resubmitted for approval.`,
+        },
+      });
+
+      return NextResponse.json(updatedRequest);
+    }
+
+    // Regular update (draft save)
+    const { status, saveAsDraft, ...safeFields } = body;
     const updatedRequest = await prisma.financeRequest.update({
       where: { id: existingRequest.id },
-      data: body,
+      data: safeFields,
     });
 
     return NextResponse.json(updatedRequest);
