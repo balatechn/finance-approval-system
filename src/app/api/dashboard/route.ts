@@ -36,8 +36,6 @@ async function getDashboardStats(user: any) {
   // Apply role-based filtering
   if (user.role === 'EMPLOYEE') {
     baseWhere.requestorId = user.id;
-  } else if (user.role === 'DEPARTMENT_HEAD') {
-    baseWhere.department = user.department;
   }
 
   const [
@@ -56,10 +54,10 @@ async function getDashboardStats(user: any) {
         status: {
           in: [
             'SUBMITTED',
-            'PENDING_MANAGER',
-            'PENDING_HOD',
             'PENDING_FINANCE_VETTING',
-            'PENDING_FINANCE_APPROVAL',
+            'PENDING_FINANCE_CONTROLLER',
+            'PENDING_DIRECTOR',
+            'PENDING_MD',
           ],
         },
       },
@@ -87,33 +85,31 @@ async function getDashboardStats(user: any) {
 
   // Get pending approvals count based on role
   let myPendingApprovals = 0;
-  if (user.role === 'MANAGER') {
+  if (user.role === 'FINANCE_TEAM') {
     myPendingApprovals = await prisma.financeRequest.count({
       where: {
-        status: 'PENDING_MANAGER',
-        requestor: { managerId: user.id },
+        status: { in: ['PENDING_FINANCE_VETTING', 'APPROVED'] },
         isDeleted: false,
       },
     });
-  } else if (user.role === 'DEPARTMENT_HEAD') {
+  } else if (user.role === 'FINANCE_CONTROLLER') {
     myPendingApprovals = await prisma.financeRequest.count({
       where: {
-        status: 'PENDING_HOD',
-        department: user.department,
+        status: 'PENDING_FINANCE_CONTROLLER',
         isDeleted: false,
       },
     });
-  } else if (user.role === 'FINANCE_TEAM') {
+  } else if (user.role === 'DIRECTOR') {
     myPendingApprovals = await prisma.financeRequest.count({
       where: {
-        status: 'PENDING_FINANCE_VETTING',
+        status: 'PENDING_DIRECTOR',
         isDeleted: false,
       },
     });
-  } else if (user.role === 'FINANCE_HEAD') {
+  } else if (user.role === 'MD') {
     myPendingApprovals = await prisma.financeRequest.count({
       where: {
-        status: 'PENDING_FINANCE_APPROVAL',
+        status: 'PENDING_MD',
         isDeleted: false,
       },
     });
@@ -135,7 +131,7 @@ async function getDashboardStats(user: any) {
       where: {
         ...baseWhere,
         status: {
-          in: ['SUBMITTED', 'PENDING_MANAGER', 'PENDING_HOD', 'PENDING_FINANCE_VETTING', 'PENDING_FINANCE_APPROVAL'],
+          in: ['SUBMITTED', 'PENDING_FINANCE_VETTING', 'PENDING_FINANCE_CONTROLLER', 'PENDING_DIRECTOR', 'PENDING_MD'],
         },
       },
       _sum: { totalAmount: true },
@@ -162,8 +158,6 @@ async function getRecentRequests(user: any) {
 
   if (user.role === 'EMPLOYEE') {
     whereClause.requestorId = user.id;
-  } else if (user.role === 'DEPARTMENT_HEAD') {
-    whereClause.department = user.department;
   }
 
   const requests = await prisma.financeRequest.findMany({
@@ -194,29 +188,27 @@ async function getPendingApprovals(user: any) {
   let whereClause: any = { isDeleted: false };
 
   switch (user.role) {
-    case 'MANAGER':
-      whereClause.status = 'PENDING_MANAGER';
-      whereClause.requestor = { managerId: user.id };
-      break;
-    case 'DEPARTMENT_HEAD':
-      whereClause.status = 'PENDING_HOD';
-      whereClause.department = user.department;
-      break;
     case 'FINANCE_TEAM':
       whereClause.status = {
         in: ['PENDING_FINANCE_VETTING', 'APPROVED'],
       };
       break;
-    case 'FINANCE_HEAD':
-      whereClause.status = 'PENDING_FINANCE_APPROVAL';
+    case 'FINANCE_CONTROLLER':
+      whereClause.status = 'PENDING_FINANCE_CONTROLLER';
+      break;
+    case 'DIRECTOR':
+      whereClause.status = 'PENDING_DIRECTOR';
+      break;
+    case 'MD':
+      whereClause.status = 'PENDING_MD';
       break;
     case 'ADMIN':
       whereClause.status = {
         in: [
-          'PENDING_MANAGER',
-          'PENDING_HOD',
           'PENDING_FINANCE_VETTING',
-          'PENDING_FINANCE_APPROVAL',
+          'PENDING_FINANCE_CONTROLLER',
+          'PENDING_DIRECTOR',
+          'PENDING_MD',
           'APPROVED',
         ],
       };
@@ -278,9 +270,7 @@ async function getSLAAlerts(user: any) {
   };
 
   // Apply role-based filtering
-  if (user.role === 'DEPARTMENT_HEAD') {
-    whereClause.department = user.department;
-  } else if (user.role !== 'ADMIN' && user.role !== 'FINANCE_HEAD' && user.role !== 'FINANCE_TEAM') {
+  if (user.role !== 'ADMIN' && user.role !== 'FINANCE_CONTROLLER' && user.role !== 'FINANCE_TEAM' && user.role !== 'DIRECTOR' && user.role !== 'MD') {
     return [];
   }
 

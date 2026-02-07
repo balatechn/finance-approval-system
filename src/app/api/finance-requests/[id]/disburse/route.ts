@@ -15,7 +15,7 @@ export async function POST(
     }
 
     // Only Finance team can process disbursement
-    if (user.role !== 'FINANCE_TEAM' && user.role !== 'FINANCE_HEAD' && user.role !== 'ADMIN') {
+    if (user.role !== 'FINANCE_TEAM' && user.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Only Finance team can process disbursements' },
         { status: 403 }

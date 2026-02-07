@@ -22,18 +22,18 @@ interface ApprovalTimelineProps {
 }
 
 const levelOrder = [
-  "MANAGER",
-  "DEPARTMENT_HEAD",
   "FINANCE_VETTING",
-  "FINANCE_APPROVAL",
+  "FINANCE_CONTROLLER",
+  "DIRECTOR",
+  "MD",
   "DISBURSEMENT",
 ] as const
 
 const levelLabels: Record<string, string> = {
-  MANAGER: "Manager Approval",
-  DEPARTMENT_HEAD: "Department Head",
   FINANCE_VETTING: "Finance Vetting",
-  FINANCE_APPROVAL: "Finance Approval",
+  FINANCE_CONTROLLER: "Finance Controller",
+  DIRECTOR: "Director",
+  MD: "Managing Director",
   DISBURSEMENT: "Disbursement",
 }
 

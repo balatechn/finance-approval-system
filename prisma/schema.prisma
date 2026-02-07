@@ -16,20 +16,20 @@ datasource db {
 
 enum Role {
   EMPLOYEE
-  MANAGER
-  DEPARTMENT_HEAD
   FINANCE_TEAM
-  FINANCE_HEAD
+  FINANCE_CONTROLLER
+  DIRECTOR
+  MD
   ADMIN
 }
 
 enum RequestStatus {
   DRAFT
   SUBMITTED
-  PENDING_MANAGER
-  PENDING_HOD
   PENDING_FINANCE_VETTING
-  PENDING_FINANCE_APPROVAL
+  PENDING_FINANCE_CONTROLLER
+  PENDING_DIRECTOR
+  PENDING_MD
   APPROVED
   REJECTED
   SENT_BACK
@@ -73,11 +73,11 @@ enum Currency {
 }
 
 enum ApprovalLevel {
-  MANAGER           // Level 1
-  DEPARTMENT_HEAD   // Level 2
-  FINANCE_VETTING   // Level 3
-  FINANCE_APPROVAL  // Level 4
-  DISBURSEMENT      // Level 5
+  FINANCE_VETTING       // Level 1: Finance Evaluate & Vetting on quote level
+  FINANCE_CONTROLLER    // Level 2: Finance Controller on business requirement
+  DIRECTOR              // Level 3: Director Final Checks
+  MD                    // Level 4: Managing Director Final Approval
+  DISBURSEMENT          // Level 5: Finance Disbursement Processing
 }
 
 // ============================================================================

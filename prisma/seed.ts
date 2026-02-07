@@ -82,21 +82,53 @@ async function main() {
   });
   console.log('✅ Admin user created');
 
-  // Create Finance Head
-  const financeHead = await prisma.user.upsert({
-    where: { email: 'financehead@nationalconsultingindia.com' },
+  // Create Managing Director
+  const md = await prisma.user.upsert({
+    where: { email: 'md@nationalconsultingindia.com' },
     update: {},
     create: {
-      email: 'financehead@nationalconsultingindia.com',
-      name: 'Finance Head',
+      email: 'md@nationalconsultingindia.com',
+      name: 'Rajesh Kumar',
       password: hashedPassword,
-      role: Role.FINANCE_HEAD,
-      department: 'Finance',
+      role: Role.MD,
+      department: 'Management',
       employeeId: 'EMP002',
       isActive: true,
     },
   });
-  console.log('✅ Finance Head created');
+  console.log('✅ MD created');
+
+  // Create Director
+  const director = await prisma.user.upsert({
+    where: { email: 'director@nationalconsultingindia.com' },
+    update: {},
+    create: {
+      email: 'director@nationalconsultingindia.com',
+      name: 'Anita Sharma',
+      password: hashedPassword,
+      role: Role.DIRECTOR,
+      department: 'Management',
+      employeeId: 'EMP003',
+      isActive: true,
+    },
+  });
+  console.log('✅ Director created');
+
+  // Create Finance Controller
+  const financeController = await prisma.user.upsert({
+    where: { email: 'fc@nationalconsultingindia.com' },
+    update: {},
+    create: {
+      email: 'fc@nationalconsultingindia.com',
+      name: 'Vikram Patel',
+      password: hashedPassword,
+      role: Role.FINANCE_CONTROLLER,
+      department: 'Finance',
+      employeeId: 'EMP004',
+      isActive: true,
+    },
+  });
+  console.log('✅ Finance Controller created');
 
   // Create Finance Team Member
   const financeTeam = await prisma.user.upsert({
@@ -104,49 +136,15 @@ async function main() {
     update: {},
     create: {
       email: 'finance@nationalconsultingindia.com',
-      name: 'Finance Executive',
+      name: 'Priya Mehta',
       password: hashedPassword,
       role: Role.FINANCE_TEAM,
       department: 'Finance',
-      employeeId: 'EMP003',
-      managerId: financeHead.id,
+      employeeId: 'EMP005',
       isActive: true,
     },
   });
   console.log('✅ Finance Team member created');
-
-  // Create Department Head
-  const deptHead = await prisma.user.upsert({
-    where: { email: 'hod.sales@nationalconsultingindia.com' },
-    update: {},
-    create: {
-      email: 'hod.sales@nationalconsultingindia.com',
-      name: 'Sales Department Head',
-      password: hashedPassword,
-      role: Role.DEPARTMENT_HEAD,
-      department: 'Sales',
-      employeeId: 'EMP004',
-      isActive: true,
-    },
-  });
-  console.log('✅ Department Head created');
-
-  // Create Manager
-  const manager = await prisma.user.upsert({
-    where: { email: 'manager@nationalconsultingindia.com' },
-    update: {},
-    create: {
-      email: 'manager@nationalconsultingindia.com',
-      name: 'Sales Manager',
-      password: hashedPassword,
-      role: Role.MANAGER,
-      department: 'Sales',
-      employeeId: 'EMP005',
-      managerId: deptHead.id,
-      isActive: true,
-    },
-  });
-  console.log('✅ Manager created');
 
   // Create Employee
   const employee = await prisma.user.upsert({
@@ -159,7 +157,6 @@ async function main() {
       role: Role.EMPLOYEE,
       department: 'Sales',
       employeeId: 'EMP006',
-      managerId: manager.id,
       isActive: true,
     },
   });
@@ -167,11 +164,12 @@ async function main() {
 
   // Create System Config
   const configs = [
-    { key: 'SLA_MANAGER_HOURS', value: '24', description: 'SLA hours for Manager approval' },
-    { key: 'SLA_HOD_HOURS', value: '24', description: 'SLA hours for HOD approval' },
-    { key: 'SLA_FINANCE_CRITICAL_HOURS', value: '24', description: 'SLA hours for Finance vetting (Critical)' },
-    { key: 'SLA_FINANCE_NON_CRITICAL_HOURS', value: '72', description: 'SLA hours for Finance vetting (Non-Critical)' },
-    { key: 'SLA_FINAL_APPROVAL_HOURS', value: '24', description: 'SLA hours for Final approval' },
+    { key: 'SLA_FINANCE_VETTING_HOURS', value: '72', description: 'SLA hours for Finance vetting' },
+    { key: 'SLA_FINANCE_VETTING_CRITICAL_HOURS', value: '24', description: 'SLA hours for Finance vetting (Critical)' },
+    { key: 'SLA_FINANCE_CONTROLLER_HOURS', value: '24', description: 'SLA hours for Finance Controller approval' },
+    { key: 'SLA_DIRECTOR_HOURS', value: '24', description: 'SLA hours for Director approval' },
+    { key: 'SLA_MD_HOURS', value: '24', description: 'SLA hours for MD approval' },
+    { key: 'SLA_DISBURSEMENT_HOURS', value: '24', description: 'SLA hours for Disbursement processing' },
     { key: 'REFERENCE_PREFIX', value: 'FIN', description: 'Prefix for reference numbers' },
     { key: 'HIGH_VALUE_THRESHOLD', value: '500000', description: 'High value transaction threshold' },
   ];
@@ -190,13 +188,13 @@ async function main() {
   console.log('');
   console.log('Test Accounts:');
   console.log('─────────────────────────────────────────');
-  console.log('Admin:        admin@nationalconsultingindia.com');
-  console.log('Finance Head: financehead@nationalconsultingindia.com');
-  console.log('Finance:      finance@nationalconsultingindia.com');
-  console.log('HOD:          hod.sales@nationalconsultingindia.com');
-  console.log('Manager:      manager@nationalconsultingindia.com');
-  console.log('Employee:     employee@nationalconsultingindia.com');
-  console.log('Password:     Password@123');
+  console.log('Admin:              admin@nationalconsultingindia.com');
+  console.log('MD:                 md@nationalconsultingindia.com');
+  console.log('Director:           director@nationalconsultingindia.com');
+  console.log('Finance Controller: fc@nationalconsultingindia.com');
+  console.log('Finance Team:       finance@nationalconsultingindia.com');
+  console.log('Employee:           employee@nationalconsultingindia.com');
+  console.log('Password:           Password@123');
   console.log('─────────────────────────────────────────');
 }
 

@@ -142,8 +142,8 @@ export async function PATCH(
         where: { id: existingRequest.id },
         data: {
           ...body,
-          status: 'PENDING_MANAGER',
-          currentApprovalLevel: 'MANAGER',
+          status: 'PENDING_FINANCE_VETTING',
+          currentApprovalLevel: 'FINANCE_VETTING',
           submittedAt: new Date(),
         },
       });
@@ -221,45 +221,36 @@ export async function DELETE(
 
 // Helper functions
 function checkViewPermission(user: any, request: any): boolean {
-  // Requestor can view their own
   if (request.requestorId === user.id) return true;
 
-  // Role-based access
   switch (user.role) {
     case 'ADMIN':
-    case 'FINANCE_HEAD':
+    case 'MD':
+    case 'DIRECTOR':
+    case 'FINANCE_CONTROLLER':
     case 'FINANCE_TEAM':
       return true;
-    case 'DEPARTMENT_HEAD':
-      return request.department === user.department;
-    case 'MANAGER':
-      // Can view if they are the manager of the requestor
-      return request.requestor?.managerId === user.id;
     default:
       return false;
   }
 }
 
 function checkEditPermission(user: any, request: any): boolean {
-  // Only drafts can be edited by requestor
   if (request.status === 'DRAFT' && request.requestorId === user.id) {
     return true;
   }
 
-  // Sent back requests can be edited by requestor
   if (request.status === 'SENT_BACK' && request.requestorId === user.id) {
     return true;
   }
 
-  // Finance can edit financial fields during vetting
   if (
     request.status === 'PENDING_FINANCE_VETTING' &&
-    (user.role === 'FINANCE_TEAM' || user.role === 'FINANCE_HEAD')
+    user.role === 'FINANCE_TEAM'
   ) {
     return true;
   }
 
-  // Admin can edit
   if (user.role === 'ADMIN') return true;
 
   return false;
@@ -270,31 +261,27 @@ async function createApprovalStepsForRequest(
   paymentType: string,
   requestorId: string
 ) {
-  const requestor = await prisma.user.findUnique({
-    where: { id: requestorId },
-  });
-
   const slaHours: Record<string, number> = {
-    MANAGER: 24,
-    DEPARTMENT_HEAD: 24,
     FINANCE_VETTING: paymentType === 'CRITICAL' ? 24 : 72,
-    FINANCE_APPROVAL: 24,
+    FINANCE_CONTROLLER: 24,
+    DIRECTOR: 24,
+    MD: 24,
     DISBURSEMENT: 24,
   };
 
   const levels = [
-    'MANAGER',
-    'DEPARTMENT_HEAD',
     'FINANCE_VETTING',
-    'FINANCE_APPROVAL',
+    'FINANCE_CONTROLLER',
+    'DIRECTOR',
+    'MD',
     'DISBURSEMENT',
   ] as const;
 
   const roleMapping: Record<string, string> = {
-    MANAGER: 'MANAGER',
-    DEPARTMENT_HEAD: 'DEPARTMENT_HEAD',
     FINANCE_VETTING: 'FINANCE_TEAM',
-    FINANCE_APPROVAL: 'FINANCE_HEAD',
+    FINANCE_CONTROLLER: 'FINANCE_CONTROLLER',
+    DIRECTOR: 'DIRECTOR',
+    MD: 'MD',
     DISBURSEMENT: 'FINANCE_TEAM',
   };
 

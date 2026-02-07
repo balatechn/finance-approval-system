@@ -167,38 +167,38 @@ async function processApproval(
   paymentType: string
 ): Promise<{ newStatus: RequestStatus; nextLevel: ApprovalLevel | null }> {
   const levelSequence: ApprovalLevel[] = [
-    'MANAGER',
-    'DEPARTMENT_HEAD',
     'FINANCE_VETTING',
-    'FINANCE_APPROVAL',
+    'FINANCE_CONTROLLER',
+    'DIRECTOR',
+    'MD',
     'DISBURSEMENT',
   ];
 
   const statusMapping: Record<ApprovalLevel, RequestStatus> = {
-    MANAGER: 'PENDING_HOD',
-    DEPARTMENT_HEAD: 'PENDING_FINANCE_VETTING',
-    FINANCE_VETTING: 'PENDING_FINANCE_APPROVAL',
-    FINANCE_APPROVAL: 'APPROVED',
+    FINANCE_VETTING: 'PENDING_FINANCE_CONTROLLER',
+    FINANCE_CONTROLLER: 'PENDING_DIRECTOR',
+    DIRECTOR: 'PENDING_MD',
+    MD: 'APPROVED',
     DISBURSEMENT: 'DISBURSED',
   };
 
   const currentIndex = levelSequence.indexOf(currentLevel);
   const nextIndex = currentIndex + 1;
 
-  if (nextIndex >= levelSequence.length || currentLevel === 'FINANCE_APPROVAL') {
-    // Final approval reached
-    return { newStatus: statusMapping[currentLevel], nextLevel: null };
+  if (nextIndex >= levelSequence.length || currentLevel === 'MD') {
+    // Final approval reached (MD approved) or disbursement completed
+    return { newStatus: statusMapping[currentLevel], nextLevel: currentLevel === 'MD' ? null : null };
   }
 
   const nextLevel = levelSequence[nextIndex];
   const newStatus = statusMapping[currentLevel];
 
   // Activate next approval step
-  const slaHours = {
-    MANAGER: 24,
-    DEPARTMENT_HEAD: 24,
+  const slaHours: Record<string, number> = {
     FINANCE_VETTING: paymentType === 'CRITICAL' ? 24 : 72,
-    FINANCE_APPROVAL: 24,
+    FINANCE_CONTROLLER: 24,
+    DIRECTOR: 24,
+    MD: 24,
     DISBURSEMENT: 24,
   };
 
@@ -217,7 +217,6 @@ async function processApproval(
     },
   });
 
-  // Create SLA log for next step
   await prisma.sLALog.create({
     data: {
       financeRequestId: requestId,

@@ -32,44 +32,26 @@ export async function GET(request: NextRequest) {
       case 'EMPLOYEE':
         whereClause.requestorId = user.id;
         break;
-      case 'MANAGER':
-        if (type === 'pending-approvals') {
-          whereClause.status = 'PENDING_MANAGER';
-          whereClause.currentApprovalLevel = 'MANAGER';
-        } else if (type === 'my-requests') {
-          whereClause.requestorId = user.id;
-        } else {
-          whereClause.OR = [
-            { requestorId: user.id },
-            { 
-              status: 'PENDING_MANAGER',
-              requestor: { managerId: user.id }
-            }
-          ];
-        }
-        break;
-      case 'DEPARTMENT_HEAD':
-        if (type === 'pending-approvals') {
-          whereClause.status = 'PENDING_HOD';
-          whereClause.currentApprovalLevel = 'DEPARTMENT_HEAD';
-          whereClause.department = user.department;
-        } else if (type === 'my-requests') {
-          whereClause.requestorId = user.id;
-        } else {
-          whereClause.department = user.department;
-        }
-        break;
       case 'FINANCE_TEAM':
         if (type === 'pending-approvals') {
-          whereClause.OR = [
-            { status: 'PENDING_FINANCE_VETTING' },
-            { status: 'APPROVED' }
-          ];
+          whereClause.status = {
+            in: ['PENDING_FINANCE_VETTING', 'APPROVED'],
+          };
         }
         break;
-      case 'FINANCE_HEAD':
+      case 'FINANCE_CONTROLLER':
         if (type === 'pending-approvals') {
-          whereClause.status = 'PENDING_FINANCE_APPROVAL';
+          whereClause.status = 'PENDING_FINANCE_CONTROLLER';
+        }
+        break;
+      case 'DIRECTOR':
+        if (type === 'pending-approvals') {
+          whereClause.status = 'PENDING_DIRECTOR';
+        }
+        break;
+      case 'MD':
+        if (type === 'pending-approvals') {
+          whereClause.status = 'PENDING_MD';
         }
         break;
       case 'ADMIN':
@@ -81,7 +63,7 @@ export async function GET(request: NextRequest) {
     if (status) {
       whereClause.status = status;
     }
-    if (department && (user.role === 'ADMIN' || user.role === 'FINANCE_HEAD' || user.role === 'FINANCE_TEAM')) {
+    if (department && (user.role === 'ADMIN' || user.role === 'FINANCE_CONTROLLER' || user.role === 'FINANCE_TEAM')) {
       whereClause.department = department;
     }
     if (search) {
@@ -219,12 +201,12 @@ export async function POST(request: NextRequest) {
     if (finalStatus === 'SUBMITTED') {
       await createApprovalSteps(financeRequest.id, data.paymentType, user.id);
       
-      // Update status to pending manager
+      // Update status to pending finance vetting (first step)
       await prisma.financeRequest.update({
         where: { id: financeRequest.id },
         data: {
-          status: 'PENDING_MANAGER',
-          currentApprovalLevel: 'MANAGER',
+          status: 'PENDING_FINANCE_VETTING',
+          currentApprovalLevel: 'FINANCE_VETTING',
         },
       });
     }
@@ -245,32 +227,27 @@ async function createApprovalSteps(
   paymentType: string,
   requestorId: string
 ) {
-  const requestor = await prisma.user.findUnique({
-    where: { id: requestorId },
-    include: { manager: true },
-  });
-
-  const slaHours = {
-    MANAGER: 24,
-    DEPARTMENT_HEAD: 24,
+  const slaHours: Record<string, number> = {
     FINANCE_VETTING: paymentType === 'CRITICAL' ? 24 : 72,
-    FINANCE_APPROVAL: 24,
+    FINANCE_CONTROLLER: 24,
+    DIRECTOR: 24,
+    MD: 24,
     DISBURSEMENT: 24,
   };
 
   const approvalLevels: ApprovalLevel[] = [
-    'MANAGER',
-    'DEPARTMENT_HEAD',
     'FINANCE_VETTING',
-    'FINANCE_APPROVAL',
+    'FINANCE_CONTROLLER',
+    'DIRECTOR',
+    'MD',
     'DISBURSEMENT',
   ];
 
   const roleMapping: Record<ApprovalLevel, Role> = {
-    MANAGER: 'MANAGER',
-    DEPARTMENT_HEAD: 'DEPARTMENT_HEAD',
     FINANCE_VETTING: 'FINANCE_TEAM',
-    FINANCE_APPROVAL: 'FINANCE_HEAD',
+    FINANCE_CONTROLLER: 'FINANCE_CONTROLLER',
+    DIRECTOR: 'DIRECTOR',
+    MD: 'MD',
     DISBURSEMENT: 'FINANCE_TEAM',
   };
 
@@ -285,9 +262,8 @@ async function createApprovalSteps(
         financeRequestId,
         level,
         sequence: i + 1,
-        assignedToId: isFirst && requestor?.managerId ? requestor.managerId : null,
         assignedToRole: roleMapping[level],
-        status: isFirst ? 'PENDING' : 'PENDING',
+        status: 'PENDING',
         isActive: isFirst,
         slaHours: slaHours[level],
         slaDueAt: isFirst ? new Date(now.getTime() + slaHours[level] * 60 * 60 * 1000) : null,
@@ -295,7 +271,6 @@ async function createApprovalSteps(
       },
     });
 
-    // Create SLA log for first step
     if (isFirst) {
       await prisma.sLALog.create({
         data: {

@@ -10,10 +10,10 @@ interface StatusBadgeProps {
 const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info" | "pending" }> = {
   DRAFT: { label: "Draft", variant: "secondary" },
   SUBMITTED: { label: "Submitted", variant: "info" },
-  PENDING_MANAGER: { label: "Pending Manager", variant: "pending" },
-  PENDING_HOD: { label: "Pending HOD", variant: "pending" },
   PENDING_FINANCE_VETTING: { label: "Pending Vetting", variant: "pending" },
-  PENDING_FINANCE_APPROVAL: { label: "Pending Approval", variant: "pending" },
+  PENDING_FINANCE_CONTROLLER: { label: "Pending Finance Controller", variant: "pending" },
+  PENDING_DIRECTOR: { label: "Pending Director", variant: "pending" },
+  PENDING_MD: { label: "Pending MD", variant: "pending" },
   APPROVED: { label: "Approved", variant: "success" },
   DISBURSED: { label: "Disbursed", variant: "success" },
   REJECTED: { label: "Rejected", variant: "destructive" },
@@ -36,11 +36,10 @@ interface ApprovalLevelBadgeProps {
 }
 
 const levelConfig: Record<string, { label: string; color: string }> = {
-  MANAGER: { label: "Manager", color: "bg-blue-100 text-blue-800" },
-  DEPARTMENT_HEAD: { label: "Department Head", color: "bg-purple-100 text-purple-800" },
-  HOD: { label: "Department Head", color: "bg-purple-100 text-purple-800" },
   FINANCE_VETTING: { label: "Finance Vetting", color: "bg-orange-100 text-orange-800" },
-  FINANCE_APPROVAL: { label: "Finance Approval", color: "bg-indigo-100 text-indigo-800" },
+  FINANCE_CONTROLLER: { label: "Finance Controller", color: "bg-blue-100 text-blue-800" },
+  DIRECTOR: { label: "Director", color: "bg-purple-100 text-purple-800" },
+  MD: { label: "Managing Director", color: "bg-indigo-100 text-indigo-800" },
   DISBURSEMENT: { label: "Disbursement", color: "bg-green-100 text-green-800" },
 }
 

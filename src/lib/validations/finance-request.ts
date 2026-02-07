@@ -13,10 +13,10 @@ export const ApprovalActionEnum = z.enum(['APPROVED', 'REJECTED', 'SENT_BACK']);
 export const RequestStatusEnum = z.enum([
   'DRAFT',
   'SUBMITTED',
-  'PENDING_MANAGER',
-  'PENDING_HOD',
   'PENDING_FINANCE_VETTING',
-  'PENDING_FINANCE_APPROVAL',
+  'PENDING_FINANCE_CONTROLLER',
+  'PENDING_DIRECTOR',
+  'PENDING_MD',
   'APPROVED',
   'REJECTED',
   'SENT_BACK',

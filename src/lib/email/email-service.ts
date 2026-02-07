@@ -79,10 +79,10 @@ export function getPendingApprovalEmail(
   level: string
 ): { subject: string; html: string } {
   const levelLabels: Record<string, string> = {
-    MANAGER: 'Manager Approval',
-    DEPARTMENT_HEAD: 'Department Head Approval',
     FINANCE_VETTING: 'Finance Vetting',
-    FINANCE_APPROVAL: 'Finance Approval',
+    FINANCE_CONTROLLER: 'Finance Controller',
+    DIRECTOR: 'Director Approval',
+    MD: 'MD Approval',
     DISBURSEMENT: 'Disbursement',
   };
 
@@ -121,10 +121,10 @@ export function getApprovalDecisionEmail(
   comments?: string
 ): { subject: string; html: string } {
   const levelLabels: Record<string, string> = {
-    MANAGER: 'Manager',
-    DEPARTMENT_HEAD: 'Department Head',
     FINANCE_VETTING: 'Finance Vetting',
-    FINANCE_APPROVAL: 'Finance Head',
+    FINANCE_CONTROLLER: 'Finance Controller',
+    DIRECTOR: 'Director',
+    MD: 'Managing Director',
     DISBURSEMENT: 'Disbursement',
   };
 
@@ -276,12 +276,11 @@ export async function getApproversForLevel(
   department?: string
 ): Promise<{ id: string; email: string; name: string }[]> {
   const roleMap: Record<string, string[]> = {
-    MANAGER: ['MANAGER'],
-    DEPARTMENT_HEAD: ['DEPARTMENT_HEAD'],
-    HOD: ['DEPARTMENT_HEAD'],
     FINANCE_VETTING: ['FINANCE_TEAM'],
-    FINANCE_APPROVAL: ['FINANCE_HEAD'],
-    DISBURSEMENT: ['FINANCE_TEAM', 'FINANCE_HEAD'],
+    FINANCE_CONTROLLER: ['FINANCE_CONTROLLER'],
+    DIRECTOR: ['DIRECTOR'],
+    MD: ['MD'],
+    DISBURSEMENT: ['FINANCE_TEAM'],
   };
 
   const roles = roleMap[level] || [];
@@ -289,7 +288,6 @@ export async function getApproversForLevel(
   const approvers = await prisma.user.findMany({
     where: {
       role: { in: roles as any[] },
-      ...(department && (level === 'HOD' || level === 'DEPARTMENT_HEAD') ? { department } : {}),
       id: { not: requesterId },
     },
     select: {
@@ -298,21 +296,6 @@ export async function getApproversForLevel(
       name: true,
     },
   });
-
-  // For manager level, try to get the direct manager
-  if (level === 'MANAGER') {
-    const requester = await prisma.user.findUnique({
-      where: { id: requesterId },
-      select: {
-        manager: {
-          select: { id: true, email: true, name: true },
-        },
-      },
-    });
-    if (requester?.manager) {
-      return [requester.manager];
-    }
-  }
 
   return approvers;
 }
