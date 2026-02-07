@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const unreadOnly = searchParams.get('unreadOnly') === 'true';
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 50);
 
     const whereClause: any = { userId: user.id };
     if (unreadOnly) {
@@ -40,10 +40,12 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       notifications,
       unreadCount,
     });
+    response.headers.set('Cache-Control', 'private, max-age=10, stale-while-revalidate=20');
+    return response;
   } catch (error) {
     console.error('Error fetching notifications:', error);
     return NextResponse.json(

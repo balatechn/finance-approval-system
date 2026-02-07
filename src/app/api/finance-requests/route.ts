@@ -76,24 +76,53 @@ export async function GET(request: NextRequest) {
       ];
     }
 
+    const cappedLimit = Math.min(limit, 50);
     const [requests, total] = await Promise.all([
       prisma.financeRequest.findMany({
         where: whereClause,
-        include: {
+        select: {
+          id: true,
+          referenceNumber: true,
+          purpose: true,
+          vendorName: true,
+          amount: true,
+          totalAmount: true,
+          status: true,
+          paymentType: true,
+          department: true,
+          currency: true,
+          currentApprovalLevel: true,
+          createdAt: true,
+          updatedAt: true,
+          gstAmount: true,
+          gstPercentage: true,
+          gstApplicable: true,
           requestor: {
             select: { id: true, name: true, email: true, department: true }
           },
           approvalSteps: {
-            include: {
+            select: {
+              id: true,
+              level: true,
+              sequence: true,
+              status: true,
+              isActive: true,
+              slaBreached: true,
+              assignedToRole: true,
+              completedAt: true,
               actions: {
-                include: {
+                select: {
+                  id: true,
+                  action: true,
+                  comments: true,
+                  createdAt: true,
                   actor: { select: { id: true, name: true } }
                 },
-                orderBy: { createdAt: 'desc' },
+                orderBy: { createdAt: 'desc' as const },
                 take: 1
               }
             },
-            orderBy: { sequence: 'asc' }
+            orderBy: { sequence: 'asc' as const }
           },
           _count: {
             select: { attachments: true }
@@ -101,7 +130,7 @@ export async function GET(request: NextRequest) {
         },
         orderBy: { createdAt: 'desc' },
         skip,
-        take: limit,
+        take: cappedLimit,
       }),
       prisma.financeRequest.count({ where: whereClause }),
     ]);
@@ -118,15 +147,17 @@ export async function GET(request: NextRequest) {
       requester: r.requestor,
     }));
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       requests: transformedRequests,
       pagination: {
         page,
-        limit,
+        limit: cappedLimit,
         total,
-        pages: Math.ceil(total / limit),
+        pages: Math.ceil(total / cappedLimit),
       },
     });
+    response.headers.set('Cache-Control', 'private, max-age=10, stale-while-revalidate=20');
+    return response;
   } catch (error) {
     console.error('Error fetching finance requests:', error);
     return NextResponse.json(
@@ -279,33 +310,29 @@ async function createApprovalSteps(
 
   const now = new Date();
 
-  for (let i = 0; i < approvalLevels.length; i++) {
-    const level = approvalLevels[i];
-    const isFirst = i === 0;
-
-    await prisma.approvalStep.create({
-      data: {
+  // Batch create all approval steps + SLA log in parallel
+  const firstLevel = approvalLevels[0];
+  await Promise.all([
+    prisma.approvalStep.createMany({
+      data: approvalLevels.map((level, i) => ({
         financeRequestId,
         level,
         sequence: i + 1,
         assignedToRole: roleMapping[level],
-        status: 'PENDING',
-        isActive: isFirst,
+        status: 'PENDING' as const,
+        isActive: i === 0,
         slaHours: slaHours[level],
-        slaDueAt: isFirst ? new Date(now.getTime() + slaHours[level] * 60 * 60 * 1000) : null,
-        startedAt: isFirst ? now : null,
+        slaDueAt: i === 0 ? new Date(now.getTime() + slaHours[level] * 60 * 60 * 1000) : null,
+        startedAt: i === 0 ? now : null,
+      })),
+    }),
+    prisma.sLALog.create({
+      data: {
+        financeRequestId,
+        level: firstLevel,
+        slaHours: slaHours[firstLevel],
+        slaDueAt: new Date(now.getTime() + slaHours[firstLevel] * 60 * 60 * 1000),
       },
-    });
-
-    if (isFirst) {
-      await prisma.sLALog.create({
-        data: {
-          financeRequestId,
-          level,
-          slaHours: slaHours[level],
-          slaDueAt: new Date(now.getTime() + slaHours[level] * 60 * 60 * 1000),
-        },
-      });
-    }
-  }
+    }),
+  ]);
 }

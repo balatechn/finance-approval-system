@@ -42,29 +42,47 @@ export async function GET(
         },
         attachments: {
           where: { isDeleted: false },
+          select: {
+            id: true,
+            fileName: true,
+            fileUrl: true,
+            fileSize: true,
+            uploadedAt: true,
+          },
           orderBy: { uploadedAt: 'desc' }
         },
         approvalSteps: {
-          include: {
+          select: {
+            id: true,
+            level: true,
+            sequence: true,
+            status: true,
+            isActive: true,
+            slaHours: true,
+            slaBreached: true,
+            slaDueAt: true,
+            startedAt: true,
+            completedAt: true,
+            assignedToRole: true,
             actions: {
-              include: {
+              select: {
+                id: true,
+                action: true,
+                comments: true,
+                createdAt: true,
                 actor: {
                   select: { id: true, name: true, email: true, role: true }
                 }
               },
-              orderBy: { createdAt: 'asc' }
+              orderBy: { createdAt: 'asc' as const }
             }
           },
-          orderBy: { sequence: 'asc' }
+          orderBy: { sequence: 'asc' as const }
         },
         slaLogs: {
-          orderBy: { createdAt: 'desc' }
-        },
-        notifications: {
-          where: { userId: user.id },
           orderBy: { createdAt: 'desc' },
-          take: 10
-        }
+          take: 20
+        },
       },
     });
 
@@ -102,7 +120,9 @@ export async function GET(
       approvalSteps: transformedSteps,
     };
 
-    return NextResponse.json(response);
+    const jsonResponse = NextResponse.json(response);
+    jsonResponse.headers.set('Cache-Control', 'private, max-age=5, stale-while-revalidate=15');
+    return jsonResponse;
   } catch (error) {
     console.error('Error fetching finance request:', error);
     return NextResponse.json(
@@ -235,19 +255,14 @@ export async function PATCH(
       });
       const oldStepIds = oldSteps.map(s => s.id);
 
-      if (oldStepIds.length > 0) {
-        await prisma.approvalAction_Record.deleteMany({
-          where: { approvalStepId: { in: oldStepIds } },
-        });
-      }
-
-      await prisma.approvalStep.deleteMany({
-        where: { financeRequestId: existingRequest.id },
-      });
-
-      await prisma.sLALog.deleteMany({
-        where: { financeRequestId: existingRequest.id },
-      });
+      // Parallelize cleanup deletes
+      await Promise.all([
+        oldStepIds.length > 0
+          ? prisma.approvalAction_Record.deleteMany({ where: { approvalStepId: { in: oldStepIds } } })
+          : Promise.resolve(),
+        prisma.approvalStep.deleteMany({ where: { financeRequestId: existingRequest.id } }),
+        prisma.sLALog.deleteMany({ where: { financeRequestId: existingRequest.id } }),
+      ]);
 
       // Update the request with new data and restart workflow
       const updatedRequest = await prisma.financeRequest.update({
@@ -426,33 +441,29 @@ async function createApprovalStepsForRequest(
 
   const now = new Date();
 
-  for (let i = 0; i < levels.length; i++) {
-    const level = levels[i];
-    const isFirst = i === 0;
-
-    await prisma.approvalStep.create({
-      data: {
+  // Batch create all approval steps + SLA log in parallel
+  const firstLevel = levels[0];
+  await Promise.all([
+    prisma.approvalStep.createMany({
+      data: levels.map((level, i) => ({
         financeRequestId,
         level,
         sequence: i + 1,
         assignedToRole: roleMapping[level] as any,
-        status: 'PENDING',
-        isActive: isFirst,
+        status: 'PENDING' as const,
+        isActive: i === 0,
         slaHours: slaHours[level],
-        slaDueAt: isFirst ? new Date(now.getTime() + slaHours[level] * 60 * 60 * 1000) : null,
-        startedAt: isFirst ? now : null,
+        slaDueAt: i === 0 ? new Date(now.getTime() + slaHours[level] * 60 * 60 * 1000) : null,
+        startedAt: i === 0 ? now : null,
+      })),
+    }),
+    prisma.sLALog.create({
+      data: {
+        financeRequestId,
+        level: firstLevel,
+        slaHours: slaHours[firstLevel],
+        slaDueAt: new Date(now.getTime() + slaHours[firstLevel] * 60 * 60 * 1000),
       },
-    });
-
-    if (isFirst) {
-      await prisma.sLALog.create({
-        data: {
-          financeRequestId,
-          level,
-          slaHours: slaHours[level],
-          slaDueAt: new Date(now.getTime() + slaHours[level] * 60 * 60 * 1000),
-        },
-      });
-    }
-  }
+    }),
+  ]);
 }

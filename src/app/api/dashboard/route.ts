@@ -12,17 +12,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const stats = await getDashboardStats(user);
-    const recentRequests = await getRecentRequests(user);
-    const pendingApprovals = await getPendingApprovals(user);
-    const slaAlerts = await getSLAAlerts(user);
+    // Parallelize all dashboard data fetches
+    const [stats, recentRequests, pendingApprovals, slaAlerts] = await Promise.all([
+      getDashboardStats(user),
+      getRecentRequests(user),
+      getPendingApprovals(user),
+      getSLAAlerts(user),
+    ]);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       stats,
       recentRequests,
       pendingApprovals,
       slaAlerts,
     });
+    response.headers.set('Cache-Control', 'private, max-age=15, stale-while-revalidate=30');
+    return response;
   } catch (error) {
     console.error('Error fetching dashboard data:', error);
     return NextResponse.json(
@@ -85,43 +90,24 @@ async function getDashboardStats(user: any) {
     }),
   ]);
 
-  // Get pending approvals count based on role
-  let myPendingApprovals = 0;
+  // Build role-based pending where clause
+  let myPendingWhere: any = null;
   if (user.role === 'FINANCE_TEAM') {
-    myPendingApprovals = await prisma.financeRequest.count({
-      where: {
-        status: { in: ['PENDING_FINANCE_VETTING', 'APPROVED'] },
-        isDeleted: false,
-      },
-    });
+    myPendingWhere = { status: { in: ['PENDING_FINANCE_VETTING', 'APPROVED'] }, isDeleted: false };
   } else if (user.role === 'FINANCE_CONTROLLER') {
-    myPendingApprovals = await prisma.financeRequest.count({
-      where: {
-        status: 'PENDING_FINANCE_CONTROLLER',
-        isDeleted: false,
-      },
-    });
+    myPendingWhere = { status: 'PENDING_FINANCE_CONTROLLER', isDeleted: false };
   } else if (user.role === 'DIRECTOR') {
-    myPendingApprovals = await prisma.financeRequest.count({
-      where: {
-        status: 'PENDING_DIRECTOR',
-        isDeleted: false,
-      },
-    });
+    myPendingWhere = { status: 'PENDING_DIRECTOR', isDeleted: false };
   } else if (user.role === 'MD') {
-    myPendingApprovals = await prisma.financeRequest.count({
-      where: {
-        status: 'PENDING_MD',
-        isDeleted: false,
-      },
-    });
+    myPendingWhere = { status: 'PENDING_MD', isDeleted: false };
   }
 
-  // Get this month stats
+  // Get this month stats + role-based count in one parallel batch
   const startOfMonth = new Date();
   startOfMonth.setDate(1);
   startOfMonth.setHours(0, 0, 0, 0);
-  const [thisMonthCount, thisMonthAmount, pendingAmount] = await Promise.all([
+
+  const secondBatchPromises: Promise<any>[] = [
     prisma.financeRequest.count({
       where: { ...baseWhere, createdAt: { gte: startOfMonth }, status: { not: 'DRAFT' } },
     }),
@@ -138,7 +124,16 @@ async function getDashboardStats(user: any) {
       },
       _sum: { totalAmount: true },
     }),
-  ]);
+  ];
+  if (myPendingWhere) {
+    secondBatchPromises.push(prisma.financeRequest.count({ where: myPendingWhere }));
+  }
+
+  const secondBatch = await Promise.all(secondBatchPromises);
+  const thisMonthCount = secondBatch[0];
+  const thisMonthAmount = secondBatch[1];
+  const pendingAmount = secondBatch[2];
+  const myPendingApprovals = secondBatch[3] || 0;
 
   return {
     total: totalRequests,

@@ -15,33 +15,32 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const section = searchParams.get('section') || 'all';
 
-    const data: any = {};
+    let data: any = {};
 
-    if (section === 'all' || section === 'departments') {
-      data.departments = await prisma.department.findMany({
-        orderBy: { name: 'asc' },
-      });
+    if (section === 'all') {
+      // Parallelize all queries when fetching everything
+      const [departments, costCenters, entities, systemConfig] = await Promise.all([
+        prisma.department.findMany({ orderBy: { name: 'asc' } }),
+        prisma.costCenter.findMany({ orderBy: { name: 'asc' } }),
+        prisma.entity.findMany({ orderBy: { name: 'asc' } }),
+        prisma.systemConfig.findMany({ orderBy: { key: 'asc' } }),
+      ]);
+      data = { departments, costCenters, entities, systemConfig };
+    } else {
+      if (section === 'departments') {
+        data.departments = await prisma.department.findMany({ orderBy: { name: 'asc' } });
+      } else if (section === 'costCenters') {
+        data.costCenters = await prisma.costCenter.findMany({ orderBy: { name: 'asc' } });
+      } else if (section === 'entities') {
+        data.entities = await prisma.entity.findMany({ orderBy: { name: 'asc' } });
+      } else if (section === 'systemConfig') {
+        data.systemConfig = await prisma.systemConfig.findMany({ orderBy: { key: 'asc' } });
+      }
     }
 
-    if (section === 'all' || section === 'costCenters') {
-      data.costCenters = await prisma.costCenter.findMany({
-        orderBy: { name: 'asc' },
-      });
-    }
-
-    if (section === 'all' || section === 'entities') {
-      data.entities = await prisma.entity.findMany({
-        orderBy: { name: 'asc' },
-      });
-    }
-
-    if (section === 'all' || section === 'systemConfig') {
-      data.systemConfig = await prisma.systemConfig.findMany({
-        orderBy: { key: 'asc' },
-      });
-    }
-
-    return NextResponse.json(data);
+    const response = NextResponse.json(data);
+    response.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=120');
+    return response;
   } catch (error) {
     console.error('Settings GET error:', error);
     return NextResponse.json({ error: 'Failed to fetch settings' }, { status: 500 });

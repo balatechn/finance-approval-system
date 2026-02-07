@@ -12,6 +12,16 @@ const nextConfig = {
         hostname: 'utfs.io',
       },
     ],
+    formats: ['image/webp'],
+  },
+  compress: true,
+  poweredByHeader: false,
+  reactStrictMode: true,
+  // Optimize package imports to reduce bundle size
+  modularizeImports: {
+    'lucide-react': {
+      transform: 'lucide-react/dist/esm/icons/{{kebabCase member}}',
+    },
   },
 };
 
