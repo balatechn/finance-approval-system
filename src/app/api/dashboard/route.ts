@@ -119,13 +119,39 @@ async function getDashboardStats(user: any) {
     });
   }
 
+  // Get this month stats
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
+  const [thisMonthCount, thisMonthAmount, pendingAmount] = await Promise.all([
+    prisma.financeRequest.count({
+      where: { ...baseWhere, createdAt: { gte: startOfMonth }, status: { not: 'DRAFT' } },
+    }),
+    prisma.financeRequest.aggregate({
+      where: { ...baseWhere, createdAt: { gte: startOfMonth }, status: { not: 'DRAFT' } },
+      _sum: { totalAmount: true },
+    }),
+    prisma.financeRequest.aggregate({
+      where: {
+        ...baseWhere,
+        status: {
+          in: ['SUBMITTED', 'PENDING_MANAGER', 'PENDING_HOD', 'PENDING_FINANCE_VETTING', 'PENDING_FINANCE_APPROVAL'],
+        },
+      },
+      _sum: { totalAmount: true },
+    }),
+  ]);
+
   return {
-    totalRequests,
-    pendingRequests,
-    approvedRequests,
-    rejectedRequests,
-    disbursedRequests,
-    totalAmount: totalAmount._sum.totalAmount?.toString() || '0',
+    total: totalRequests,
+    pending: pendingRequests,
+    approved: approvedRequests,
+    rejected: rejectedRequests,
+    disbursed: disbursedRequests,
+    totalAmount: Number(totalAmount._sum.totalAmount || 0),
+    pendingAmount: Number(pendingAmount._sum.totalAmount || 0),
+    thisMonthCount,
+    thisMonthAmount: Number(thisMonthAmount._sum.totalAmount || 0),
     slaBreaches,
     myPendingApprovals,
   };
@@ -140,11 +166,12 @@ async function getRecentRequests(user: any) {
     whereClause.department = user.department;
   }
 
-  return prisma.financeRequest.findMany({
+  const requests = await prisma.financeRequest.findMany({
     where: whereClause,
     select: {
       id: true,
       referenceNumber: true,
+      purpose: true,
       vendorName: true,
       totalAmount: true,
       status: true,
@@ -156,6 +183,11 @@ async function getRecentRequests(user: any) {
     orderBy: { createdAt: 'desc' },
     take: 5,
   });
+  return requests.map((r: any) => ({
+    ...r,
+    totalAmountINR: Number(r.totalAmount),
+    requester: r.requestor,
+  }));
 }
 
 async function getPendingApprovals(user: any) {
@@ -193,13 +225,15 @@ async function getPendingApprovals(user: any) {
       return [];
   }
 
-  return prisma.financeRequest.findMany({
+  const approvals = await prisma.financeRequest.findMany({
     where: whereClause,
     select: {
       id: true,
       referenceNumber: true,
+      purpose: true,
       vendorName: true,
       totalAmount: true,
+      currentApprovalLevel: true,
       status: true,
       paymentType: true,
       createdAt: true,
@@ -218,6 +252,11 @@ async function getPendingApprovals(user: any) {
     orderBy: { createdAt: 'asc' },
     take: 10,
   });
+  return approvals.map((r: any) => ({
+    ...r,
+    totalAmountINR: Number(r.totalAmount),
+    requester: r.requestor,
+  }));
 }
 
 async function getSLAAlerts(user: any) {
@@ -248,6 +287,8 @@ async function getSLAAlerts(user: any) {
       referenceNumber: true,
       vendorName: true,
       status: true,
+      currentApprovalLevel: true,
+      updatedAt: true,
       approvalSteps: {
         where: { isActive: true },
         select: {

@@ -14,8 +14,16 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const financeRequest = await prisma.financeRequest.findUnique({
-      where: { id: params.id, isDeleted: false },
+    // Try lookup by referenceNumber first, then by id
+    const identifier = params.id;
+    const financeRequest = await prisma.financeRequest.findFirst({
+      where: {
+        isDeleted: false,
+        OR: [
+          { referenceNumber: identifier },
+          { id: identifier },
+        ],
+      },
       include: {
         requestor: {
           select: {
@@ -67,7 +75,24 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    return NextResponse.json(financeRequest);
+    // Transform response to match frontend interface
+    const transformedSteps = financeRequest.approvalSteps.map((step) => {
+      const lastAction = step.actions?.[step.actions.length - 1];
+      return {
+        ...step,
+        isOverdue: step.slaBreached,
+        approverName: lastAction?.actor?.name || null,
+        comments: lastAction?.comments || null,
+      };
+    });
+
+    const response = {
+      ...financeRequest,
+      requester: financeRequest.requestor,
+      approvalSteps: transformedSteps,
+    };
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error('Error fetching finance request:', error);
     return NextResponse.json(

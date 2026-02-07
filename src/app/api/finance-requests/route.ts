@@ -122,13 +122,19 @@ export async function GET(request: NextRequest) {
       prisma.financeRequest.count({ where: whereClause }),
     ]);
 
+    // Transform requestor to requester for frontend compatibility
+    const transformedRequests = requests.map((r: any) => ({
+      ...r,
+      requester: r.requestor,
+    }));
+
     return NextResponse.json({
-      data: requests,
+      requests: transformedRequests,
       pagination: {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit),
+        pages: Math.ceil(total / limit),
       },
     });
   } catch (error) {
