@@ -105,6 +105,52 @@ export async function GET(
 }
 
 // PATCH /api/finance-requests/[id] - Update finance request
+
+// Map form fields to Prisma schema fields
+const mapFormToPrisma = (formData: any) => {
+  const mapped: any = {};
+  if (formData.purpose !== undefined) mapped.purpose = formData.purpose;
+  if (formData.department !== undefined) mapped.department = formData.department;
+  if (formData.costCenter !== undefined) mapped.costCenter = formData.costCenter;
+  if (formData.entity !== undefined) mapped.entity = formData.entity || null;
+  if (formData.paymentType !== undefined) mapped.paymentType = formData.paymentType;
+  if (formData.paymentMode !== undefined) mapped.paymentMode = formData.paymentMode;
+  if (formData.currency !== undefined) mapped.currency = formData.currency;
+  if (formData.vendorName !== undefined) mapped.vendorName = formData.vendorName;
+  if (formData.vendorCode !== undefined) mapped.vendorCode = formData.vendorCode || null;
+  if (formData.invoiceNumber !== undefined) mapped.invoiceNumber = formData.invoiceNumber || null;
+  if (formData.remarks !== undefined) mapped.disbursementRemarks = formData.remarks || null;
+
+  // Amount mapping: form "totalAmount" = base amount, "totalAmountINR" = total in INR
+  if (formData.totalAmount !== undefined) {
+    mapped.amount = formData.totalAmount;
+  }
+  if (formData.totalAmountINR !== undefined) {
+    mapped.totalAmount = formData.totalAmountINR;
+  } else if (formData.totalAmount !== undefined) {
+    mapped.totalAmount = formData.totalAmount;
+  }
+
+  // Bank details
+  if (formData.bankAccountNumber !== undefined) mapped.vendorBankAccount = formData.bankAccountNumber || null;
+  if (formData.bankName !== undefined) mapped.vendorBankName = formData.bankName || null;
+  if (formData.ifscCode !== undefined) mapped.vendorBankIfsc = formData.ifscCode || null;
+  if (formData.upiId !== undefined) mapped.vendorUpiId = formData.upiId || null;
+
+  // GST
+  if (formData.isGSTApplicable !== undefined) mapped.gstApplicable = formData.isGSTApplicable;
+  if (formData.gstPercentage !== undefined && formData.gstPercentage !== null) {
+    mapped.gstPercentage = formData.gstPercentage;
+  }
+
+  // Invoice date
+  if (formData.invoiceDate) {
+    mapped.invoiceDate = new Date(formData.invoiceDate);
+  }
+
+  return mapped;
+};
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -140,11 +186,11 @@ export async function PATCH(
 
     // If submitting a draft
     if (body.status === 'SUBMITTED' && existingRequest.status === 'DRAFT') {
-      const { status, saveAsDraft, ...updateFields } = body;
+      const prismaData = mapFormToPrisma(body);
       const updatedRequest = await prisma.financeRequest.update({
         where: { id: existingRequest.id },
         data: {
-          ...updateFields,
+          ...prismaData,
           status: 'PENDING_FINANCE_VETTING',
           currentApprovalLevel: 'FINANCE_VETTING',
           submittedAt: new Date(),
@@ -159,7 +205,7 @@ export async function PATCH(
 
     // If resubmitting a sent-back request
     if (body.status === 'RESUBMITTED' && existingRequest.status === 'SENT_BACK') {
-      const { status, saveAsDraft, ...updateFields } = body;
+      const prismaUpdateData = mapFormToPrisma(body);
 
       // Delete old approval steps, actions, and SLA logs
       const oldSteps = await prisma.approvalStep.findMany({
@@ -186,7 +232,7 @@ export async function PATCH(
       const updatedRequest = await prisma.financeRequest.update({
         where: { id: existingRequest.id },
         data: {
-          ...updateFields,
+          ...prismaUpdateData,
           status: 'PENDING_FINANCE_VETTING',
           currentApprovalLevel: 'FINANCE_VETTING',
           completedAt: null,
@@ -211,10 +257,10 @@ export async function PATCH(
     }
 
     // Regular update (draft save)
-    const { status, saveAsDraft, ...safeFields } = body;
+    const prismaFields = mapFormToPrisma(body);
     const updatedRequest = await prisma.financeRequest.update({
       where: { id: existingRequest.id },
-      data: safeFields,
+      data: prismaFields,
     });
 
     return NextResponse.json(updatedRequest);
