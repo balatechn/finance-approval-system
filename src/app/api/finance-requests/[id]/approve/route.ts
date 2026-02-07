@@ -4,7 +4,6 @@ import { getCurrentUser } from '@/lib/auth/session';
 import { approvalActionSchema } from '@/lib/validations/finance-request';
 import { canApproveLevel } from '@/lib/auth/permissions';
 import { ApprovalLevel, RequestStatus } from '@prisma/client';
-import { Decimal } from '@prisma/client/runtime/library';
 
 // POST /api/finance-requests/[id]/approve - Process approval action
 export async function POST(
@@ -84,7 +83,7 @@ export async function POST(
         action: action,
         comments: comments || null,
         slaCompliant,
-        responseTimeHours: new Decimal(responseTimeHours.toFixed(2)),
+        responseTimeHours: parseFloat(responseTimeHours.toFixed(2)),
       },
     });
 

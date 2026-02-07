@@ -4,7 +4,6 @@ import { getCurrentUser } from '@/lib/auth/session';
 import { createFinanceRequestSchema } from '@/lib/validations/finance-request';
 import { generateReferenceNumber } from '@/lib/utils';
 import { ApprovalLevel, RequestStatus, Role } from '@prisma/client';
-import { Decimal } from '@prisma/client/runtime/library';
 
 // GET /api/finance-requests - List finance requests
 export async function GET(request: NextRequest) {
@@ -150,15 +149,16 @@ export async function POST(request: NextRequest) {
     const data = validationResult.data;
 
     // Calculate GST and total
-    let gstAmount = new Decimal(0);
+    const baseAmount = Number(data.totalAmount);
+    let gstAmount = 0;
     if (data.isGSTApplicable && data.gstPercentage) {
-      gstAmount = new Decimal(data.totalAmount).mul(data.gstPercentage).div(100);
+      gstAmount = baseAmount * Number(data.gstPercentage) / 100;
     }
-    let tdsAmount = new Decimal(0);
+    let tdsAmount = 0;
     if (data.isTDSApplicable && data.tdsPercentage) {
-      tdsAmount = new Decimal(data.totalAmount).mul(data.tdsPercentage).div(100);
+      tdsAmount = baseAmount * Number(data.tdsPercentage) / 100;
     }
-    const totalAmountCalc = new Decimal(data.totalAmount).add(gstAmount).sub(tdsAmount);
+    const totalAmountCalc = baseAmount + gstAmount - tdsAmount;
 
     // Generate reference number
     const referenceNumber = generateReferenceNumber('FIN');
@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
       department: data.department,
       costCenter: data.costCenter,
       paymentType: data.paymentType,
-      amount: new Decimal(data.totalAmount),
+      amount: baseAmount,
       currency: data.currency || 'INR',
       purpose: data.purpose,
       vendorName: data.vendorName,
@@ -194,8 +194,8 @@ export async function POST(request: NextRequest) {
     if (data.upiId) createData.vendorUpiId = data.upiId;
     if (data.invoiceNumber) createData.invoiceNumber = data.invoiceNumber;
     if (data.invoiceDate) createData.invoiceDate = new Date(data.invoiceDate);
-    if (data.gstPercentage) createData.gstPercentage = new Decimal(data.gstPercentage);
-    if (gstAmount.gt(0)) createData.gstAmount = gstAmount;
+    if (data.gstPercentage) createData.gstPercentage = Number(data.gstPercentage);
+    if (gstAmount > 0) createData.gstAmount = gstAmount;
 
     const financeRequest = await prisma.financeRequest.create({
       data: createData,

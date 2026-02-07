@@ -134,8 +134,8 @@ export default function NewRequestPage() {
       })
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || "Failed to create request")
+        const errorData = await response.json()
+        throw new Error(errorData.details || errorData.error || "Failed to create request")
       }
 
       const result = await response.json()
