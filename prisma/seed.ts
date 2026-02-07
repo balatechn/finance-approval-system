@@ -68,14 +68,14 @@ async function main() {
 
   // Create Admin User
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@nationalconsultingindia.com' },
+    where: { email: 'bala@nationalgroupindia.com' },
     update: {},
     create: {
-      email: 'admin@nationalconsultingindia.com',
-      name: 'System Administrator',
+      email: 'bala@nationalgroupindia.com',
+      name: 'Bala',
       password: hashedPassword,
       role: Role.ADMIN,
-      department: 'IT',
+      department: 'Management',
       employeeId: 'EMP001',
       isActive: true,
     },
@@ -188,7 +188,7 @@ async function main() {
   console.log('');
   console.log('Test Accounts:');
   console.log('─────────────────────────────────────────');
-  console.log('Admin:              admin@nationalconsultingindia.com');
+  console.log('Admin:              bala@nationalgroupindia.com');
   console.log('MD:                 md@nationalconsultingindia.com');
   console.log('Director:           director@nationalconsultingindia.com');
   console.log('Finance Controller: fc@nationalconsultingindia.com');

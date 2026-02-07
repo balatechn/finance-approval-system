@@ -151,9 +151,9 @@ function LoginForm() {
                 <p className="font-medium">MD</p>
                 <p className="text-muted-foreground text-[10px]">md@national...</p>
               </div>
-              <div className="rounded bg-muted p-2 cursor-pointer hover:bg-muted/80" onClick={() => { setValue("email", "admin@nationalconsultingindia.com"); setValue("password", "Password@123"); }}>
+              <div className="rounded bg-muted p-2 cursor-pointer hover:bg-muted/80" onClick={() => { setValue("email", "bala@nationalgroupindia.com"); setValue("password", "Password@123"); }}>
                 <p className="font-medium">Admin</p>
-                <p className="text-muted-foreground text-[10px]">admin@national...</p>
+                <p className="text-muted-foreground text-[10px]">bala@nationalgroup...</p>
               </div>
             </div>
           </div>

@@ -196,12 +196,14 @@ export async function DELETE(
       return NextResponse.json({ error: 'Request not found' }, { status: 404 });
     }
 
-    // Only allow deletion of drafts by the requestor
-    if (existingDeleteRequest.status !== 'DRAFT' || existingDeleteRequest.requestorId !== user.id) {
-      return NextResponse.json(
-        { error: 'Only draft requests can be deleted by the requestor' },
-        { status: 403 }
-      );
+    // Admin can delete any request; others can only delete their own drafts
+    if (user.role !== 'ADMIN') {
+      if (existingDeleteRequest.status !== 'DRAFT' || existingDeleteRequest.requestorId !== user.id) {
+        return NextResponse.json(
+          { error: 'Only draft requests can be deleted by the requestor' },
+          { status: 403 }
+        );
+      }
     }
 
     await prisma.financeRequest.update({
