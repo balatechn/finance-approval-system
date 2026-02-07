@@ -4,6 +4,8 @@ import { getCurrentUser } from '@/lib/auth/session';
 import { hasPermission } from '@/lib/auth/permissions';
 import { RequestStatus } from '@prisma/client';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/reports - Generate reports
 export async function GET(request: NextRequest) {
   try {

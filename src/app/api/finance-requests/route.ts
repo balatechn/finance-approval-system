@@ -5,6 +5,8 @@ import { createFinanceRequestSchema } from '@/lib/validations/finance-request';
 import { generateReferenceNumber } from '@/lib/utils';
 import { ApprovalLevel, RequestStatus, Role } from '@prisma/client';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/finance-requests - List finance requests
 export async function GET(request: NextRequest) {
   try {

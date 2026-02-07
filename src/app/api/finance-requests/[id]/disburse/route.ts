@@ -3,6 +3,8 @@ import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth/session';
 import { disbursementSchema } from '@/lib/validations/finance-request';
 
+export const dynamic = 'force-dynamic';
+
 // POST /api/finance-requests/[id]/disburse - Process disbursement
 export async function POST(
   request: NextRequest,

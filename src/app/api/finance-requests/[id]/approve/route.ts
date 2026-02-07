@@ -5,6 +5,8 @@ import { approvalActionSchema } from '@/lib/validations/finance-request';
 import { canApproveLevel } from '@/lib/auth/permissions';
 import { ApprovalLevel, RequestStatus } from '@prisma/client';
 
+export const dynamic = 'force-dynamic';
+
 // POST /api/finance-requests/[id]/approve - Process approval action
 export async function POST(
   request: NextRequest,
