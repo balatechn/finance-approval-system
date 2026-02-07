@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -53,6 +53,7 @@ export default function NewRequestPage() {
   const router = useRouter()
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const isDraftRef = useRef(false)
   const [departments, setDepartments] = useState<{ id: string; name: string }[]>([])
   const [costCenters, setCostCenters] = useState<{ id: string; code: string; name: string }[]>([])
   const [entities, setEntities] = useState<{ id: string; code: string; name: string }[]>([])
@@ -72,6 +73,7 @@ export default function NewRequestPage() {
       isGSTApplicable: false,
       isTDSApplicable: false,
       saveAsDraft: false,
+      status: "DRAFT",
     },
   })
 
@@ -118,10 +120,17 @@ export default function NewRequestPage() {
     try {
       setIsSubmitting(true)
 
+      // Override status based on which button was clicked
+      const submitData = {
+        ...data,
+        saveAsDraft: isDraftRef.current,
+        status: isDraftRef.current ? "DRAFT" as const : "SUBMITTED" as const,
+      }
+
       const response = await fetch("/api/finance-requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(submitData),
       })
 
       if (!response.ok) {
@@ -132,7 +141,7 @@ export default function NewRequestPage() {
       const result = await response.json()
 
       toast({
-        title: data.saveAsDraft ? "Draft Saved" : "Request Submitted",
+        title: isDraftRef.current ? "Draft Saved" : "Request Submitted",
         description: `Reference number: ${result.referenceNumber}`,
         variant: "success",
       })
@@ -166,7 +175,15 @@ export default function NewRequestPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit, (validationErrors) => {
+        console.error("Form validation errors:", validationErrors)
+        const firstError = Object.values(validationErrors)[0]
+        toast({
+          title: "Validation Error",
+          description: (firstError?.message as string) || "Please fill in all required fields",
+          variant: "destructive",
+        })
+      })} className="space-y-6">
         {/* Basic Information */}
         <Card>
           <CardHeader>
@@ -608,7 +625,7 @@ export default function NewRequestPage() {
             type="submit"
             variant="secondary"
             loading={isSubmitting}
-            onClick={() => setValue("saveAsDraft", true)}
+            onClick={() => { isDraftRef.current = true; }}
             className="w-full sm:w-auto"
           >
             Save as Draft
@@ -616,7 +633,7 @@ export default function NewRequestPage() {
           <Button
             type="submit"
             loading={isSubmitting}
-            onClick={() => setValue("saveAsDraft", false)}
+            onClick={() => { isDraftRef.current = false; }}
             className="w-full sm:w-auto"
           >
             Submit Request

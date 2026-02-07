@@ -23,6 +23,7 @@ function LoginForm() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -127,24 +128,24 @@ function LoginForm() {
 
           <div className="mt-6 border-t pt-4">
             <p className="text-sm text-muted-foreground text-center mb-3">
-              Demo Accounts (Password: password123)
+              Demo Accounts (Password: Password@123)
             </p>
             <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="rounded bg-muted p-2">
+              <div className="rounded bg-muted p-2 cursor-pointer hover:bg-muted/80" onClick={() => { setValue("email", "employee@nationalconsultingindia.com"); setValue("password", "Password@123"); }}>
                 <p className="font-medium">Employee</p>
-                <p className="text-muted-foreground">employee@demo.com</p>
+                <p className="text-muted-foreground text-[10px]">employee@national...</p>
               </div>
-              <div className="rounded bg-muted p-2">
+              <div className="rounded bg-muted p-2 cursor-pointer hover:bg-muted/80" onClick={() => { setValue("email", "manager@nationalconsultingindia.com"); setValue("password", "Password@123"); }}>
                 <p className="font-medium">Manager</p>
-                <p className="text-muted-foreground">manager@demo.com</p>
+                <p className="text-muted-foreground text-[10px]">manager@national...</p>
               </div>
-              <div className="rounded bg-muted p-2">
+              <div className="rounded bg-muted p-2 cursor-pointer hover:bg-muted/80" onClick={() => { setValue("email", "hod.sales@nationalconsultingindia.com"); setValue("password", "Password@123"); }}>
                 <p className="font-medium">HOD</p>
-                <p className="text-muted-foreground">hod@demo.com</p>
+                <p className="text-muted-foreground text-[10px]">hod.sales@national...</p>
               </div>
-              <div className="rounded bg-muted p-2">
+              <div className="rounded bg-muted p-2 cursor-pointer hover:bg-muted/80" onClick={() => { setValue("email", "finance@nationalconsultingindia.com"); setValue("password", "Password@123"); }}>
                 <p className="font-medium">Finance</p>
-                <p className="text-muted-foreground">finance@demo.com</p>
+                <p className="text-muted-foreground text-[10px]">finance@national...</p>
               </div>
             </div>
           </div>

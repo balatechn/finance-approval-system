@@ -49,13 +49,13 @@ export const createFinanceRequestSchema = z.object({
   
   // Payment Details
   paymentType: PaymentTypeEnum,
-  paymentMode: PaymentModeEnum.default('NEFT'),
-  totalAmount: z.number()
+  paymentMode: PaymentModeEnum.optional().default('NEFT'),
+  totalAmount: z.coerce.number({ invalid_type_error: 'Amount is required' })
     .min(1, 'Amount must be greater than 0')
     .max(100000000, 'Amount exceeds maximum limit'),
   currency: CurrencyEnum.default('INR'),
-  exchangeRate: z.number().min(0).default(1),
-  totalAmountINR: z.number().optional(),
+  exchangeRate: z.coerce.number().min(0).default(1),
+  totalAmountINR: z.coerce.number().optional(),
   purpose: z.string()
     .min(10, 'Purpose must be at least 10 characters')
     .max(2000, 'Purpose must not exceed 2000 characters'),
@@ -77,12 +77,12 @@ export const createFinanceRequestSchema = z.object({
   
   // GST Details
   isGSTApplicable: z.boolean().default(false),
-  gstPercentage: z.number().min(0).max(28).optional(),
+  gstPercentage: z.coerce.number().min(0).max(28).optional().nullable(),
   gstNumber: z.string().optional(),
   
   // TDS Details
   isTDSApplicable: z.boolean().default(false),
-  tdsPercentage: z.number().min(0).max(100).optional(),
+  tdsPercentage: z.coerce.number().min(0).max(100).optional().nullable(),
   tdsSection: z.string().optional(),
   
   // Other
