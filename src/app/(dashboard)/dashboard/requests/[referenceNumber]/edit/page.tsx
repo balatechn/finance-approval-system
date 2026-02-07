@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { ArrowLeft, Upload, X, Info, AlertTriangle, MessageSquare } from "lucide-react"
@@ -60,6 +61,7 @@ export default function EditRequestPage() {
   const params = useParams()
   const router = useRouter()
   const { toast } = useToast()
+  const { data: session } = useSession()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [loading, setLoading] = useState(true)
   const [requestData, setRequestData] = useState<any>(null)
@@ -142,11 +144,17 @@ export default function EditRequestPage() {
         const data = await response.json()
         setRequestData(data)
 
-        // Only allow editing DRAFT or SENT_BACK requests
-        if (data.status !== "DRAFT" && data.status !== "SENT_BACK") {
+        // Check edit permissions: admin can edit any, owner can edit pre-approval
+        const isAdmin = session?.user?.role === "ADMIN"
+        const isOwner = session?.user?.id === data.requester?.id
+        const editableStatuses = ["DRAFT", "SENT_BACK", "SUBMITTED", "PENDING_FINANCE_VETTING"]
+        const canEditRequest = isAdmin || 
+          (editableStatuses.includes(data.status) && (isOwner || data.status === "DRAFT" || data.status === "SENT_BACK"))
+        
+        if (!canEditRequest) {
           toast({
             title: "Cannot Edit",
-            description: "Only draft or sent-back requests can be edited",
+            description: "You don't have permission to edit this request",
             variant: "destructive",
           })
           router.push(`/dashboard/requests/${referenceNumber}`)

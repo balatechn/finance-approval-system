@@ -390,22 +390,35 @@ function checkViewPermission(user: any, request: any): boolean {
 }
 
 function checkEditPermission(user: any, request: any): boolean {
+  // Admin can edit any request regardless of status
+  if (user.role === 'ADMIN') return true;
+
+  // Requestor can edit their own DRAFT
   if (request.status === 'DRAFT' && request.requestorId === user.id) {
     return true;
   }
 
+  // Requestor can edit their own SENT_BACK request
   if (request.status === 'SENT_BACK' && request.requestorId === user.id) {
     return true;
   }
 
+  // Requestor can edit their own request before any approval action
+  // (SUBMITTED or PENDING_FINANCE_VETTING with no completed steps)
+  if (
+    (request.status === 'SUBMITTED' || request.status === 'PENDING_FINANCE_VETTING') &&
+    request.requestorId === user.id
+  ) {
+    return true;
+  }
+
+  // Finance team can edit during vetting
   if (
     request.status === 'PENDING_FINANCE_VETTING' &&
     user.role === 'FINANCE_TEAM'
   ) {
     return true;
   }
-
-  if (user.role === 'ADMIN') return true;
 
   return false;
 }

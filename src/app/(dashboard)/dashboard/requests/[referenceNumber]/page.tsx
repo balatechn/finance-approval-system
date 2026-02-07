@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import Link from "next/link"
 import {
   ArrowLeft,
@@ -104,6 +105,7 @@ export default function RequestDetailPage() {
   const params = useParams()
   const router = useRouter()
   const { toast } = useToast()
+  const { data: session } = useSession()
   const [request, setRequest] = useState<FinanceRequest | null>(null)
   const [loading, setLoading] = useState(true)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -177,8 +179,13 @@ export default function RequestDetailPage() {
     return null
   }
 
-  const canEdit = request.status === "DRAFT" || request.status === "SENT_BACK"
-  const canDelete = request.status === "DRAFT"
+  const userRole = session?.user?.role
+  const isOwner = session?.user?.id === request.requester?.id
+  const isAdmin = userRole === "ADMIN"
+  // Admin can edit any request; owner can edit draft, sent-back, or pre-approval requests
+  const canEdit = isAdmin || request.status === "DRAFT" || request.status === "SENT_BACK" || 
+    (isOwner && (request.status === "SUBMITTED" || request.status === "PENDING_FINANCE_VETTING"))
+  const canDelete = request.status === "DRAFT" || isAdmin
   const isSentBack = request.status === "SENT_BACK"
 
   // Extract sent-back comments from approval steps
