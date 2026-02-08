@@ -482,17 +482,28 @@ export default function SettingsPage() {
                       placeholder="e.g. Desktop Computer"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Code *</label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.code}
-                      onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
-                      placeholder="e.g. ITEM-001"
-                    />
-                  </div>
+                  {editingItem && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Code</label>
+                      <input
+                        type="text"
+                        disabled
+                        value={formData.code}
+                        className="w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-500"
+                      />
+                    </div>
+                  )}
+                  {!editingItem && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Code</label>
+                      <input
+                        type="text"
+                        disabled
+                        value="Auto-generated (ITEM-001, ITEM-002...)"
+                        className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-400 italic"
+                      />
+                    </div>
+                  )}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                     <input

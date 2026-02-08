@@ -103,17 +103,28 @@ export async function POST(request: NextRequest) {
       }
 
       case 'itemMaster': {
-        const existing = await prisma.itemMaster.findFirst({
-          where: { OR: [{ name: data.name }, { code: data.code }] },
+        const existingName = await prisma.itemMaster.findFirst({
+          where: { name: data.name },
         });
-        if (existing) {
+        if (existingName) {
           return NextResponse.json(
-            { error: `Item with this ${existing.name === data.name ? 'name' : 'code'} already exists` },
+            { error: 'Item with this name already exists' },
             { status: 400 }
           );
         }
+        // Auto-generate code: ITEM-001, ITEM-002, etc.
+        const lastItem = await prisma.itemMaster.findFirst({
+          orderBy: { code: 'desc' },
+          where: { code: { startsWith: 'ITEM-' } },
+        });
+        let nextNum = 1;
+        if (lastItem?.code) {
+          const match = lastItem.code.match(/ITEM-(\d+)/);
+          if (match) nextNum = parseInt(match[1], 10) + 1;
+        }
+        const autoCode = `ITEM-${String(nextNum).padStart(3, '0')}`;
         result = await prisma.itemMaster.create({
-          data: { name: data.name, code: data.code, description: data.description || null },
+          data: { name: data.name, code: autoCode, description: data.description || null },
         });
         break;
       }
