@@ -109,7 +109,10 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                   />
                 </svg>
               </div>
-              <span className="font-semibold text-gray-900">Finance</span>
+              <div className="flex flex-col">
+                <span className="font-semibold text-gray-900">Finance</span>
+                <span className="text-[10px] text-muted-foreground leading-tight">National Group India</span>
+              </div>
             </Link>
             <button
               onClick={() => setSidebarOpen(false)}
