@@ -54,7 +54,7 @@ export async function POST(
       );
     }
 
-    const { paymentReferenceNumber, actualPaymentDate, disbursementRemarks } = validationResult.data;
+    const { paymentReferenceNumber, actualPaymentDate, disbursementRemarks, disbursementPaymentMode } = validationResult.data;
 
     // Check if request is approved
     if (financeRequest.status !== 'APPROVED') {
@@ -95,7 +95,7 @@ export async function POST(
           financeRequestId: financeRequest.id,
           actorId: user.id,
           action: 'APPROVED',
-          comments: disbursementRemarks || 'Payment processed',
+          comments: disbursementRemarks || `Payment processed via ${disbursementPaymentMode}. Ref: ${paymentReferenceNumber}`,
           slaCompliant: true,
         },
       });
@@ -109,6 +109,7 @@ export async function POST(
         paymentReferenceNumber,
         actualPaymentDate,
         disbursementRemarks,
+        disbursementPaymentMode,
         completedAt: now,
       },
     });

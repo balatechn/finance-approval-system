@@ -208,6 +208,7 @@ model FinanceRequest {
   // Disbursement
   paymentReferenceNumber String?
   disbursementRemarks    String?
+  disbursementPaymentMode String?    // NEFT, RTGS, UPI, CHEQUE, etc.
   
   // Audit
   isDeleted             Boolean       @default(false)

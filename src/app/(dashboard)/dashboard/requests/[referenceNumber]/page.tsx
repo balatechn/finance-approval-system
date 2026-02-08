@@ -78,6 +78,10 @@ interface FinanceRequest {
   updatedAt: string
   disbursedAt: string | null
   disbursementReference: string | null
+  disbursementPaymentMode: string | null
+  disbursementRemarks: string | null
+  actualPaymentDate: string | null
+  paymentReferenceNumber: string | null
   requester: {
     id: string
     name: string
@@ -679,26 +683,46 @@ export default function RequestDetailPage() {
           </Card>
 
           {/* Disbursement Info */}
-          {request.status === "DISBURSED" && request.disbursedAt && (
+          {request.status === "DISBURSED" && (
             <Card className="border-green-200 bg-green-50">
               <CardHeader>
                 <CardTitle className="text-green-800">Payment Disbursed</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <div>
-                  <p className="text-sm text-green-700">Disbursed On</p>
-                  <p className="font-medium text-green-800">
-                    {formatDateTime(request.disbursedAt)}
-                  </p>
+              <CardContent>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {(request.actualPaymentDate || request.disbursedAt) && (
+                    <div>
+                      <p className="text-sm text-green-700">Payment Date</p>
+                      <p className="font-medium text-green-800">
+                        {formatDateTime(request.actualPaymentDate || request.disbursedAt || "")}
+                      </p>
+                    </div>
+                  )}
+                  {request.disbursementPaymentMode && (
+                    <div>
+                      <p className="text-sm text-green-700">Payment Mode</p>
+                      <p className="font-medium text-green-800">
+                        {request.disbursementPaymentMode.replace(/_/g, " ")}
+                      </p>
+                    </div>
+                  )}
+                  {(request.paymentReferenceNumber || request.disbursementReference) && (
+                    <div>
+                      <p className="text-sm text-green-700">UTR / Reference Number</p>
+                      <p className="font-medium text-green-800">
+                        {request.paymentReferenceNumber || request.disbursementReference}
+                      </p>
+                    </div>
+                  )}
+                  {request.disbursementRemarks && (
+                    <div>
+                      <p className="text-sm text-green-700">Remarks</p>
+                      <p className="font-medium text-green-800">
+                        {request.disbursementRemarks}
+                      </p>
+                    </div>
+                  )}
                 </div>
-                {request.disbursementReference && (
-                  <div>
-                    <p className="text-sm text-green-700">Payment Reference</p>
-                    <p className="font-medium text-green-800">
-                      {request.disbursementReference}
-                    </p>
-                  </div>
-                )}
               </CardContent>
             </Card>
           )}

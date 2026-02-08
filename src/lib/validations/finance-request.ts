@@ -126,10 +126,11 @@ export const approvalActionSchema = z.object({
 
 export const disbursementSchema = z.object({
   financeRequestId: z.string().cuid(),
-  paymentReferenceNumber: z.string().min(1, 'Payment reference is required'),
+  paymentReferenceNumber: z.string().min(1, 'Payment reference / UTR number is required'),
   actualPaymentDate: z.coerce.date({
     required_error: 'Payment date is required',
   }),
+  disbursementPaymentMode: z.string().min(1, 'Payment mode is required'),
   disbursementRemarks: z.string().optional(),
 });
 

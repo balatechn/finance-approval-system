@@ -209,9 +209,44 @@ async function processApproval(
   const currentIndex = levelSequence.indexOf(currentLevel);
   const nextIndex = currentIndex + 1;
 
-  if (nextIndex >= levelSequence.length || currentLevel === 'MD') {
-    // Final approval reached (MD approved) or disbursement completed
-    return { newStatus: statusMapping[currentLevel], nextLevel: currentLevel === 'MD' ? null : null };
+  if (currentLevel === 'DISBURSEMENT') {
+    // Disbursement completed
+    return { newStatus: 'DISBURSED' as RequestStatus, nextLevel: null };
+  }
+
+  if (currentLevel === 'MD') {
+    // MD approved → activate DISBURSEMENT step for Finance Team
+    const nextLevel: ApprovalLevel = 'DISBURSEMENT';
+    const now = new Date();
+    const disbursementSlaHours = 24;
+    const slaDueAt = new Date(now.getTime() + disbursementSlaHours * 60 * 60 * 1000);
+
+    await prisma.approvalStep.updateMany({
+      where: {
+        financeRequestId: requestId,
+        level: nextLevel,
+      },
+      data: {
+        isActive: true,
+        startedAt: now,
+        slaDueAt: slaDueAt,
+      },
+    });
+
+    await prisma.sLALog.create({
+      data: {
+        financeRequestId: requestId,
+        level: nextLevel,
+        slaHours: disbursementSlaHours,
+        slaDueAt: slaDueAt,
+      },
+    });
+
+    return { newStatus: 'APPROVED' as RequestStatus, nextLevel };
+  }
+
+  if (nextIndex >= levelSequence.length) {
+    return { newStatus: statusMapping[currentLevel], nextLevel: null };
   }
 
   const nextLevel = levelSequence[nextIndex];

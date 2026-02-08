@@ -103,6 +103,8 @@ export default function ApprovalDetailPage() {
   const [currentAction, setCurrentAction] = useState<"APPROVED" | "REJECTED" | "SENT_BACK">("APPROVED")
   const [comments, setComments] = useState("")
   const [paymentReference, setPaymentReference] = useState("")
+  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split("T")[0])
+  const [disbursementPaymentMode, setDisbursementPaymentMode] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const referenceNumber = params.referenceNumber as string
@@ -185,6 +187,18 @@ export default function ApprovalDetailPage() {
   }
 
   const handleDisburse = async () => {
+    if (!paymentReference.trim()) {
+      toast({ title: "Required", description: "Payment reference / UTR number is required", variant: "destructive" })
+      return
+    }
+    if (!disbursementPaymentMode) {
+      toast({ title: "Required", description: "Please select a payment mode", variant: "destructive" })
+      return
+    }
+    if (!paymentDate) {
+      toast({ title: "Required", description: "Payment date is required", variant: "destructive" })
+      return
+    }
     try {
       setIsSubmitting(true)
 
@@ -192,8 +206,10 @@ export default function ApprovalDetailPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          paymentReference: paymentReference.trim() || undefined,
-          comments: comments.trim() || undefined,
+          paymentReferenceNumber: paymentReference.trim(),
+          actualPaymentDate: paymentDate,
+          disbursementPaymentMode: disbursementPaymentMode,
+          disbursementRemarks: comments.trim() || undefined,
         }),
       })
 
@@ -239,7 +255,9 @@ export default function ApprovalDetailPage() {
     return null
   }
 
-  const isPendingDisbursement = request.status === "PENDING_DISBURSEMENT"
+  const isPendingDisbursement = request.status === "APPROVED" && (
+    session?.user?.role === "FINANCE_TEAM" || session?.user?.role === "ADMIN"
+  )
   const currentStep = request.approvalSteps.find((s) => s.level === request.currentApprovalLevel)
   const isOverdue = currentStep?.isOverdue
 
@@ -650,7 +668,7 @@ export default function ApprovalDetailPage() {
 
       {/* Disbursement Dialog */}
       <Dialog open={disbursementDialogOpen} onOpenChange={setDisbursementDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Process Disbursement</DialogTitle>
             <DialogDescription>
@@ -658,31 +676,70 @@ export default function ApprovalDetailPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="rounded-lg bg-muted p-4">
+            {/* Amount Summary */}
+            <div className="rounded-lg bg-green-50 border border-green-200 p-4">
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Amount to Disburse</span>
-                <span className="text-xl font-bold">
+                <span className="text-sm text-green-700">Amount to Disburse</span>
+                <span className="text-xl font-bold text-green-800">
                   {formatCurrency(request.netPayableAmount || request.totalAmountINR)}
                 </span>
               </div>
+              <div className="mt-1 text-xs text-green-600">
+                {request.vendorName} &bull; {request.referenceNumber}
+              </div>
             </div>
+
+            {/* Payment Mode */}
             <div className="space-y-2">
-              <Label htmlFor="paymentReference">Payment Reference Number</Label>
+              <Label htmlFor="disbursementPaymentMode">Payment Mode *</Label>
+              <select
+                id="disbursementPaymentMode"
+                value={disbursementPaymentMode}
+                onChange={(e) => setDisbursementPaymentMode(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+              >
+                <option value="">Select payment mode</option>
+                <option value="NEFT">NEFT</option>
+                <option value="RTGS">RTGS</option>
+                <option value="UPI">UPI</option>
+                <option value="CHEQUE">Cheque</option>
+                <option value="BANK_TRANSFER">Bank Transfer</option>
+                <option value="DEMAND_DRAFT">Demand Draft</option>
+                <option value="CASH">Cash</option>
+              </select>
+            </div>
+
+            {/* Payment Reference / UTR */}
+            <div className="space-y-2">
+              <Label htmlFor="paymentReference">Payment Reference / UTR Number *</Label>
               <Input
                 id="paymentReference"
-                placeholder="Enter payment reference..."
+                placeholder="Enter UTR / transaction reference number..."
                 value={paymentReference}
                 onChange={(e) => setPaymentReference(e.target.value)}
               />
             </div>
+
+            {/* Payment Date */}
             <div className="space-y-2">
-              <Label htmlFor="disbursementComments">Comments (Optional)</Label>
+              <Label htmlFor="paymentDate">Payment Date *</Label>
+              <Input
+                id="paymentDate"
+                type="date"
+                value={paymentDate}
+                onChange={(e) => setPaymentDate(e.target.value)}
+              />
+            </div>
+
+            {/* Remarks */}
+            <div className="space-y-2">
+              <Label htmlFor="disbursementComments">Remarks (Optional)</Label>
               <Textarea
                 id="disbursementComments"
-                placeholder="Enter any additional notes..."
+                placeholder="Enter any additional notes about the payment..."
                 value={comments}
                 onChange={(e) => setComments(e.target.value)}
-                rows={3}
+                rows={2}
               />
             </div>
           </div>
