@@ -938,7 +938,7 @@ function EmailTestPanel({
 
       <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-1">
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">From Address</p>
-        <p className="text-sm font-mono text-gray-700">noreply@nationalgroupindia.com</p>
+        <p className="text-sm font-mono text-gray-700">bala@nationalgroupindia.com</p>
       </div>
 
       <div className="space-y-2">

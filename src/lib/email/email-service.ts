@@ -13,7 +13,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const APP_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-const FROM_EMAIL = process.env.FROM_EMAIL || process.env.SMTP_USER || 'noreply@nationalgroupindia.com';
+const FROM_EMAIL = process.env.FROM_EMAIL || process.env.SMTP_USER || 'bala@nationalgroupindia.com';
 const FROM_NAME = process.env.FROM_NAME || 'Finance Approval System';
 
 interface EmailData {
