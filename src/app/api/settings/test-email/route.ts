@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
       });
     } else {
       return NextResponse.json(
-        { error: 'Failed to send email. Check SendGrid API key and sender authentication.' },
+        { error: 'Failed to send email. Check SMTP credentials (SMTP_USER and SMTP_PASS) in environment variables.' },
         { status: 500 }
       );
     }

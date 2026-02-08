@@ -1,14 +1,19 @@
-import sgMail from '@sendgrid/mail';
+import nodemailer from 'nodemailer';
 import prisma from '@/lib/prisma';
 
-// Initialize SendGrid
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
-if (SENDGRID_API_KEY) {
-  sgMail.setApiKey(SENDGRID_API_KEY);
-}
+// Initialize Nodemailer with Gmail SMTP
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: process.env.SMTP_SECURE === 'true', // true for 465, false for 587
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS, // Gmail App Password
+  },
+});
 
 const APP_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@nationalgroupindia.com';
+const FROM_EMAIL = process.env.FROM_EMAIL || process.env.SMTP_USER || 'noreply@nationalgroupindia.com';
 const FROM_NAME = process.env.FROM_NAME || 'Finance Approval System';
 
 interface EmailData {
@@ -19,27 +24,26 @@ interface EmailData {
 }
 
 export async function sendEmail(data: EmailData): Promise<boolean> {
-  if (!SENDGRID_API_KEY) {
-    console.warn('SendGrid API key not configured, skipping email:', data.subject);
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.warn('SMTP credentials not configured, skipping email:', data.subject);
     return false;
   }
 
   try {
-    const recipients = Array.isArray(data.to) ? data.to : [data.to];
+    const recipients = Array.isArray(data.to) ? data.to.join(', ') : data.to;
 
-    for (const to of recipients) {
-      await sgMail.send({
-        to,
-        from: { email: FROM_EMAIL, name: FROM_NAME },
-        subject: data.subject,
-        html: data.html,
-        text: data.text || data.subject,
-      });
-    }
-    console.log(`Email sent: "${data.subject}" to ${recipients.join(', ')}`);
+    await transporter.sendMail({
+      from: `"${FROM_NAME}" <${FROM_EMAIL}>`,
+      to: recipients,
+      subject: data.subject,
+      html: data.html,
+      text: data.text || data.subject,
+    });
+
+    console.log(`Email sent: "${data.subject}" to ${recipients}`);
     return true;
   } catch (error: any) {
-    console.error('SendGrid email error:', error?.response?.body || error?.message || error);
+    console.error('Email error:', error?.message || error);
     return false;
   }
 }

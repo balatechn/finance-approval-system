@@ -989,8 +989,8 @@ function EmailTestPanel({
 
       <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
         <p className="text-sm text-amber-800">
-          <strong>Note:</strong> Make sure the SendGrid API key is configured in your environment variables
-          and the sender domain (nationalgroupindia.com) is verified in SendGrid.
+          <strong>Note:</strong> Make sure SMTP credentials (SMTP_USER and SMTP_PASS) are configured in your environment variables.
+          For Gmail, use an App Password (Google Account → Security → 2-Step Verification → App Passwords).
         </p>
       </div>
     </div>
