@@ -17,9 +17,13 @@ import {
   Save,
   Loader2,
   Package,
+  Mail,
+  Send,
+  CheckCircle2,
+  AlertCircle,
 } from 'lucide-react';
 
-type Tab = 'departments' | 'costCenters' | 'entities' | 'itemMasters' | 'systemConfig';
+type Tab = 'departments' | 'costCenters' | 'entities' | 'itemMasters' | 'systemConfig' | 'emailTest';
 
 interface Department {
   id: string;
@@ -89,6 +93,9 @@ export default function SettingsPage() {
   const [formData, setFormData] = useState<any>({});
   const [formError, setFormError] = useState('');
   const [formLoading, setFormLoading] = useState(false);
+  const [testEmail, setTestEmail] = useState('');
+  const [testEmailLoading, setTestEmailLoading] = useState(false);
+  const [testEmailResult, setTestEmailResult] = useState<{ success: boolean; message: string } | null>(null);
 
   useEffect(() => {
     if (status === 'authenticated' && session?.user?.role !== 'ADMIN') {
@@ -175,6 +182,7 @@ export default function SettingsPage() {
         entities: 'entity',
         itemMasters: 'itemMaster',
         systemConfig: 'systemConfig',
+        emailTest: '',
       };
 
       const payload = {
@@ -237,6 +245,7 @@ export default function SettingsPage() {
     { id: 'entities' as Tab, label: 'Entities', icon: Landmark, count: data.entities.length },
     { id: 'itemMasters' as Tab, label: 'Item Master', icon: Package, count: data.itemMasters.length },
     { id: 'systemConfig' as Tab, label: 'System Config', icon: Settings2, count: data.systemConfig.length },
+    { id: 'emailTest' as Tab, label: 'Email Test', icon: Mail },
   ];
 
   if (status === 'loading' || loading) {
@@ -259,13 +268,15 @@ export default function SettingsPage() {
             Manage departments, cost centers, entities, and system configuration
           </p>
         </div>
-        <button
-          onClick={openCreateModal}
-          className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white hover:bg-primary/90 transition-colors"
-        >
-          <Plus className="h-4 w-4" />
-          Add New
-        </button>
+        {activeTab !== 'emailTest' && (
+          <button
+            onClick={openCreateModal}
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white hover:bg-primary/90 transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            Add New
+          </button>
+        )}
       </div>
 
       {/* Tabs */}
@@ -286,13 +297,15 @@ export default function SettingsPage() {
               >
                 <Icon className="h-4 w-4" />
                 {tab.label}
-                <span
-                  className={`ml-1 rounded-full px-2 py-0.5 text-xs ${
-                    isActive ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-600'
-                  }`}
-                >
-                  {tab.count}
-                </span>
+                {'count' in tab && tab.count !== undefined && (
+                  <span
+                    className={`ml-1 rounded-full px-2 py-0.5 text-xs ${
+                      isActive ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-600'
+                    }`}
+                  >
+                    {tab.count}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -335,6 +348,39 @@ export default function SettingsPage() {
             items={data.systemConfig}
             onEdit={openEditModal}
             onDelete={handleDeleteConfig}
+          />
+        )}
+        {activeTab === 'emailTest' && (
+          <EmailTestPanel
+            testEmail={testEmail}
+            setTestEmail={setTestEmail}
+            loading={testEmailLoading}
+            result={testEmailResult}
+            onSend={async () => {
+              if (!testEmail || !testEmail.includes('@')) {
+                setTestEmailResult({ success: false, message: 'Please enter a valid email address' });
+                return;
+              }
+              setTestEmailLoading(true);
+              setTestEmailResult(null);
+              try {
+                const res = await fetch('/api/settings/test-email', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ recipientEmail: testEmail }),
+                });
+                const data = await res.json();
+                if (res.ok) {
+                  setTestEmailResult({ success: true, message: data.message });
+                } else {
+                  setTestEmailResult({ success: false, message: data.error || 'Failed to send test email' });
+                }
+              } catch {
+                setTestEmailResult({ success: false, message: 'Network error. Please try again.' });
+              } finally {
+                setTestEmailLoading(false);
+              }
+            }}
           />
         )}
       </div>
@@ -859,6 +905,94 @@ function ItemMastersTable({
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+function EmailTestPanel({
+  testEmail,
+  setTestEmail,
+  loading,
+  result,
+  onSend,
+}: {
+  testEmail: string;
+  setTestEmail: (v: string) => void;
+  loading: boolean;
+  result: { success: boolean; message: string } | null;
+  onSend: () => void;
+}) {
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex items-start gap-3">
+        <div className="rounded-lg bg-blue-50 p-2.5">
+          <Mail className="h-5 w-5 text-blue-600" />
+        </div>
+        <div>
+          <h3 className="text-base font-semibold text-gray-900">Test Email Configuration</h3>
+          <p className="text-sm text-gray-500 mt-0.5">
+            Send a test email to verify that SendGrid is configured correctly and emails are being delivered.
+          </p>
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-1">
+        <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">From Address</p>
+        <p className="text-sm font-mono text-gray-700">noreply@nationalgroupindia.com</p>
+      </div>
+
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">Recipient Email *</label>
+        <div className="flex gap-3">
+          <input
+            type="email"
+            required
+            value={testEmail}
+            onChange={(e) => setTestEmail(e.target.value)}
+            placeholder="Enter email address to send test"
+            className="flex-1 rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+          />
+          <button
+            onClick={onSend}
+            disabled={loading || !testEmail}
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50 transition-colors whitespace-nowrap"
+          >
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+            {loading ? 'Sending...' : 'Send Test Email'}
+          </button>
+        </div>
+      </div>
+
+      {result && (
+        <div
+          className={`flex items-start gap-3 rounded-lg border p-4 ${
+            result.success
+              ? 'bg-green-50 border-green-200 text-green-800'
+              : 'bg-red-50 border-red-200 text-red-800'
+          }`}
+        >
+          {result.success ? (
+            <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+          ) : (
+            <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+          )}
+          <div>
+            <p className="text-sm font-medium">{result.success ? 'Success' : 'Error'}</p>
+            <p className="text-sm mt-0.5">{result.message}</p>
+          </div>
+        </div>
+      )}
+
+      <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+        <p className="text-sm text-amber-800">
+          <strong>Note:</strong> Make sure the SendGrid API key is configured in your environment variables
+          and the sender domain (nationalgroupindia.com) is verified in SendGrid.
+        </p>
+      </div>
     </div>
   );
 }
