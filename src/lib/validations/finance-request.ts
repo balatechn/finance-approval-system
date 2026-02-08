@@ -47,6 +47,9 @@ export const createFinanceRequestSchema = z.object({
   costCenter: z.string().min(1, 'Cost center is required'),
   entity: z.string().optional(),
   
+  // Item Details
+  itemName: z.string().min(1, 'Item name is required'),
+  
   // Payment Details
   paymentType: PaymentTypeEnum,
   paymentMode: PaymentModeEnum.optional().default('NEFT'),

@@ -163,6 +163,9 @@ model FinanceRequest {
   costCenter            String
   entity                String?       // Business Unit
   
+  // Item Details
+  itemName              String?
+  
   // Payment Details
   paymentType           PaymentType   @default(NON_CRITICAL)
   amount                Decimal       @db.Decimal(15, 2)
@@ -406,6 +409,16 @@ model Entity {
   id              String   @id @default(cuid())
   name            String
   code            String   @unique
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ItemMaster {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  code            String   @unique
+  description     String?
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

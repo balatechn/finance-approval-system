@@ -83,6 +83,7 @@ export async function GET(request: NextRequest) {
         select: {
           id: true,
           referenceNumber: true,
+          itemName: true,
           purpose: true,
           vendorName: true,
           amount: true,
@@ -227,6 +228,7 @@ export async function POST(request: NextRequest) {
 
     // Add optional fields only if they have values
     if (data.entity) createData.entity = data.entity;
+    if (data.itemName) createData.itemName = data.itemName;
     if (data.vendorCode) createData.vendorCode = data.vendorCode;
     if (data.bankName) createData.vendorBankName = data.bankName;
     if (data.bankAccountNumber) createData.vendorBankAccount = data.bankAccountNumber;

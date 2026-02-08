@@ -72,7 +72,7 @@ export default function EditRequestPage() {
   const [filePreviews, setFilePreviews] = useState<{ file: File; preview: string; type: string }[]>([])
   const [previewFile, setPreviewFile] = useState<{ url: string; type: string; name: string } | null>(null)
   const [existingAttachments, setExistingAttachments] = useState<any[]>([])
-  const [departments] = useState([
+  const [departments, setDepartments] = useState([
     { id: "1", name: "Engineering" },
     { id: "2", name: "Sales" },
     { id: "3", name: "Marketing" },
@@ -80,17 +80,18 @@ export default function EditRequestPage() {
     { id: "5", name: "HR" },
     { id: "6", name: "Operations" },
   ])
-  const [costCenters] = useState([
+  const [costCenters, setCostCenters] = useState([
     { id: "1", code: "CC001", name: "IT Infrastructure" },
     { id: "2", code: "CC002", name: "Marketing Campaigns" },
     { id: "3", code: "CC003", name: "Operations" },
     { id: "4", code: "CC004", name: "R&D" },
   ])
-  const [entities] = useState([
+  const [entities, setEntities] = useState([
     { id: "1", code: "CORP", name: "Corporate" },
     { id: "2", code: "SUB1", name: "Subsidiary 1" },
     { id: "3", code: "SUB2", name: "Subsidiary 2" },
   ])
+  const [items, setItems] = useState<{ id: string; name: string; code: string }[]>([])
 
   const referenceNumber = params.referenceNumber as string
 
@@ -128,6 +129,25 @@ export default function EditRequestPage() {
       setValue("totalAmountINR", inrAmount)
     }
   }, [totalAmount, exchangeRate, setValue])
+
+  // Fetch reference data
+  useEffect(() => {
+    const fetchReferenceData = async () => {
+      try {
+        const res = await fetch('/api/settings?section=all')
+        if (res.ok) {
+          const data = await res.json()
+          if (data.departments?.length) setDepartments(data.departments.filter((d: any) => d.isActive))
+          if (data.costCenters?.length) setCostCenters(data.costCenters.filter((c: any) => c.isActive))
+          if (data.entities?.length) setEntities(data.entities.filter((e: any) => e.isActive))
+          if (data.itemMasters?.length) setItems(data.itemMasters.filter((i: any) => i.isActive))
+        }
+      } catch (error) {
+        console.error('Failed to fetch reference data:', error)
+      }
+    }
+    fetchReferenceData()
+  }, [])
 
   // Fetch existing request data
   useEffect(() => {
@@ -185,6 +205,7 @@ export default function EditRequestPage() {
 
         // Populate form with existing data
         reset({
+          itemName: data.itemName || "",
           paymentType: data.paymentType,
           paymentMode: data.paymentMode,
           purpose: data.purpose,
@@ -431,6 +452,29 @@ export default function EditRequestPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Item Name */}
+            <div className="space-y-2">
+              <Label htmlFor="itemName" required>Item Name</Label>
+              <Controller
+                name="itemName"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger error={errors.itemName?.message}>
+                      <SelectValue placeholder="Select item" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {items.map((item) => (
+                        <SelectItem key={item.id} value={item.name}>
+                          {item.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="paymentType" required>Payment Type</Label>

@@ -19,13 +19,14 @@ export async function GET(request: NextRequest) {
 
     if (section === 'all') {
       // Parallelize all queries when fetching everything
-      const [departments, costCenters, entities, systemConfig] = await Promise.all([
+      const [departments, costCenters, entities, itemMasters, systemConfig] = await Promise.all([
         prisma.department.findMany({ orderBy: { name: 'asc' } }),
         prisma.costCenter.findMany({ orderBy: { name: 'asc' } }),
         prisma.entity.findMany({ orderBy: { name: 'asc' } }),
+        prisma.itemMaster.findMany({ orderBy: { name: 'asc' } }),
         prisma.systemConfig.findMany({ orderBy: { key: 'asc' } }),
       ]);
-      data = { departments, costCenters, entities, systemConfig };
+      data = { departments, costCenters, entities, itemMasters, systemConfig };
     } else {
       if (section === 'departments') {
         data.departments = await prisma.department.findMany({ orderBy: { name: 'asc' } });
@@ -33,6 +34,8 @@ export async function GET(request: NextRequest) {
         data.costCenters = await prisma.costCenter.findMany({ orderBy: { name: 'asc' } });
       } else if (section === 'entities') {
         data.entities = await prisma.entity.findMany({ orderBy: { name: 'asc' } });
+      } else if (section === 'itemMasters') {
+        data.itemMasters = await prisma.itemMaster.findMany({ orderBy: { name: 'asc' } });
       } else if (section === 'systemConfig') {
         data.systemConfig = await prisma.systemConfig.findMany({ orderBy: { key: 'asc' } });
       }
@@ -95,6 +98,22 @@ export async function POST(request: NextRequest) {
         }
         result = await prisma.entity.create({
           data: { name: data.name, code: data.code },
+        });
+        break;
+      }
+
+      case 'itemMaster': {
+        const existing = await prisma.itemMaster.findFirst({
+          where: { OR: [{ name: data.name }, { code: data.code }] },
+        });
+        if (existing) {
+          return NextResponse.json(
+            { error: `Item with this ${existing.name === data.name ? 'name' : 'code'} already exists` },
+            { status: 400 }
+          );
+        }
+        result = await prisma.itemMaster.create({
+          data: { name: data.name, code: data.code, description: data.description || null },
         });
         break;
       }
@@ -208,6 +227,35 @@ export async function PATCH(request: NextRequest) {
         break;
       }
 
+      case 'itemMaster': {
+        if (data.code || data.name) {
+          const conflict = await prisma.itemMaster.findFirst({
+            where: {
+              AND: [
+                { id: { not: id } },
+                { OR: [
+                  ...(data.name ? [{ name: data.name }] : []),
+                  ...(data.code ? [{ code: data.code }] : []),
+                ]},
+              ],
+            },
+          });
+          if (conflict) {
+            return NextResponse.json({ error: 'Item name or code already in use' }, { status: 400 });
+          }
+        }
+        result = await prisma.itemMaster.update({
+          where: { id },
+          data: {
+            ...(data.name && { name: data.name }),
+            ...(data.code && { code: data.code }),
+            ...(data.description !== undefined && { description: data.description || null }),
+            ...(data.isActive !== undefined && { isActive: data.isActive }),
+          },
+        });
+        break;
+      }
+
       case 'systemConfig': {
         result = await prisma.systemConfig.update({
           where: { id },
@@ -255,6 +303,9 @@ export async function DELETE(request: NextRequest) {
         break;
       case 'entity':
         await prisma.entity.update({ where: { id }, data: { isActive: false } });
+        break;
+      case 'itemMaster':
+        await prisma.itemMaster.update({ where: { id }, data: { isActive: false } });
         break;
       case 'systemConfig':
         await prisma.systemConfig.delete({ where: { id } });

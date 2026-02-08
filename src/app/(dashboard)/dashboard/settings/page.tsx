@@ -16,9 +16,10 @@ import {
   X,
   Save,
   Loader2,
+  Package,
 } from 'lucide-react';
 
-type Tab = 'departments' | 'costCenters' | 'entities' | 'systemConfig';
+type Tab = 'departments' | 'costCenters' | 'entities' | 'itemMasters' | 'systemConfig';
 
 interface Department {
   id: string;
@@ -46,6 +47,15 @@ interface Entity {
   createdAt: string;
 }
 
+interface ItemMaster {
+  id: string;
+  name: string;
+  code: string;
+  description: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
+
 interface SystemConfig {
   id: string;
   key: string;
@@ -58,6 +68,7 @@ interface SettingsData {
   departments: Department[];
   costCenters: CostCenter[];
   entities: Entity[];
+  itemMasters: ItemMaster[];
   systemConfig: SystemConfig[];
 }
 
@@ -69,6 +80,7 @@ export default function SettingsPage() {
     departments: [],
     costCenters: [],
     entities: [],
+    itemMasters: [],
     systemConfig: [],
   });
   const [loading, setLoading] = useState(true);
@@ -118,6 +130,9 @@ export default function SettingsPage() {
       case 'entities':
         setFormData({ name: '', code: '' });
         break;
+      case 'itemMasters':
+        setFormData({ name: '', code: '', description: '' });
+        break;
       case 'systemConfig':
         setFormData({ key: '', value: '', description: '' });
         break;
@@ -138,6 +153,9 @@ export default function SettingsPage() {
       case 'entities':
         setFormData({ name: item.name, code: item.code });
         break;
+      case 'itemMasters':
+        setFormData({ name: item.name, code: item.code, description: item.description || '' });
+        break;
       case 'systemConfig':
         setFormData({ key: item.key, value: item.value, description: item.description || '' });
         break;
@@ -155,6 +173,7 @@ export default function SettingsPage() {
         departments: 'department',
         costCenters: 'costCenter',
         entities: 'entity',
+        itemMasters: 'itemMaster',
         systemConfig: 'systemConfig',
       };
 
@@ -216,6 +235,7 @@ export default function SettingsPage() {
     { id: 'departments' as Tab, label: 'Departments', icon: Building2, count: data.departments.length },
     { id: 'costCenters' as Tab, label: 'Cost Centers', icon: CreditCard, count: data.costCenters.length },
     { id: 'entities' as Tab, label: 'Entities', icon: Landmark, count: data.entities.length },
+    { id: 'itemMasters' as Tab, label: 'Item Master', icon: Package, count: data.itemMasters.length },
     { id: 'systemConfig' as Tab, label: 'System Config', icon: Settings2, count: data.systemConfig.length },
   ];
 
@@ -303,6 +323,13 @@ export default function SettingsPage() {
             onToggle={(id, active) => handleToggleActive('entity', id, active)}
           />
         )}
+        {activeTab === 'itemMasters' && (
+          <ItemMastersTable
+            items={data.itemMasters}
+            onEdit={openEditModal}
+            onToggle={(id, active) => handleToggleActive('itemMaster', id, active)}
+          />
+        )}
         {activeTab === 'systemConfig' && (
           <SystemConfigTable
             items={data.systemConfig}
@@ -325,6 +352,8 @@ export default function SettingsPage() {
                   ? 'Cost Center'
                   : activeTab === 'entities'
                   ? 'Entity'
+                  : activeTab === 'itemMasters'
+                  ? 'Item'
                   : 'System Config'}
               </h2>
               <button onClick={() => setModalOpen(false)} className="text-gray-400 hover:text-gray-600">
@@ -435,6 +464,43 @@ export default function SettingsPage() {
                       onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
                       className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
                       placeholder="e.g. NGI"
+                    />
+                  </div>
+                </>
+              )}
+
+              {activeTab === 'itemMasters' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                      placeholder="e.g. Desktop Computer"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Code *</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.code}
+                      onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                      placeholder="e.g. ITEM-001"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <input
+                      type="text"
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                      placeholder="Optional description"
                     />
                   </div>
                 </>
@@ -690,6 +756,69 @@ function EntitiesTable({
               <td className="px-6 py-4">
                 <code className="rounded bg-gray-100 px-2 py-0.5 text-xs">{item.code}</code>
               </td>
+              <td className="px-6 py-4">
+                <StatusBadge active={item.isActive} />
+              </td>
+              <td className="px-6 py-4 text-right">
+                <div className="flex items-center justify-end gap-2">
+                  <button
+                    onClick={() => onEdit(item)}
+                    className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                    title="Edit"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => onToggle(item.id, item.isActive)}
+                    className={`rounded-lg p-1.5 ${
+                      item.isActive
+                        ? 'text-green-500 hover:bg-green-50 hover:text-green-700'
+                        : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+                    }`}
+                    title={item.isActive ? 'Deactivate' : 'Activate'}
+                  >
+                    {item.isActive ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function ItemMastersTable({
+  items,
+  onEdit,
+  onToggle,
+}: {
+  items: ItemMaster[];
+  onEdit: (item: ItemMaster) => void;
+  onToggle: (id: string, active: boolean) => void;
+}) {
+  if (items.length === 0) return <EmptyState label="items" />;
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+            <th className="px-6 py-3">Name</th>
+            <th className="px-6 py-3">Code</th>
+            <th className="px-6 py-3">Description</th>
+            <th className="px-6 py-3">Status</th>
+            <th className="px-6 py-3 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y">
+          {items.map((item) => (
+            <tr key={item.id} className="hover:bg-gray-50">
+              <td className="px-6 py-4 font-medium text-gray-900">{item.name}</td>
+              <td className="px-6 py-4">
+                <code className="rounded bg-gray-100 px-2 py-0.5 text-xs">{item.code}</code>
+              </td>
+              <td className="px-6 py-4 text-gray-500">{item.description || '—'}</td>
               <td className="px-6 py-4">
                 <StatusBadge active={item.isActive} />
               </td>

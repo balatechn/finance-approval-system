@@ -42,6 +42,7 @@ import {
 interface FinanceRequest {
   id: string
   referenceNumber: string
+  itemName: string | null
   purpose: string
   paymentType: string
   paymentMode: string
@@ -314,6 +315,13 @@ export default function RequestDetailPage() {
                 <h4 className="font-medium text-muted-foreground">Purpose</h4>
                 <p className="mt-1 text-lg">{request.purpose}</p>
               </div>
+
+              {request.itemName && (
+                <div>
+                  <h4 className="font-medium text-muted-foreground">Item Name</h4>
+                  <p className="mt-1 font-medium">{request.itemName}</p>
+                </div>
+              )}
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="flex items-center gap-3">
