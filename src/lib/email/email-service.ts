@@ -21,6 +21,7 @@ interface EmailData {
   subject: string;
   html: string;
   text?: string;
+  bcc?: string | string[];
 }
 
 export async function sendEmail(data: EmailData): Promise<boolean> {
@@ -35,6 +36,7 @@ export async function sendEmail(data: EmailData): Promise<boolean> {
     await transporter.sendMail({
       from: `"${FROM_NAME}" <${FROM_EMAIL}>`,
       to: recipients,
+      ...(data.bcc ? { bcc: Array.isArray(data.bcc) ? data.bcc.join(', ') : data.bcc } : {}),
       subject: data.subject,
       html: data.html,
       text: data.text || data.subject,
@@ -127,6 +129,17 @@ export async function sendRequestSubmittedEmails(
 
   // 2. Notify Finance Team approvers (first step)
   await sendPendingApprovalEmails(referenceNumber, requestorName, amount, purpose, 'FINANCE_VETTING');
+
+  // 3. BCC admins on submission
+  const adminEmails = await getAdminEmails();
+  if (adminEmails.length > 0) {
+    await sendEmail({
+      to: adminEmails[0],
+      bcc: adminEmails.slice(1),
+      subject: `[Admin Copy] Request Submitted - ${referenceNumber}`,
+      html: confirmHtml,
+    });
+  }
 }
 
 /**
@@ -158,6 +171,17 @@ export async function sendRequestResubmittedEmails(
 
   // Notify Finance Team
   await sendPendingApprovalEmails(referenceNumber, requestorName, amount, purpose, 'FINANCE_VETTING');
+
+  // BCC admins on resubmission
+  const adminEmails = await getAdminEmails();
+  if (adminEmails.length > 0) {
+    await sendEmail({
+      to: adminEmails[0],
+      bcc: adminEmails.slice(1),
+      subject: `[Admin Copy] Request Resubmitted - ${referenceNumber}`,
+      html,
+    });
+  }
 }
 
 /**
@@ -187,8 +211,13 @@ export async function sendPendingApprovalEmails(
       ${actionButton(`${APP_URL}/dashboard/approvals/${referenceNumber}`, 'Review & Approve', '#1e40af')}
     `);
 
+    // BCC admins on every approver notification
+    const adminEmails = await getAdminEmails();
+    const adminBcc = adminEmails.filter((e) => e !== approver.email);
+
     await sendEmail({
       to: approver.email,
+      ...(adminBcc.length > 0 ? { bcc: adminBcc } : {}),
       subject: `Action Required: ${referenceNumber} - ${LEVEL_LABELS[level]}`,
       html,
     });
@@ -249,6 +278,18 @@ export async function sendApprovalDecisionEmails(
     html: requestorHtml,
   });
 
+  // BCC admins on approval decisions
+  const adminEmails = await getAdminEmails();
+  const adminBcc = adminEmails.filter((e) => e !== requestorEmail);
+  if (adminBcc.length > 0) {
+    await sendEmail({
+      to: adminBcc[0],
+      bcc: adminBcc.slice(1),
+      subject: `[Admin Copy] ${referenceNumber} - ${config.prefix} at ${LEVEL_LABELS[level]}`,
+      html: requestorHtml,
+    });
+  }
+
   // 2. If approved and there's a next level, notify next approvers
   if (decision === 'APPROVED' && nextLevel) {
     await sendPendingApprovalEmails(referenceNumber, requestorName, amount, purpose, nextLevel);
@@ -280,6 +321,18 @@ export async function sendDisbursementEmail(
     subject: `Payment Disbursed - ${referenceNumber}`,
     html,
   });
+
+  // BCC admins on disbursement
+  const adminEmails = await getAdminEmails();
+  const adminBcc = adminEmails.filter((e) => e !== requestorEmail);
+  if (adminBcc.length > 0) {
+    await sendEmail({
+      to: adminBcc[0],
+      bcc: adminBcc.slice(1),
+      subject: `[Admin Copy] Payment Disbursed - ${referenceNumber}`,
+      html,
+    });
+  }
 }
 
 /**
@@ -310,11 +363,39 @@ export async function sendSLABreachEmail(
     subject: `URGENT: SLA Breach - ${referenceNumber}`,
     html,
   });
+
+  // BCC admins on SLA breach
+  const adminEmails = await getAdminEmails();
+  const adminBcc = adminEmails.filter((e) => e !== approverEmail);
+  if (adminBcc.length > 0) {
+    await sendEmail({
+      to: adminBcc[0],
+      bcc: adminBcc.slice(1),
+      subject: `[Admin Copy] URGENT: SLA Breach - ${referenceNumber}`,
+      html,
+    });
+  }
 }
 
 // ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
+
+/**
+ * Get all admin email addresses for BCC
+ */
+async function getAdminEmails(): Promise<string[]> {
+  try {
+    const admins = await prisma.user.findMany({
+      where: { role: 'ADMIN' as any, isActive: true },
+      select: { email: true },
+    });
+    return admins.map((a) => a.email);
+  } catch (error) {
+    console.error('Error fetching admin emails:', error);
+    return [];
+  }
+}
 
 /**
  * Get all approvers for a specific approval level
