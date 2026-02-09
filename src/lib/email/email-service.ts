@@ -88,6 +88,7 @@ function requestInfoBox(data: { referenceNumber: string; amount?: string; purpos
 
 const LEVEL_LABELS: Record<string, string> = {
   FINANCE_VETTING: 'Finance Vetting',
+  FINANCE_PLANNER: 'Finance Planner',
   FINANCE_CONTROLLER: 'Finance Controller',
   DIRECTOR: 'Director',
   MD: 'Managing Director',
@@ -116,7 +117,7 @@ export async function sendRequestSubmittedEmails(
     <p>Dear ${requestorName},</p>
     <p>Your finance request has been submitted and is now pending approval.</p>
     ${requestInfoBox({ referenceNumber, amount, purpose })}
-    <p><strong>Workflow:</strong> Finance Vetting → Finance Controller → Director → MD → Disbursement</p>
+    <p><strong>Workflow:</strong> Finance Vetting → Finance Planner → Finance Controller → Director → MD → Disbursement</p>
     <p>You will receive email notifications at each approval stage.</p>
     ${actionButton(`${APP_URL}/dashboard/requests/${referenceNumber}`, 'View Request')}
   `);
@@ -405,6 +406,7 @@ export async function getApproversForLevel(
 ): Promise<{ id: string; email: string; name: string }[]> {
   const roleMap: Record<string, string[]> = {
     FINANCE_VETTING: ['FINANCE_TEAM'],
+    FINANCE_PLANNER: ['FINANCE_CONTROLLER'],
     FINANCE_CONTROLLER: ['FINANCE_CONTROLLER'],
     DIRECTOR: ['DIRECTOR'],
     MD: ['MD'],

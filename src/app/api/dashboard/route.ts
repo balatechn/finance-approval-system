@@ -62,6 +62,7 @@ async function getDashboardStats(user: any) {
           in: [
             'SUBMITTED',
             'PENDING_FINANCE_VETTING',
+            'PENDING_FINANCE_PLANNER',
             'PENDING_FINANCE_CONTROLLER',
             'PENDING_DIRECTOR',
             'PENDING_MD',
@@ -95,7 +96,7 @@ async function getDashboardStats(user: any) {
   if (user.role === 'FINANCE_TEAM') {
     myPendingWhere = { status: { in: ['PENDING_FINANCE_VETTING', 'APPROVED'] }, isDeleted: false };
   } else if (user.role === 'FINANCE_CONTROLLER') {
-    myPendingWhere = { status: 'PENDING_FINANCE_CONTROLLER', isDeleted: false };
+    myPendingWhere = { status: { in: ['PENDING_FINANCE_PLANNER', 'PENDING_FINANCE_CONTROLLER'] }, isDeleted: false };
   } else if (user.role === 'DIRECTOR') {
     myPendingWhere = { status: 'PENDING_DIRECTOR', isDeleted: false };
   } else if (user.role === 'MD') {
@@ -119,7 +120,7 @@ async function getDashboardStats(user: any) {
       where: {
         ...baseWhere,
         status: {
-          in: ['SUBMITTED', 'PENDING_FINANCE_VETTING', 'PENDING_FINANCE_CONTROLLER', 'PENDING_DIRECTOR', 'PENDING_MD'],
+          in: ['SUBMITTED', 'PENDING_FINANCE_VETTING', 'PENDING_FINANCE_PLANNER', 'PENDING_FINANCE_CONTROLLER', 'PENDING_DIRECTOR', 'PENDING_MD'],
         },
       },
       _sum: { totalAmount: true },
@@ -191,7 +192,7 @@ async function getPendingApprovals(user: any) {
       };
       break;
     case 'FINANCE_CONTROLLER':
-      whereClause.status = 'PENDING_FINANCE_CONTROLLER';
+      whereClause.status = { in: ['PENDING_FINANCE_PLANNER', 'PENDING_FINANCE_CONTROLLER'] };
       break;
     case 'DIRECTOR':
       whereClause.status = 'PENDING_DIRECTOR';
@@ -203,6 +204,7 @@ async function getPendingApprovals(user: any) {
       whereClause.status = {
         in: [
           'PENDING_FINANCE_VETTING',
+          'PENDING_FINANCE_PLANNER',
           'PENDING_FINANCE_CONTROLLER',
           'PENDING_DIRECTOR',
           'PENDING_MD',

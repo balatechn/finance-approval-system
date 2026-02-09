@@ -11,6 +11,7 @@ const statusConfig: Record<string, { label: string; variant: "default" | "second
   DRAFT: { label: "Draft", variant: "secondary" },
   SUBMITTED: { label: "Submitted", variant: "info" },
   PENDING_FINANCE_VETTING: { label: "Pending Vetting", variant: "pending" },
+  PENDING_FINANCE_PLANNER: { label: "Pending Finance Planner", variant: "pending" },
   PENDING_FINANCE_CONTROLLER: { label: "Pending Finance Controller", variant: "pending" },
   PENDING_DIRECTOR: { label: "Pending Director", variant: "pending" },
   PENDING_MD: { label: "Pending MD", variant: "pending" },
@@ -37,6 +38,7 @@ interface ApprovalLevelBadgeProps {
 
 const levelConfig: Record<string, { label: string; color: string }> = {
   FINANCE_VETTING: { label: "Finance Vetting", color: "bg-orange-100 text-orange-800" },
+  FINANCE_PLANNER: { label: "Finance Planner", color: "bg-cyan-100 text-cyan-800" },
   FINANCE_CONTROLLER: { label: "Finance Controller", color: "bg-blue-100 text-blue-800" },
   DIRECTOR: { label: "Director", color: "bg-purple-100 text-purple-800" },
   MD: { label: "Managing Director", color: "bg-indigo-100 text-indigo-800" },

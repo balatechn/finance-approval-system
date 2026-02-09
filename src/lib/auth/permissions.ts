@@ -74,6 +74,8 @@ export function canApproveLevel(role: Role, level: string): boolean {
   switch (level) {
     case 'FINANCE_VETTING':
       return role === 'FINANCE_TEAM' || role === 'ADMIN';
+    case 'FINANCE_PLANNER':
+      return role === 'FINANCE_CONTROLLER' || role === 'ADMIN';
     case 'FINANCE_CONTROLLER':
       return role === 'FINANCE_CONTROLLER' || role === 'ADMIN';
     case 'DIRECTOR':

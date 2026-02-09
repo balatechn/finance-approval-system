@@ -1063,8 +1063,8 @@ export default function EditRequestPage() {
               </p>
               <p className="mt-1">
                 {isSentBack
-                  ? "Once resubmitted, your request will restart the approval process from Finance Vetting → Finance Controller → Director → MD → Disbursement"
-                  : "Once submitted, your request will go through: Finance Vetting → Finance Controller → Director → MD → Disbursement"}
+                  ? "Once resubmitted, your request will restart the approval process from Finance Vetting → Finance Planner → Finance Controller → Director → MD → Disbursement"
+                  : "Once submitted, your request will go through: Finance Vetting → Finance Planner → Finance Controller → Director → MD → Disbursement"}
               </p>
             </div>
           </div>

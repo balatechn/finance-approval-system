@@ -27,6 +27,7 @@ enum RequestStatus {
   DRAFT
   SUBMITTED
   PENDING_FINANCE_VETTING
+  PENDING_FINANCE_PLANNER
   PENDING_FINANCE_CONTROLLER
   PENDING_DIRECTOR
   PENDING_MD
@@ -74,10 +75,11 @@ enum Currency {
 
 enum ApprovalLevel {
   FINANCE_VETTING       // Level 1: Finance Evaluate & Vetting on quote level
-  FINANCE_CONTROLLER    // Level 2: Finance Controller on business requirement
-  DIRECTOR              // Level 3: Director Final Checks
-  MD                    // Level 4: Managing Director Final Approval
-  DISBURSEMENT          // Level 5: Finance Disbursement Processing
+  FINANCE_PLANNER       // Level 2: Finance Planner review
+  FINANCE_CONTROLLER    // Level 3: Finance Controller on business requirement
+  DIRECTOR              // Level 4: Director Final Checks
+  MD                    // Level 5: Managing Director Final Approval
+  DISBURSEMENT          // Level 6: Finance Disbursement Processing
 }
 
 // ============================================================================

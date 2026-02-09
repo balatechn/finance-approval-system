@@ -912,7 +912,7 @@ export default function NewRequestPage() {
               <p className="font-medium">Approval Workflow</p>
               <p className="mt-1">
                 Once submitted, your request will go through the following approval stages:
-                Finance Vetting → Finance Controller → Director → MD → Disbursement
+                Finance Vetting → Finance Planner → Finance Controller → Director → MD → Disbursement
               </p>
             </div>
           </div>

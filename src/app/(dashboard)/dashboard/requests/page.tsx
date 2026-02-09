@@ -101,6 +101,7 @@ export default function RequestsPage() {
     { value: "all", label: "All Statuses" },
     { value: "DRAFT", label: "Draft" },
     { value: "PENDING_FINANCE_VETTING", label: "Pending Vetting" },
+    { value: "PENDING_FINANCE_PLANNER", label: "Pending Finance Planner" },
     { value: "PENDING_FINANCE_CONTROLLER", label: "Pending Finance Controller" },
     { value: "PENDING_DIRECTOR", label: "Pending Director" },
     { value: "PENDING_MD", label: "Pending MD" },

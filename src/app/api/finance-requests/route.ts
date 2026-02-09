@@ -288,6 +288,7 @@ async function createApprovalSteps(
 ) {
   const slaHours: Record<string, number> = {
     FINANCE_VETTING: paymentType === 'CRITICAL' ? 24 : 72,
+    FINANCE_PLANNER: 24,
     FINANCE_CONTROLLER: 24,
     DIRECTOR: 24,
     MD: 24,
@@ -296,6 +297,7 @@ async function createApprovalSteps(
 
   const approvalLevels: ApprovalLevel[] = [
     'FINANCE_VETTING',
+    'FINANCE_PLANNER',
     'FINANCE_CONTROLLER',
     'DIRECTOR',
     'MD',
@@ -304,6 +306,7 @@ async function createApprovalSteps(
 
   const roleMapping: Record<ApprovalLevel, Role> = {
     FINANCE_VETTING: 'FINANCE_TEAM',
+    FINANCE_PLANNER: 'FINANCE_CONTROLLER',
     FINANCE_CONTROLLER: 'FINANCE_CONTROLLER',
     DIRECTOR: 'DIRECTOR',
     MD: 'MD',

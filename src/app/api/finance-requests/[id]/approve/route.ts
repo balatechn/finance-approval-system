@@ -70,6 +70,24 @@ export async function POST(
       );
     }
 
+    // Enforce different approver for Finance Planner vs Finance Controller
+    if (currentStep.level === 'FINANCE_CONTROLLER') {
+      const plannerStep = await prisma.approvalAction_Record.findFirst({
+        where: {
+          financeRequestId: financeRequest.id,
+          approvalStep: { level: 'FINANCE_PLANNER' },
+          action: 'APPROVED',
+        },
+        select: { actorId: true },
+      });
+      if (plannerStep && plannerStep.actorId === user.id) {
+        return NextResponse.json(
+          { error: 'The same person cannot approve both Finance Planner and Finance Controller steps' },
+          { status: 403 }
+        );
+      }
+    }
+
     // Calculate SLA compliance
     const now = new Date();
     const responseTimeHours = currentStep.startedAt
@@ -192,6 +210,7 @@ async function processApproval(
 ): Promise<{ newStatus: RequestStatus; nextLevel: ApprovalLevel | null }> {
   const levelSequence: ApprovalLevel[] = [
     'FINANCE_VETTING',
+    'FINANCE_PLANNER',
     'FINANCE_CONTROLLER',
     'DIRECTOR',
     'MD',
@@ -199,7 +218,8 @@ async function processApproval(
   ];
 
   const statusMapping: Record<ApprovalLevel, RequestStatus> = {
-    FINANCE_VETTING: 'PENDING_FINANCE_CONTROLLER',
+    FINANCE_VETTING: 'PENDING_FINANCE_PLANNER',
+    FINANCE_PLANNER: 'PENDING_FINANCE_CONTROLLER',
     FINANCE_CONTROLLER: 'PENDING_DIRECTOR',
     DIRECTOR: 'PENDING_MD',
     MD: 'APPROVED',
@@ -255,6 +275,7 @@ async function processApproval(
   // Activate next approval step
   const slaHours: Record<string, number> = {
     FINANCE_VETTING: paymentType === 'CRITICAL' ? 24 : 72,
+    FINANCE_PLANNER: 24,
     FINANCE_CONTROLLER: 24,
     DIRECTOR: 24,
     MD: 24,

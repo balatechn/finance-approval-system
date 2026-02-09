@@ -177,6 +177,7 @@ async function getStepStartTime(requestId: string, level: ApprovalLevel): Promis
   
   const levelOrder: ApprovalLevel[] = [
     'FINANCE_VETTING',
+    'FINANCE_PLANNER',
     'FINANCE_CONTROLLER',
     'DIRECTOR',
     'MD',
