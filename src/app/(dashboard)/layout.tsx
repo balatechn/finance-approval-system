@@ -50,41 +50,19 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const [onlineUsers, setOnlineUsers] = useState<{ count: number; users: { id: string; name: string; role: string; department: string | null }[] }>({ count: 0, users: [] })
   const [showOnlineDropdown, setShowOnlineDropdown] = useState(false)
 
-  if (status === "loading") {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-    )
-  }
-
-  if (!session) {
-    redirect("/login")
-  }
-
-  const user = session.user
-  const userRole = user.role
-
-  const filteredNavigation = navigation.filter((item) => {
-    if (!item.roles) return true
-    return item.roles.includes(userRole)
-  })
-
-  const userInitials = user.name
-    ?.split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase() || "U"
+  const user = session?.user
+  const userRole = user?.role
 
   // Heartbeat: update last active timestamp every 2 minutes
   useEffect(() => {
+    if (status !== 'authenticated') return
     const sendHeartbeat = () => {
       fetch('/api/users/online', { method: 'POST' }).catch(() => {})
     }
     sendHeartbeat() // Send immediately on mount
     const interval = setInterval(sendHeartbeat, 2 * 60 * 1000)
     return () => clearInterval(interval)
-  }, [])
+  }, [status])
 
   // Fetch online users for admins
   const fetchOnlineUsers = useCallback(async () => {
@@ -99,12 +77,36 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   }, [userRole])
 
   useEffect(() => {
+    if (status !== 'authenticated') return
     fetchOnlineUsers()
     if (userRole === 'ADMIN') {
       const interval = setInterval(fetchOnlineUsers, 30 * 1000) // refresh every 30s
       return () => clearInterval(interval)
     }
-  }, [fetchOnlineUsers, userRole])
+  }, [fetchOnlineUsers, userRole, status])
+
+  if (status === "loading") {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    )
+  }
+
+  if (!session) {
+    redirect("/login")
+  }
+
+  const filteredNavigation = navigation.filter((item) => {
+    if (!item.roles) return true
+    return item.roles.includes(userRole!)
+  })
+
+  const userInitials = user?.name
+    ?.split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase() || "U"
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -187,9 +189,9 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 overflow-hidden">
-                <p className="truncate text-sm font-medium">{user.name}</p>
+                <p className="truncate text-sm font-medium">{user!.name}</p>
                 <p className="truncate text-xs text-muted-foreground">
-                  {getRoleLabel(userRole)}
+                  {getRoleLabel(userRole!)}
                 </p>
               </div>
             </div>
@@ -281,20 +283,20 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>
                   <div className="flex flex-col">
-                    <span>{user.name}</span>
+                    <span>{user!.name}</span>
                     <span className="text-xs font-normal text-muted-foreground">
-                      {user.email}
+                      {user!.email}
                     </span>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <Badge variant="secondary" className="mr-2">
-                    {getRoleLabel(userRole)}
+                    {getRoleLabel(userRole!)}
                   </Badge>
-                  {user.department && (
+                  {user!.department && (
                     <span className="text-xs text-muted-foreground">
-                      {user.department}
+                      {user!.department}
                     </span>
                   )}
                 </DropdownMenuItem>
