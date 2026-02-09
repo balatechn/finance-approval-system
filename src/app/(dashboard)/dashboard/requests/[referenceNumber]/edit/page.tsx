@@ -723,7 +723,7 @@ export default function EditRequestPage() {
               {isGSTApplicable && (
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="gstPercentage">GST Percentage</Label>
+                    <Label htmlFor="gstPercentage">GST Percentage (%)</Label>
                     <Input
                       id="gstPercentage"
                       type="number"
@@ -747,7 +747,7 @@ export default function EditRequestPage() {
               {isTDSApplicable && (
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="tdsPercentage">TDS Percentage</Label>
+                    <Label htmlFor="tdsPercentage">TDS Percentage (%)</Label>
                     <Input
                       id="tdsPercentage"
                       type="number"
@@ -768,42 +768,48 @@ export default function EditRequestPage() {
               )}
             </div>
 
-            {/* Amount Summary */}
-            {totalAmount > 0 && (
-              <>
-                <Separator />
-                <div className="rounded-lg border bg-muted/50 p-4 space-y-3">
-                  <h4 className="font-medium text-sm">Amount Summary</h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Base Amount</span>
-                      <span className="font-medium">₹{baseAmountINR.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                    </div>
-                    {isGSTApplicable && (gstPercentage ?? 0) > 0 && (
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">GST ({gstPercentage}%)</span>
-                        <span className="font-medium text-amber-600">+ ₹{gstAmount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                      </div>
-                    )}
-                    {isTDSApplicable && (tdsPercentage ?? 0) > 0 && (
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">TDS ({tdsPercentage}%)</span>
-                        <span className="font-medium text-red-600">- ₹{tdsAmount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                      </div>
-                    )}
-                    {(isGSTApplicable || isTDSApplicable) && (gstAmount > 0 || tdsAmount > 0) && (
-                      <>
-                        <Separator />
-                        <div className="flex justify-between text-sm font-semibold">
-                          <span>Net Payable Amount</span>
-                          <span className="text-base">₹{netPayableAmount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                        </div>
-                      </>
-                    )}
-                  </div>
+            {/* Amount, Tax Amount & Total Amount */}
+            <Separator />
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="space-y-2">
+                <Label className="text-muted-foreground text-xs">Amount</Label>
+                <div className="rounded-lg border bg-gray-50 px-4 py-3">
+                  <p className="text-lg font-semibold">
+                    ₹{baseAmountINR.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
                 </div>
-              </>
-            )}
+              </div>
+              <div className="space-y-2">
+                <Label className="text-muted-foreground text-xs">
+                  Tax Amount
+                  {isGSTApplicable && gstPercentage ? ` (GST ${gstPercentage}%)` : ""}
+                  {isTDSApplicable && tdsPercentage ? ` (TDS ${tdsPercentage}%)` : ""}
+                </Label>
+                <div className="rounded-lg border bg-gray-50 px-4 py-3">
+                  <p className="text-lg font-semibold">
+                    {gstAmount - tdsAmount >= 0 ? "+" : "-"} ₹{Math.abs(gstAmount - tdsAmount).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
+                  {(gstAmount > 0 || tdsAmount > 0) && (
+                    <div className="mt-1 space-y-0.5">
+                      {gstAmount > 0 && (
+                        <p className="text-xs text-amber-600">GST: + ₹{gstAmount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                      )}
+                      {tdsAmount > 0 && (
+                        <p className="text-xs text-red-600">TDS: - ₹{tdsAmount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-muted-foreground text-xs">Total Amount</Label>
+                <div className="rounded-lg border-2 border-primary/30 bg-primary/5 px-4 py-3">
+                  <p className="text-lg font-bold text-primary">
+                    ₹{netPayableAmount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
