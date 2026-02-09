@@ -87,6 +87,7 @@ export const createFinanceRequestSchema = z.object({
   // Invoice Details
   invoiceNumber: z.string().optional(),
   invoiceDate: z.string().optional(),
+  dueDate: z.string().optional(),
   
   // GST Details
   isGSTApplicable: z.boolean().default(false),

@@ -743,14 +743,24 @@ export default function NewRequestPage() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="remarks">Additional Remarks</Label>
-              <Textarea
-                id="remarks"
-                placeholder="Any additional notes or remarks..."
-                {...register("remarks")}
-                rows={2}
-              />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="remarks">Additional Remarks</Label>
+                <Textarea
+                  id="remarks"
+                  placeholder="Any additional notes or remarks..."
+                  {...register("remarks")}
+                  rows={2}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="dueDate">Due Date</Label>
+                <Input
+                  id="dueDate"
+                  type="date"
+                  {...register("dueDate")}
+                />
+              </div>
             </div>
           </CardContent>
         </Card>

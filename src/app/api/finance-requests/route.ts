@@ -236,6 +236,7 @@ export async function POST(request: NextRequest) {
     if (data.upiId) createData.vendorUpiId = data.upiId;
     if (data.invoiceNumber) createData.invoiceNumber = data.invoiceNumber;
     if (data.invoiceDate) createData.invoiceDate = new Date(data.invoiceDate);
+    if (data.dueDate) createData.expectedPaymentDate = new Date(data.dueDate);
     if (data.gstPercentage) createData.gstPercentage = Number(data.gstPercentage);
     if (gstAmount > 0) createData.gstAmount = gstAmount;
 

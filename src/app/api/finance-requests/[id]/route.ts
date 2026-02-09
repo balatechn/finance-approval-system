@@ -178,6 +178,11 @@ const mapFormToPrisma = (formData: any) => {
     mapped.invoiceDate = new Date(formData.invoiceDate);
   }
 
+  // Due date
+  if (formData.dueDate) {
+    mapped.expectedPaymentDate = new Date(formData.dueDate);
+  }
+
   return mapped;
 };
 
