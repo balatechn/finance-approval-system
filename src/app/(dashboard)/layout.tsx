@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { signOut, useSession } from "next-auth/react"
@@ -17,6 +17,7 @@ import {
   ChevronDown,
   BarChart3,
   Users,
+  Circle,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -46,6 +47,8 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession()
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [onlineUsers, setOnlineUsers] = useState<{ count: number; users: { id: string; name: string; role: string; department: string | null }[] }>({ count: 0, users: [] })
+  const [showOnlineDropdown, setShowOnlineDropdown] = useState(false)
 
   if (status === "loading") {
     return (
@@ -72,6 +75,36 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     .map((n) => n[0])
     .join("")
     .toUpperCase() || "U"
+
+  // Heartbeat: update last active timestamp every 2 minutes
+  useEffect(() => {
+    const sendHeartbeat = () => {
+      fetch('/api/users/online', { method: 'POST' }).catch(() => {})
+    }
+    sendHeartbeat() // Send immediately on mount
+    const interval = setInterval(sendHeartbeat, 2 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Fetch online users for admins
+  const fetchOnlineUsers = useCallback(async () => {
+    if (userRole !== 'ADMIN') return
+    try {
+      const res = await fetch('/api/users/online')
+      if (res.ok) {
+        const data = await res.json()
+        setOnlineUsers(data)
+      }
+    } catch {}
+  }, [userRole])
+
+  useEffect(() => {
+    fetchOnlineUsers()
+    if (userRole === 'ADMIN') {
+      const interval = setInterval(fetchOnlineUsers, 30 * 1000) // refresh every 30s
+      return () => clearInterval(interval)
+    }
+  }, [fetchOnlineUsers, userRole])
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -176,6 +209,55 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           </button>
 
           <div className="flex items-center gap-4 ml-auto">
+            {/* Online Users - Admin only */}
+            {userRole === 'ADMIN' && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowOnlineDropdown(!showOnlineDropdown)}
+                  className="flex items-center gap-2 rounded-full px-3 py-1.5 hover:bg-gray-100 transition-colors"
+                  title="Online users"
+                >
+                  <Circle className="h-2.5 w-2.5 fill-green-500 text-green-500" />
+                  <span className="text-sm font-medium text-gray-700">
+                    {onlineUsers.count} Online
+                  </span>
+                </button>
+                {showOnlineDropdown && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowOnlineDropdown(false)} />
+                    <div className="absolute right-0 top-full mt-2 z-50 w-72 rounded-lg border bg-white shadow-lg">
+                      <div className="border-b px-4 py-3">
+                        <p className="text-sm font-semibold text-gray-900">Online Users</p>
+                        <p className="text-xs text-muted-foreground">{onlineUsers.count} user{onlineUsers.count !== 1 ? 's' : ''} active now</p>
+                      </div>
+                      <div className="max-h-64 overflow-y-auto py-1">
+                        {onlineUsers.users.length === 0 ? (
+                          <p className="px-4 py-3 text-sm text-muted-foreground">No users online</p>
+                        ) : (
+                          onlineUsers.users.map((u) => (
+                            <div key={u.id} className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50">
+                              <div className="relative">
+                                <Avatar className="h-8 w-8">
+                                  <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                                    {u.name?.split(' ').map(n => n[0]).join('').toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <Circle className="absolute -bottom-0.5 -right-0.5 h-3 w-3 fill-green-500 text-green-500 border-2 border-white rounded-full" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-900 truncate">{u.name}</p>
+                                <p className="text-xs text-muted-foreground truncate">{u.department || u.role}</p>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
             {/* Notifications */}
             <button className="relative rounded-full p-2 hover:bg-gray-100">
               <Bell className="h-5 w-5 text-gray-600" />

@@ -1,5 +1,11 @@
 import { z } from 'zod';
 
+// Helper: preprocess empty/NaN values to undefined for optional number fields
+const optionalNumber = z.preprocess(
+  (val) => (val === '' || val === null || val === undefined || Number.isNaN(Number(val)) ? undefined : val),
+  z.coerce.number().optional()
+);
+
 // ============================================================================
 // ENUMS
 // ============================================================================
@@ -57,8 +63,11 @@ export const createFinanceRequestSchema = z.object({
     .min(1, 'Amount must be greater than 0')
     .max(100000000, 'Amount exceeds maximum limit'),
   currency: CurrencyEnum.default('INR'),
-  exchangeRate: z.coerce.number().min(0).default(1),
-  totalAmountINR: z.coerce.number().optional(),
+  exchangeRate: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? 1 : val),
+    z.coerce.number().min(0).default(1)
+  ),
+  totalAmountINR: optionalNumber,
   purpose: z.string()
     .min(10, 'Purpose must be at least 10 characters')
     .max(2000, 'Purpose must not exceed 2000 characters'),
@@ -80,12 +89,18 @@ export const createFinanceRequestSchema = z.object({
   
   // GST Details
   isGSTApplicable: z.boolean().default(false),
-  gstPercentage: z.coerce.number().min(0).max(28).optional().nullable(),
+  gstPercentage: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined || Number.isNaN(Number(val)) ? undefined : val),
+    z.coerce.number().min(0).max(28).optional().nullable()
+  ),
   gstNumber: z.string().optional(),
   
   // TDS Details
   isTDSApplicable: z.boolean().default(false),
-  tdsPercentage: z.coerce.number().min(0).max(100).optional().nullable(),
+  tdsPercentage: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined || Number.isNaN(Number(val)) ? undefined : val),
+    z.coerce.number().min(0).max(100).optional().nullable()
+  ),
   tdsSection: z.string().optional(),
   
   // Other

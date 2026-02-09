@@ -88,6 +88,14 @@ export default function NewRequestPage() {
   const currency = watch("currency")
   const totalAmount = watch("totalAmount")
   const exchangeRate = watch("exchangeRate") || 1
+  const gstPercentage = watch("gstPercentage")
+  const tdsPercentage = watch("tdsPercentage")
+
+  // Calculate amounts
+  const baseAmountINR = (totalAmount || 0) * (exchangeRate || 1)
+  const gstAmount = isGSTApplicable && gstPercentage ? baseAmountINR * (gstPercentage / 100) : 0
+  const tdsAmount = isTDSApplicable && tdsPercentage ? baseAmountINR * (tdsPercentage / 100) : 0
+  const netPayableAmount = baseAmountINR + gstAmount - tdsAmount
 
   // Calculate INR amount
   useEffect(() => {
@@ -581,6 +589,43 @@ export default function NewRequestPage() {
                 </div>
               )}
             </div>
+
+            {/* Amount Summary */}
+            {totalAmount > 0 && (
+              <>
+                <Separator />
+                <div className="rounded-lg border bg-muted/50 p-4 space-y-3">
+                  <h4 className="font-medium text-sm">Amount Summary</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Base Amount</span>
+                      <span className="font-medium">₹{baseAmountINR.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </div>
+                    {isGSTApplicable && (gstPercentage ?? 0) > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">GST ({gstPercentage}%)</span>
+                        <span className="font-medium text-amber-600">+ ₹{gstAmount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                      </div>
+                    )}
+                    {isTDSApplicable && (tdsPercentage ?? 0) > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">TDS ({tdsPercentage}%)</span>
+                        <span className="font-medium text-red-600">- ₹{tdsAmount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                      </div>
+                    )}
+                    {(isGSTApplicable || isTDSApplicable) && (gstAmount > 0 || tdsAmount > 0) && (
+                      <>
+                        <Separator />
+                        <div className="flex justify-between text-sm font-semibold">
+                          <span>Net Payable Amount</span>
+                          <span className="text-base">₹{netPayableAmount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
 

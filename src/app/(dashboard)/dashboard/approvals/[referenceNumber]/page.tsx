@@ -12,7 +12,7 @@ import {
   FileText,
   Download,
   AlertTriangle,
-  DollarSign,
+  IndianRupee,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -322,7 +322,7 @@ export default function ApprovalDetailPage() {
                 }}
                 className="bg-green-600 hover:bg-green-700"
               >
-                <DollarSign className="mr-2 h-4 w-4" />
+                <IndianRupee className="mr-2 h-4 w-4" />
                 Process Disbursement
               </Button>
             ) : (
@@ -752,7 +752,7 @@ export default function ApprovalDetailPage() {
               loading={isSubmitting}
               className="bg-green-600 hover:bg-green-700"
             >
-              <DollarSign className="mr-2 h-4 w-4" />
+              <IndianRupee className="mr-2 h-4 w-4" />
               Confirm Disbursement
             </Button>
           </DialogFooter>

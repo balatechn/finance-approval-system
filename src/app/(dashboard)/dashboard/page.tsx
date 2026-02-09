@@ -9,7 +9,7 @@ import {
   CheckCircle,
   AlertTriangle,
   TrendingUp,
-  DollarSign,
+  IndianRupee,
   ArrowRight,
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -121,7 +121,7 @@ export default function DashboardPage() {
     {
       title: "Total Value",
       value: formatCurrency(stats.totalAmount),
-      icon: DollarSign,
+      icon: IndianRupee,
       color: "text-indigo-600",
       bgColor: "bg-indigo-100",
       isAmount: true,
