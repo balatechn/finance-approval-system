@@ -18,8 +18,8 @@ import {
   BarChart3,
   Users,
   Circle,
-  PanelLeftClose,
-  PanelLeft,
+  ChevronsLeft,
+  ChevronsRight,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -50,12 +50,13 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession()
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('sidebar-collapsed') === 'true'
-    }
-    return false
-  })
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+
+  // Hydrate sidebar state from localStorage after mount
+  useEffect(() => {
+    const stored = localStorage.getItem('sidebar-collapsed')
+    if (stored === 'true') setSidebarCollapsed(true)
+  }, [])
   const [onlineUsers, setOnlineUsers] = useState<{ count: number; users: { id: string; name: string; role: string; department: string | null }[] }>({ count: 0, users: [] })
   const [showOnlineDropdown, setShowOnlineDropdown] = useState(false)
 
@@ -235,10 +236,10 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                     )}
                   >
                     {sidebarCollapsed ? (
-                      <PanelLeft className="h-5 w-5" />
+                      <ChevronsRight className="h-5 w-5" />
                     ) : (
                       <>
-                        <PanelLeftClose className="h-5 w-5" />
+                        <ChevronsLeft className="h-5 w-5" />
                         <span>Collapse</span>
                       </>
                     )}
