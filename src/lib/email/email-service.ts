@@ -430,6 +430,238 @@ export async function getApproversForLevel(
   return approvers;
 }
 
+// ============================================================================
+// USER MANAGEMENT EMAIL FUNCTIONS
+// ============================================================================
+
+const ROLE_LABELS: Record<string, string> = {
+  EMPLOYEE: 'Employee',
+  FINANCE_TEAM: 'Finance Team',
+  FINANCE_CONTROLLER: 'Finance Controller',
+  DIRECTOR: 'Director',
+  MD: 'Managing Director',
+  ADMIN: 'Administrator',
+};
+
+/**
+ * Send email when a new user account is created
+ * - To: New user (welcome + credentials)
+ * - To: All admins (notification)
+ */
+export async function sendNewUserEmail(
+  newUserEmail: string,
+  newUserName: string,
+  role: string,
+  department: string | null,
+  employeeId: string | null,
+  temporaryPassword: string
+): Promise<void> {
+  // 1. Welcome email to the new user
+  const userHtml = emailWrapper(`
+    <h2 style="color: #1e40af; margin-top: 0;">Welcome to Finance Approval System</h2>
+    <p>Dear ${newUserName},</p>
+    <p>Your account has been created on the National Group Finance Approval System. Below are your login details:</p>
+    <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0;">
+      <p style="margin: 4px 0;"><strong>Email:</strong> ${newUserEmail}</p>
+      <p style="margin: 4px 0;"><strong>Temporary Password:</strong> <code style="background: #e5e7eb; padding: 2px 8px; border-radius: 4px; font-size: 14px;">${temporaryPassword}</code></p>
+      <p style="margin: 4px 0;"><strong>Role:</strong> ${ROLE_LABELS[role] || role}</p>
+      ${department ? `<p style="margin: 4px 0;"><strong>Department:</strong> ${department}</p>` : ''}
+      ${employeeId ? `<p style="margin: 4px 0;"><strong>Employee ID:</strong> ${employeeId}</p>` : ''}
+    </div>
+    <p style="color: #ef4444; font-weight: 600;">Please change your password after your first login for security purposes.</p>
+    ${actionButton(`${APP_URL}/login`, 'Login Now')}
+  `);
+
+  await sendEmail({
+    to: newUserEmail,
+    subject: 'Welcome - Your Account Has Been Created',
+    html: userHtml,
+  });
+
+  // 2. Notify all admins
+  const adminEmails = await getAdminEmails();
+  const adminBcc = adminEmails.filter((e) => e !== newUserEmail);
+  if (adminBcc.length > 0) {
+    const adminHtml = emailWrapper(`
+      <h2 style="color: #1e40af; margin-top: 0;">New User Account Created</h2>
+      <p>A new user account has been created on the Finance Approval System.</p>
+      <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0;">
+        <p style="margin: 4px 0;"><strong>Name:</strong> ${newUserName}</p>
+        <p style="margin: 4px 0;"><strong>Email:</strong> ${newUserEmail}</p>
+        <p style="margin: 4px 0;"><strong>Role:</strong> ${ROLE_LABELS[role] || role}</p>
+        ${department ? `<p style="margin: 4px 0;"><strong>Department:</strong> ${department}</p>` : ''}
+        ${employeeId ? `<p style="margin: 4px 0;"><strong>Employee ID:</strong> ${employeeId}</p>` : ''}
+      </div>
+      ${actionButton(`${APP_URL}/dashboard/users`, 'View Users')}
+    `);
+
+    await sendEmail({
+      to: adminBcc[0],
+      bcc: adminBcc.slice(1),
+      subject: `[Admin] New User Created - ${newUserName}`,
+      html: adminHtml,
+    });
+  }
+}
+
+/**
+ * Send email when a user's password is reset by admin
+ * - To: User (new password notification)
+ * - To: All admins (notification)
+ */
+export async function sendPasswordResetEmail(
+  userEmail: string,
+  userName: string,
+  newPassword: string,
+  resetByAdminName: string
+): Promise<void> {
+  // 1. Notify the user
+  const userHtml = emailWrapper(`
+    <h2 style="color: #f59e0b; margin-top: 0;">Password Reset</h2>
+    <p>Dear ${userName},</p>
+    <p>Your password has been reset by an administrator. Below are your updated login details:</p>
+    <div style="background: #fffbeb; padding: 16px; border-radius: 8px; margin: 16px 0; border: 1px solid #fde68a;">
+      <p style="margin: 4px 0;"><strong>Email:</strong> ${userEmail}</p>
+      <p style="margin: 4px 0;"><strong>New Password:</strong> <code style="background: #fef3c7; padding: 2px 8px; border-radius: 4px; font-size: 14px;">${newPassword}</code></p>
+    </div>
+    <p style="color: #ef4444; font-weight: 600;">Please change your password immediately after logging in for security purposes.</p>
+    ${actionButton(`${APP_URL}/login`, 'Login Now', '#f59e0b')}
+  `);
+
+  await sendEmail({
+    to: userEmail,
+    subject: 'Your Password Has Been Reset',
+    html: userHtml,
+  });
+
+  // 2. Notify all admins
+  const adminEmails = await getAdminEmails();
+  const adminBcc = adminEmails.filter((e) => e !== userEmail);
+  if (adminBcc.length > 0) {
+    const adminHtml = emailWrapper(`
+      <h2 style="color: #f59e0b; margin-top: 0;">User Password Reset</h2>
+      <p>A user's password has been reset.</p>
+      <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0;">
+        <p style="margin: 4px 0;"><strong>User:</strong> ${userName} (${userEmail})</p>
+        <p style="margin: 4px 0;"><strong>Reset By:</strong> ${resetByAdminName}</p>
+      </div>
+      ${actionButton(`${APP_URL}/dashboard/users`, 'View Users')}
+    `);
+
+    await sendEmail({
+      to: adminBcc[0],
+      bcc: adminBcc.slice(1),
+      subject: `[Admin] Password Reset - ${userName}`,
+      html: adminHtml,
+    });
+  }
+}
+
+/**
+ * Send email when a user's profile/role is updated by admin
+ * - To: User (notification of changes)
+ * - To: All admins (notification)
+ */
+export async function sendUserUpdatedEmail(
+  userEmail: string,
+  userName: string,
+  changes: string[],
+  updatedByAdminName: string
+): Promise<void> {
+  if (changes.length === 0) return;
+
+  const changesList = changes.map((c) => `<li style="margin: 4px 0;">${c}</li>`).join('');
+
+  // 1. Notify the user
+  const userHtml = emailWrapper(`
+    <h2 style="color: #1e40af; margin-top: 0;">Account Updated</h2>
+    <p>Dear ${userName},</p>
+    <p>Your account details have been updated by an administrator. The following changes were made:</p>
+    <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0;">
+      <ul style="margin: 0; padding-left: 20px;">${changesList}</ul>
+    </div>
+    <p>If you did not expect these changes, please contact your administrator immediately.</p>
+    ${actionButton(`${APP_URL}/login`, 'Login')}
+  `);
+
+  await sendEmail({
+    to: userEmail,
+    subject: 'Your Account Has Been Updated',
+    html: userHtml,
+  });
+
+  // 2. Notify all admins
+  const adminEmails = await getAdminEmails();
+  const adminBcc = adminEmails.filter((e) => e !== userEmail);
+  if (adminBcc.length > 0) {
+    const adminHtml = emailWrapper(`
+      <h2 style="color: #1e40af; margin-top: 0;">User Account Updated</h2>
+      <p>A user account has been updated.</p>
+      <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0;">
+        <p style="margin: 4px 0;"><strong>User:</strong> ${userName} (${userEmail})</p>
+        <p style="margin: 4px 0;"><strong>Updated By:</strong> ${updatedByAdminName}</p>
+        <p style="margin: 8px 0 4px;"><strong>Changes:</strong></p>
+        <ul style="margin: 0; padding-left: 20px;">${changesList}</ul>
+      </div>
+      ${actionButton(`${APP_URL}/dashboard/users`, 'View Users')}
+    `);
+
+    await sendEmail({
+      to: adminBcc[0],
+      bcc: adminBcc.slice(1),
+      subject: `[Admin] User Updated - ${userName}`,
+      html: adminHtml,
+    });
+  }
+}
+
+/**
+ * Send email when a user account is deactivated
+ * - To: User (notification)
+ * - To: All admins (notification)
+ */
+export async function sendUserDeactivatedEmail(
+  userEmail: string,
+  userName: string,
+  deactivatedByAdminName: string
+): Promise<void> {
+  // 1. Notify the user
+  const userHtml = emailWrapper(`
+    <h2 style="color: #ef4444; margin-top: 0;">Account Deactivated</h2>
+    <p>Dear ${userName},</p>
+    <p>Your account on the Finance Approval System has been deactivated. You will no longer be able to log in.</p>
+    <p>If you believe this is a mistake, please contact your administrator.</p>
+  `);
+
+  await sendEmail({
+    to: userEmail,
+    subject: 'Your Account Has Been Deactivated',
+    html: userHtml,
+  });
+
+  // 2. Notify all admins
+  const adminEmails = await getAdminEmails();
+  const adminBcc = adminEmails.filter((e) => e !== userEmail);
+  if (adminBcc.length > 0) {
+    const adminHtml = emailWrapper(`
+      <h2 style="color: #ef4444; margin-top: 0;">User Account Deactivated</h2>
+      <p>A user account has been deactivated.</p>
+      <div style="background: #fef2f2; padding: 16px; border-radius: 8px; margin: 16px 0; border: 1px solid #fecaca;">
+        <p style="margin: 4px 0;"><strong>User:</strong> ${userName} (${userEmail})</p>
+        <p style="margin: 4px 0;"><strong>Deactivated By:</strong> ${deactivatedByAdminName}</p>
+      </div>
+      ${actionButton(`${APP_URL}/dashboard/users`, 'View Users')}
+    `);
+
+    await sendEmail({
+      to: adminBcc[0],
+      bcc: adminBcc.slice(1),
+      subject: `[Admin] User Deactivated - ${userName}`,
+      html: adminHtml,
+    });
+  }
+}
+
 /**
  * Create in-app notification
  */

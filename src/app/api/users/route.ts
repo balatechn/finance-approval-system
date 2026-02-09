@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth/session';
 import bcrypt from 'bcryptjs';
+import { sendNewUserEmail } from '@/lib/email/email-service';
 
 export const dynamic = 'force-dynamic';
 
@@ -146,6 +147,20 @@ export async function POST(request: NextRequest) {
         createdAt: true,
       },
     });
+
+    // Send welcome email with credentials to user + notification to admins
+    try {
+      await sendNewUserEmail(
+        newUser.email,
+        newUser.name,
+        newUser.role,
+        newUser.department,
+        newUser.employeeId,
+        password
+      );
+    } catch (emailError) {
+      console.error('Error sending new user email:', emailError);
+    }
 
     return NextResponse.json(newUser, { status: 201 });
   } catch (error) {
