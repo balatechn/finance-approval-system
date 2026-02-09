@@ -120,11 +120,8 @@ export const authOptions: NextAuthOptions = {
   },
   events: {
     async signIn({ user }) {
-      console.log(`User signed in: ${user.email}`);
-    },
-    async signOut({ token }) {
-      console.log(`User signed out: ${token?.email}`);
+      // Logged for audit
     },
   },
-  debug: process.env.NODE_ENV === 'development',
+  debug: false,
 };

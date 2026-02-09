@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
         break;
       case 'FINANCE_CONTROLLER':
         if (type === 'pending-approvals') {
-          whereClause.status = 'PENDING_FINANCE_CONTROLLER';
+          whereClause.status = { in: ['PENDING_FINANCE_PLANNER', 'PENDING_FINANCE_CONTROLLER'] };
         }
         break;
       case 'DIRECTOR':
