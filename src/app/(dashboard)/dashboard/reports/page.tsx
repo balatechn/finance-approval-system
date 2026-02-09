@@ -10,6 +10,7 @@ import {
   TrendingUp,
   Calendar,
   Filter,
+  X,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -23,6 +24,13 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog"
 
 const reportTypes = [
   {
@@ -73,6 +81,7 @@ export default function ReportsPage() {
   const [format, setFormat] = useState("json")
   const [loading, setLoading] = useState(false)
   const [reportData, setReportData] = useState<any>(null)
+  const [showReportDialog, setShowReportDialog] = useState(false)
   const [departments, setDepartments] = useState<string[]>([])
 
   // Fetch unique departments from existing requests
@@ -134,6 +143,7 @@ export default function ReportsPage() {
       } else {
         const data = await response.json()
         setReportData(data)
+        setShowReportDialog(true)
         toast({
           title: "Report Generated",
           description: "Your report is ready to view",
@@ -263,16 +273,24 @@ export default function ReportsPage() {
         </CardContent>
       </Card>
 
-      {/* Report Results */}
-      {reportData && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Report Results</CardTitle>
-            <CardDescription>
-              Generated at {new Date(reportData.generatedAt).toLocaleString()}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+      {/* Report Results Dialog */}
+      <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0">
+            <DialogTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-primary" />
+              {reportTypes.find(r => r.id === selectedReport)?.title || 'Report'} Results
+            </DialogTitle>
+            <DialogDescription>
+              Generated at {reportData?.generatedAt ? new Date(reportData.generatedAt).toLocaleString() : 'N/A'}
+              {startDate && ` • From: ${startDate}`}
+              {endDate && ` • To: ${endDate}`}
+              {department !== 'all' && ` • Department: ${department}`}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto pr-2">
+          {reportData && (
+            <div>
             {selectedReport === "summary" && (
               <div className="space-y-6">
                 {/* Status Breakdown */}
@@ -609,9 +627,58 @@ export default function ReportsPage() {
                 )}
               </div>
             )}
-          </CardContent>
-        </Card>
-      )}
+            </div>
+          )}
+          </div>
+
+          {/* Dialog Footer */}
+          <div className="flex-shrink-0 flex items-center justify-between border-t pt-4 mt-2">
+            <p className="text-xs text-muted-foreground">
+              {reportTypes.find(r => r.id === selectedReport)?.title} • National Group India
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  setShowReportDialog(false)
+                  try {
+                    const params = new URLSearchParams({ type: selectedReport!, format: 'csv' })
+                    if (startDate) params.set("startDate", startDate)
+                    if (endDate) params.set("endDate", endDate)
+                    if (department !== "all") params.set("department", department)
+                    const res = await fetch(`/api/reports?${params}`)
+                    if (res.ok) {
+                      const blob = await res.blob()
+                      const url = window.URL.createObjectURL(blob)
+                      const a = document.createElement("a")
+                      a.href = url
+                      a.download = `${selectedReport}-report-${new Date().toISOString().split("T")[0]}.csv`
+                      document.body.appendChild(a)
+                      a.click()
+                      window.URL.revokeObjectURL(url)
+                      document.body.removeChild(a)
+                      toast({ title: "Report Downloaded", description: "Your CSV report has been downloaded" })
+                    }
+                  } catch {
+                    toast({ title: "Error", description: "Failed to export CSV", variant: "destructive" })
+                  }
+                }}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Export CSV
+              </Button>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => setShowReportDialog(false)}
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
