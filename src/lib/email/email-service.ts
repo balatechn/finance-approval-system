@@ -406,7 +406,7 @@ export async function getApproversForLevel(
 ): Promise<{ id: string; email: string; name: string }[]> {
   const roleMap: Record<string, string[]> = {
     FINANCE_VETTING: ['FINANCE_TEAM'],
-    FINANCE_PLANNER: ['FINANCE_CONTROLLER'],
+    FINANCE_PLANNER: ['FINANCE_PLANNER'],
     FINANCE_CONTROLLER: ['FINANCE_CONTROLLER'],
     DIRECTOR: ['DIRECTOR'],
     MD: ['MD'],
@@ -437,6 +437,7 @@ export async function getApproversForLevel(
 const ROLE_LABELS: Record<string, string> = {
   EMPLOYEE: 'Employee',
   FINANCE_TEAM: 'Finance Team',
+  FINANCE_PLANNER: 'Finance Planner',
   FINANCE_CONTROLLER: 'Finance Controller',
   DIRECTOR: 'Director',
   MD: 'Managing Director',

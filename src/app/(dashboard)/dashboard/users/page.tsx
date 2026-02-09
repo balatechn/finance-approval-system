@@ -66,6 +66,7 @@ interface Pagination {
 const ROLES = [
   { value: "EMPLOYEE", label: "Employee" },
   { value: "FINANCE_TEAM", label: "Finance Team" },
+  { value: "FINANCE_PLANNER", label: "Finance Planner" },
   { value: "FINANCE_CONTROLLER", label: "Finance Controller" },
   { value: "DIRECTOR", label: "Director" },
   { value: "MD", label: "Managing Director" },
@@ -246,6 +247,7 @@ export default function UsersPage() {
       MD: "bg-purple-100 text-purple-800",
       DIRECTOR: "bg-blue-100 text-blue-800",
       FINANCE_CONTROLLER: "bg-indigo-100 text-indigo-800",
+      FINANCE_PLANNER: "bg-cyan-100 text-cyan-800",
       FINANCE_TEAM: "bg-teal-100 text-teal-800",
       EMPLOYEE: "bg-gray-100 text-gray-800",
     };

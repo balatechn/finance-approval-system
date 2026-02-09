@@ -41,9 +41,14 @@ export async function GET(request: NextRequest) {
           };
         }
         break;
+      case 'FINANCE_PLANNER':
+        if (type === 'pending-approvals') {
+          whereClause.status = 'PENDING_FINANCE_PLANNER';
+        }
+        break;
       case 'FINANCE_CONTROLLER':
         if (type === 'pending-approvals') {
-          whereClause.status = { in: ['PENDING_FINANCE_PLANNER', 'PENDING_FINANCE_CONTROLLER'] };
+          whereClause.status = 'PENDING_FINANCE_CONTROLLER';
         }
         break;
       case 'DIRECTOR':
@@ -307,7 +312,7 @@ async function createApprovalSteps(
 
   const roleMapping: Record<ApprovalLevel, Role> = {
     FINANCE_VETTING: 'FINANCE_TEAM',
-    FINANCE_PLANNER: 'FINANCE_CONTROLLER',
+    FINANCE_PLANNER: 'FINANCE_PLANNER',
     FINANCE_CONTROLLER: 'FINANCE_CONTROLLER',
     DIRECTOR: 'DIRECTOR',
     MD: 'MD',

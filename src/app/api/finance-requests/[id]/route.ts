@@ -455,7 +455,7 @@ async function createApprovalStepsForRequest(
 
   const roleMapping: Record<string, string> = {
     FINANCE_VETTING: 'FINANCE_TEAM',
-    FINANCE_PLANNER: 'FINANCE_CONTROLLER',
+    FINANCE_PLANNER: 'FINANCE_PLANNER',
     FINANCE_CONTROLLER: 'FINANCE_CONTROLLER',
     DIRECTOR: 'DIRECTOR',
     MD: 'MD',

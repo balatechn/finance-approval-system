@@ -17,6 +17,7 @@ datasource db {
 enum Role {
   EMPLOYEE
   FINANCE_TEAM
+  FINANCE_PLANNER
   FINANCE_CONTROLLER
   DIRECTOR
   MD

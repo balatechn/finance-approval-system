@@ -95,8 +95,10 @@ async function getDashboardStats(user: any) {
   let myPendingWhere: any = null;
   if (user.role === 'FINANCE_TEAM') {
     myPendingWhere = { status: { in: ['PENDING_FINANCE_VETTING', 'APPROVED'] }, isDeleted: false };
+  } else if (user.role === 'FINANCE_PLANNER') {
+    myPendingWhere = { status: 'PENDING_FINANCE_PLANNER', isDeleted: false };
   } else if (user.role === 'FINANCE_CONTROLLER') {
-    myPendingWhere = { status: { in: ['PENDING_FINANCE_PLANNER', 'PENDING_FINANCE_CONTROLLER'] }, isDeleted: false };
+    myPendingWhere = { status: 'PENDING_FINANCE_CONTROLLER', isDeleted: false };
   } else if (user.role === 'DIRECTOR') {
     myPendingWhere = { status: 'PENDING_DIRECTOR', isDeleted: false };
   } else if (user.role === 'MD') {
@@ -191,8 +193,11 @@ async function getPendingApprovals(user: any) {
         in: ['PENDING_FINANCE_VETTING', 'APPROVED'],
       };
       break;
+    case 'FINANCE_PLANNER':
+      whereClause.status = 'PENDING_FINANCE_PLANNER';
+      break;
     case 'FINANCE_CONTROLLER':
-      whereClause.status = { in: ['PENDING_FINANCE_PLANNER', 'PENDING_FINANCE_CONTROLLER'] };
+      whereClause.status = 'PENDING_FINANCE_CONTROLLER';
       break;
     case 'DIRECTOR':
       whereClause.status = 'PENDING_DIRECTOR';

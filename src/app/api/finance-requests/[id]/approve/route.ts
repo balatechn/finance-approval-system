@@ -70,24 +70,6 @@ export async function POST(
       );
     }
 
-    // Enforce different approver for Finance Planner vs Finance Controller
-    if (currentStep.level === 'FINANCE_CONTROLLER') {
-      const plannerStep = await prisma.approvalAction_Record.findFirst({
-        where: {
-          financeRequestId: financeRequest.id,
-          approvalStep: { level: 'FINANCE_PLANNER' },
-          action: 'APPROVED',
-        },
-        select: { actorId: true },
-      });
-      if (plannerStep && plannerStep.actorId === user.id) {
-        return NextResponse.json(
-          { error: 'The same person cannot approve both Finance Planner and Finance Controller steps' },
-          { status: 403 }
-        );
-      }
-    }
-
     // Calculate SLA compliance
     const now = new Date();
     const responseTimeHours = currentStep.startedAt
