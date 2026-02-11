@@ -55,6 +55,9 @@ export async function GET(request: NextRequest) {
         case 'department':
           reportData = await generateDepartmentReport(whereClause);
           break;
+        case 'entity':
+          reportData = await generateEntityReport(whereClause);
+          break;
         case 'sla':
           reportData = await generateSLAReport(whereClause);
           break;
@@ -184,6 +187,58 @@ async function generateDepartmentReport(whereClause: any) {
       department: d.department,
       status: d.status,
       count: d._count.id,
+    })),
+    generatedAt: new Date().toISOString(),
+  };
+}
+
+async function generateEntityReport(whereClause: any) {
+  const entityData = await prisma.financeRequest.groupBy({
+    by: ['entity'],
+    where: whereClause,
+    _count: { id: true },
+    _sum: { totalAmount: true },
+    _avg: { totalAmount: true },
+  });
+
+  const entityStatusData = await prisma.financeRequest.groupBy({
+    by: ['entity', 'status'],
+    where: whereClause,
+    _count: { id: true },
+    _sum: { totalAmount: true },
+  });
+
+  // Build per-entity status counts
+  const statusMap: Record<string, { approved: number; pending: number; rejected: number; disbursed: number }> = {};
+  entityStatusData.forEach((d) => {
+    const key = d.entity || 'Unspecified';
+    if (!statusMap[key]) statusMap[key] = { approved: 0, pending: 0, rejected: 0, disbursed: 0 };
+    if (d.status === 'APPROVED') statusMap[key].approved += d._count.id;
+    else if (d.status === 'REJECTED') statusMap[key].rejected += d._count.id;
+    else if (d.status === 'DISBURSED') statusMap[key].disbursed += d._count.id;
+    else statusMap[key].pending += d._count.id;
+  });
+
+  return {
+    entitySummary: entityData.map((e) => {
+      const key = e.entity || 'Unspecified';
+      const sc = statusMap[key] || { approved: 0, pending: 0, rejected: 0, disbursed: 0 };
+      return {
+        entity: key,
+        count: e._count.id,
+        totalAmount: e._sum.totalAmount?.toNumber() || 0,
+        avgAmount: e._avg.totalAmount?.toNumber() || 0,
+        approved: sc.approved,
+        pending: sc.pending,
+        rejected: sc.rejected,
+        disbursed: sc.disbursed,
+      };
+    }),
+    entityStatusMatrix: entityStatusData.map((d) => ({
+      entity: d.entity || 'Unspecified',
+      status: d.status,
+      count: d._count.id,
+      totalAmount: d._sum.totalAmount?.toNumber() || 0,
     })),
     generatedAt: new Date().toISOString(),
   };
@@ -338,6 +393,14 @@ function convertToCSV(data: any, reportType: string): string {
       data.paymentTypeBreakdown?.forEach((p: any) => {
         rows.push(['Payment Type', p.paymentType, p.count, p.totalAmount]);
       });
+      break;
+
+    case 'entity':
+      headers = ['Entity', 'Requests', 'Total Amount', 'Avg Amount', 'Approved', 'Pending', 'Rejected', 'Disbursed'];
+      rows = data.entitySummary?.map((e: any) => [
+        e.entity, e.count, e.totalAmount, e.avgAmount,
+        e.approved || 0, e.pending || 0, e.rejected || 0, e.disbursed || 0,
+      ]) || [];
       break;
 
     case 'detailed':

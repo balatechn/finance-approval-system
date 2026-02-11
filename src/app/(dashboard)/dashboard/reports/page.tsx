@@ -11,6 +11,7 @@ import {
   Calendar,
   Filter,
   X,
+  Building2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -50,6 +51,12 @@ const reportTypes = [
     title: "Department Report",
     description: "Analysis of requests by department",
     icon: FileText,
+  },
+  {
+    id: "entity",
+    title: "Entity Report",
+    description: "Analysis of requests by business entity",
+    icon: Building2,
   },
   {
     id: "sla",
@@ -562,6 +569,72 @@ export default function ReportsPage() {
                               <td className="py-2">{item.department}</td>
                               <td className="py-2">{item.status?.replace(/_/g, " ")}</td>
                               <td className="py-2 text-right">{item.count}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {selectedReport === "entity" && (
+              <div className="space-y-6">
+                <div>
+                  <h4 className="mb-3 font-medium">Entity Summary</h4>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="pb-2 text-left font-medium">Entity</th>
+                          <th className="pb-2 text-right font-medium">Requests</th>
+                          <th className="pb-2 text-right font-medium">Total Amount</th>
+                          <th className="pb-2 text-right font-medium">Avg Amount</th>
+                          <th className="pb-2 text-right font-medium">Approved</th>
+                          <th className="pb-2 text-right font-medium">Pending</th>
+                          <th className="pb-2 text-right font-medium">Rejected</th>
+                          <th className="pb-2 text-right font-medium">Disbursed</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {reportData.entitySummary?.map((item: any) => (
+                          <tr key={item.entity} className="border-b">
+                            <td className="py-2 font-medium">{item.entity}</td>
+                            <td className="py-2 text-right">{item.count}</td>
+                            <td className="py-2 text-right">₹{item.totalAmount?.toLocaleString("en-IN") || 0}</td>
+                            <td className="py-2 text-right">₹{item.avgAmount?.toLocaleString("en-IN") || 0}</td>
+                            <td className="py-2 text-right text-green-600">{item.approved || 0}</td>
+                            <td className="py-2 text-right text-amber-600">{item.pending || 0}</td>
+                            <td className="py-2 text-right text-red-600">{item.rejected || 0}</td>
+                            <td className="py-2 text-right text-blue-600">{item.disbursed || 0}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {reportData.entityStatusMatrix && reportData.entityStatusMatrix.length > 0 && (
+                  <div>
+                    <h4 className="mb-3 font-medium">Entity × Status Matrix</h4>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="pb-2 text-left font-medium">Entity</th>
+                            <th className="pb-2 text-left font-medium">Status</th>
+                            <th className="pb-2 text-right font-medium">Count</th>
+                            <th className="pb-2 text-right font-medium">Amount</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {reportData.entityStatusMatrix.map((item: any, i: number) => (
+                            <tr key={i} className="border-b">
+                              <td className="py-2">{item.entity}</td>
+                              <td className="py-2">{item.status?.replace(/_/g, " ")}</td>
+                              <td className="py-2 text-right">{item.count}</td>
+                              <td className="py-2 text-right">₹{item.totalAmount?.toLocaleString("en-IN") || 0}</td>
                             </tr>
                           ))}
                         </tbody>

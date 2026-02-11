@@ -14,6 +14,7 @@ declare module 'next-auth' {
       role: Role;
       department: string | null;
       employeeId: string | null;
+      mustChangePassword: boolean;
       image?: string | null;
     };
   }
@@ -34,6 +35,7 @@ declare module 'next-auth/jwt' {
     role: Role;
     department: string | null;
     employeeId: string | null;
+    mustChangePassword: boolean;
   }
 }
 
@@ -87,6 +89,7 @@ export const authOptions: NextAuthOptions = {
           role: user.role,
           department: user.department,
           employeeId: user.employeeId,
+          mustChangePassword: user.mustChangePassword,
         };
       },
     }),
@@ -98,12 +101,16 @@ export const authOptions: NextAuthOptions = {
         token.role = user.role;
         token.department = user.department;
         token.employeeId = user.employeeId;
+        token.mustChangePassword = (user as any).mustChangePassword ?? false;
       }
 
       // Handle session updates
       if (trigger === 'update' && session) {
         token.name = session.name;
         token.department = session.department;
+        if (session.mustChangePassword !== undefined) {
+          token.mustChangePassword = session.mustChangePassword;
+        }
       }
 
       return token;
@@ -114,6 +121,7 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role;
         session.user.department = token.department;
         session.user.employeeId = token.employeeId;
+        session.user.mustChangePassword = token.mustChangePassword ?? false;
       }
       return session;
     },

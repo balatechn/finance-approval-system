@@ -99,6 +99,7 @@ model User {
   employeeId      String?   @unique
   managerId       String?
   isActive        Boolean   @default(true)
+  mustChangePassword Boolean @default(false)
   lastActiveAt    DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt

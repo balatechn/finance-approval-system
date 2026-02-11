@@ -135,6 +135,7 @@ export async function POST(request: NextRequest) {
         department: department || null,
         employeeId: employeeId || null,
         isActive: true,
+        mustChangePassword: true,
       },
       select: {
         id: true,
