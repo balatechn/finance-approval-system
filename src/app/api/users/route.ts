@@ -55,11 +55,7 @@ export async function GET(request: NextRequest) {
           employeeId: true,
           isActive: true,
           createdAt: true,
-          _count: {
-            select: {
-              financeRequests: true,
-            },
-          },
+  
         },
         orderBy: { createdAt: 'desc' },
         skip,

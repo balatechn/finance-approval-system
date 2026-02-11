@@ -29,12 +29,7 @@ export async function GET(
         isActive: true,
         createdAt: true,
         updatedAt: true,
-        _count: {
-          select: {
-            financeRequests: true,
-            approvalActions: true,
-          },
-        },
+
       },
     });
 
