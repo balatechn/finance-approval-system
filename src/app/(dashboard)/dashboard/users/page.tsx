@@ -209,7 +209,7 @@ export default function UsersPage() {
         role: formData.role,
         department: formData.department,
         employeeId: formData.employeeId,
-        entityIds: formData.role === "FINANCE_TEAM" ? selectedEntityIds : [],
+        entityIds: selectedEntityIds,
       };
 
       if (formData.password) {
@@ -662,18 +662,17 @@ export default function UsersPage() {
                 />
               </div>
 
-              {/* Entity assignment for FINANCE_TEAM */}
-              {formData.role === "FINANCE_TEAM" && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    <div className="flex items-center gap-1.5">
-                      <Building2 className="h-4 w-4" />
-                      Assigned Entities *
-                    </div>
-                  </label>
-                  <p className="text-xs text-gray-500 mb-2">
-                    Select entities this user can process disbursements for
-                  </p>
+              {/* Entity assignment */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <div className="flex items-center gap-1.5">
+                    <Building2 className="h-4 w-4" />
+                    Assigned Entities
+                  </div>
+                </label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Select entities this user is associated with
+                </p>
                   {entities.length === 0 ? (
                     <p className="text-sm text-amber-600">
                       No entities configured. Add entities in Settings first.
@@ -713,7 +712,6 @@ export default function UsersPage() {
                     </p>
                   )}
                 </div>
-              )}
 
               <div className="flex gap-3 pt-4 border-t">
                 <Button
