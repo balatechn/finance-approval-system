@@ -112,6 +112,7 @@ model User {
   notifications          Notification[]
   accounts               Account[]
   sessions               Session[]
+  assignedEntities       Entity[]          @relation("UserEntities")
 
   @@index([email])
   @@index([department])
@@ -418,6 +419,7 @@ model Entity {
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  assignedUsers   User[]   @relation("UserEntities")
 }
 
 model ItemMaster {

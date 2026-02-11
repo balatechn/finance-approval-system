@@ -43,6 +43,34 @@ export async function POST(
       return NextResponse.json({ error: 'Request not found' }, { status: 404 });
     }
 
+    // Entity-based restriction for FINANCE_TEAM users
+    if (user.role === 'FINANCE_TEAM') {
+      const currentUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: {
+          assignedEntities: {
+            select: { name: true, code: true },
+          },
+        },
+      });
+
+      const assignedEntityNames = currentUser?.assignedEntities?.map((e) => e.name) || [];
+
+      if (assignedEntityNames.length > 0 && financeRequest.entity) {
+        if (!assignedEntityNames.includes(financeRequest.entity)) {
+          return NextResponse.json(
+            { error: `You are not assigned to entity "${financeRequest.entity}". You can only disburse requests for: ${assignedEntityNames.join(', ')}` },
+            { status: 403 }
+          );
+        }
+      } else if (assignedEntityNames.length > 0 && !financeRequest.entity) {
+        return NextResponse.json(
+          { error: 'This request has no entity assigned. Cannot verify disbursement authorization.' },
+          { status: 403 }
+        );
+      }
+    }
+
     body.financeRequestId = financeRequest.id;
 
     // Validate

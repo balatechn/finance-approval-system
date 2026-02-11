@@ -140,12 +140,12 @@ export default function DashboardPage() {
             Here&apos;s an overview of your finance requests
           </p>
         </div>
-        <Link href="/dashboard/requests/new">
-          <Button>
+        <Button asChild>
+          <Link href="/dashboard/requests/new">
             <FileText className="mr-2 h-4 w-4" />
             New Request
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
 
       {/* Stats Grid */}

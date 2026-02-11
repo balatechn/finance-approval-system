@@ -20,6 +20,8 @@ import {
   Circle,
   ChevronsLeft,
   ChevronsRight,
+  Check,
+  Lock,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -59,6 +61,9 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   }, [])
   const [onlineUsers, setOnlineUsers] = useState<{ count: number; users: { id: string; name: string; role: string; department: string | null }[] }>({ count: 0, users: [] })
   const [showOnlineDropdown, setShowOnlineDropdown] = useState(false)
+  const [notifications, setNotifications] = useState<any[]>([])
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [showNotifications, setShowNotifications] = useState(false)
 
   const user = session?.user
   const userRole = user?.role
@@ -82,6 +87,48 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     const interval = setInterval(sendHeartbeat, 2 * 60 * 1000)
     return () => clearInterval(interval)
   }, [status])
+
+  // Fetch notifications
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const res = await fetch('/api/notifications?limit=10')
+      if (res.ok) {
+        const data = await res.json()
+        setNotifications(data.notifications || [])
+        setUnreadCount(data.unreadCount || 0)
+      }
+    } catch {}
+  }, [])
+
+  useEffect(() => {
+    if (status !== 'authenticated') return
+    fetchNotifications()
+    const interval = setInterval(fetchNotifications, 30 * 1000)
+    return () => clearInterval(interval)
+  }, [fetchNotifications, status])
+
+  const markAllRead = async () => {
+    try {
+      await fetch('/api/notifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ markAllRead: true }),
+      })
+      setUnreadCount(0)
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })))
+    } catch {}
+  }
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (!target.closest('[data-notifications]')) setShowNotifications(false)
+      if (!target.closest('[data-online]')) setShowOnlineDropdown(false)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   // Fetch online users for admins
   const fetchOnlineUsers = useCallback(async () => {
@@ -359,12 +406,83 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
               )}
 
               {/* Notifications */}
-              <button className="relative rounded-full p-2 hover:bg-gray-100">
-                <Bell className="h-5 w-5 text-gray-600" />
-                <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
-                  3
-                </span>
-              </button>
+              <div className="relative" data-notifications>
+                <button
+                  className="relative rounded-full p-2 hover:bg-gray-100"
+                  onClick={() => { setShowNotifications(!showNotifications); setShowOnlineDropdown(false) }}
+                >
+                  <Bell className="h-5 w-5 text-gray-600" />
+                  {unreadCount > 0 && (
+                    <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {showNotifications && (
+                  <div className="absolute right-0 top-12 z-50 w-80 rounded-lg border bg-white shadow-lg">
+                    <div className="flex items-center justify-between border-b px-4 py-3">
+                      <h3 className="font-semibold text-sm">Notifications</h3>
+                      {unreadCount > 0 && (
+                        <button
+                          onClick={markAllRead}
+                          className="text-xs text-primary hover:underline flex items-center gap-1"
+                        >
+                          <Check className="h-3 w-3" />
+                          Mark all read
+                        </button>
+                      )}
+                    </div>
+                    <div className="max-h-80 overflow-y-auto">
+                      {notifications.length === 0 ? (
+                        <div className="py-8 text-center text-sm text-muted-foreground">
+                          No notifications
+                        </div>
+                      ) : (
+                        notifications.map((n) => (
+                          <div
+                            key={n.id}
+                            className={cn(
+                              "border-b px-4 py-3 text-sm hover:bg-gray-50 cursor-pointer",
+                              !n.isRead && "bg-blue-50/50"
+                            )}
+                            onClick={async () => {
+                              if (!n.isRead) {
+                                await fetch('/api/notifications', {
+                                  method: 'PATCH',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ notificationIds: [n.id] }),
+                                })
+                                setUnreadCount((c) => Math.max(0, c - 1))
+                                setNotifications((prev) =>
+                                  prev.map((x) => x.id === n.id ? { ...x, isRead: true } : x)
+                                )
+                              }
+                              if (n.financeRequest?.referenceNumber) {
+                                setShowNotifications(false)
+                                window.location.href = `/dashboard/requests/${n.financeRequest.referenceNumber}`
+                              }
+                            }}
+                          >
+                            <div className="flex items-start gap-2">
+                              {!n.isRead && (
+                                <span className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-blue-500" />
+                              )}
+                              <div className={cn(!n.isRead ? "" : "ml-4")}>
+                                <p className="font-medium">{n.title}</p>
+                                <p className="text-muted-foreground line-clamp-2">{n.message}</p>
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                  {new Date(n.createdAt).toLocaleString()}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {/* User menu */}
               <DropdownMenu>
@@ -399,6 +517,12 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                     )}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => window.location.href = '/dashboard/change-password'}
+                  >
+                    <Lock className="mr-2 h-4 w-4" />
+                    Change Password
+                  </DropdownMenuItem>
                   <DropdownMenuItem
                     className="text-red-600 focus:text-red-600"
                     onClick={() => signOut({ callbackUrl: "/login" })}

@@ -55,6 +55,9 @@ export async function GET(request: NextRequest) {
           employeeId: true,
           isActive: true,
           createdAt: true,
+          assignedEntities: {
+            select: { id: true, name: true, code: true },
+          },
           _count: {
             select: {
               financeRequests: true,
@@ -95,7 +98,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, email, password, role, department, employeeId } = body;
+    const { name, email, password, role, department, employeeId, entityIds } = body;
 
     if (!name || !email || !password || !role) {
       return NextResponse.json(
@@ -136,6 +139,11 @@ export async function POST(request: NextRequest) {
         employeeId: employeeId || null,
         isActive: true,
         mustChangePassword: true,
+        ...(entityIds && entityIds.length > 0 ? {
+          assignedEntities: {
+            connect: entityIds.map((id: string) => ({ id })),
+          },
+        } : {}),
       },
       select: {
         id: true,
@@ -146,6 +154,9 @@ export async function POST(request: NextRequest) {
         employeeId: true,
         isActive: true,
         createdAt: true,
+        assignedEntities: {
+          select: { id: true, name: true, code: true },
+        },
       },
     });
 

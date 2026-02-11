@@ -29,6 +29,9 @@ export async function GET(
         isActive: true,
         createdAt: true,
         updatedAt: true,
+        assignedEntities: {
+          select: { id: true, name: true, code: true },
+        },
         _count: {
           select: {
             financeRequests: true,
@@ -64,7 +67,7 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { name, email, password, role, department, employeeId, isActive } = body;
+    const { name, email, password, role, department, employeeId, isActive, entityIds } = body;
 
     // Fetch current user data for change tracking
     const currentUserData = await prisma.user.findUnique({
@@ -122,7 +125,14 @@ export async function PATCH(
 
     const updatedUser = await prisma.user.update({
       where: { id: params.id },
-      data: updateData,
+      data: {
+        ...updateData,
+        ...(entityIds !== undefined ? {
+          assignedEntities: {
+            set: entityIds.map((id: string) => ({ id })),
+          },
+        } : {}),
+      },
       select: {
         id: true,
         name: true,
@@ -132,6 +142,9 @@ export async function PATCH(
         employeeId: true,
         isActive: true,
         createdAt: true,
+        assignedEntities: {
+          select: { id: true, name: true, code: true },
+        },
       },
     });
 

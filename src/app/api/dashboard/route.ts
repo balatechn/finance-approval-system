@@ -13,10 +13,24 @@ export async function GET(request: NextRequest) {
     }
 
     // Parallelize all dashboard data fetches
+    // For FINANCE_TEAM, fetch assigned entities first
+    let userEntityNames: string[] = [];
+    if (user.role === 'FINANCE_TEAM') {
+      const fullUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: {
+          assignedEntities: {
+            select: { name: true },
+          },
+        },
+      });
+      userEntityNames = fullUser?.assignedEntities?.map((e: { name: string }) => e.name) || [];
+    }
+
     const [stats, recentRequests, pendingApprovals, slaAlerts] = await Promise.all([
-      getDashboardStats(user),
+      getDashboardStats(user, userEntityNames),
       getRecentRequests(user),
-      getPendingApprovals(user),
+      getPendingApprovals(user, userEntityNames),
       getSLAAlerts(user),
     ]);
 
@@ -37,7 +51,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-async function getDashboardStats(user: any) {
+async function getDashboardStats(user: any, userEntityNames: string[] = []) {
   const baseWhere: any = { isDeleted: false };
 
   // Apply role-based filtering
@@ -94,7 +108,11 @@ async function getDashboardStats(user: any) {
   // Build role-based pending where clause
   let myPendingWhere: any = null;
   if (user.role === 'FINANCE_TEAM') {
-    myPendingWhere = { status: { in: ['PENDING_FINANCE_VETTING', 'APPROVED'] }, isDeleted: false };
+    myPendingWhere = {
+      status: { in: ['PENDING_FINANCE_VETTING', 'APPROVED'] },
+      isDeleted: false,
+      ...(userEntityNames.length > 0 ? { entity: { in: userEntityNames } } : {}),
+    };
   } else if (user.role === 'FINANCE_PLANNER') {
     myPendingWhere = { status: 'PENDING_FINANCE_PLANNER', isDeleted: false };
   } else if (user.role === 'FINANCE_CONTROLLER') {
@@ -184,7 +202,7 @@ async function getRecentRequests(user: any) {
   }));
 }
 
-async function getPendingApprovals(user: any) {
+async function getPendingApprovals(user: any, userEntityNames: string[] = []) {
   let whereClause: any = { isDeleted: false };
 
   switch (user.role) {
@@ -192,6 +210,10 @@ async function getPendingApprovals(user: any) {
       whereClause.status = {
         in: ['PENDING_FINANCE_VETTING', 'APPROVED'],
       };
+      // Filter by assigned entities
+      if (userEntityNames.length > 0) {
+        whereClause.entity = { in: userEntityNames };
+      }
       break;
     case 'FINANCE_PLANNER':
       whereClause.status = 'PENDING_FINANCE_PLANNER';
@@ -232,6 +254,7 @@ async function getPendingApprovals(user: any) {
       currentApprovalLevel: true,
       status: true,
       paymentType: true,
+      entity: true,
       createdAt: true,
       requestor: {
         select: { name: true, department: true },

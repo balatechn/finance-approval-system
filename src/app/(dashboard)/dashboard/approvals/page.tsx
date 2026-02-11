@@ -25,6 +25,7 @@ interface PendingApproval {
   paymentType: string
   totalAmountINR: number
   currentApprovalLevel: string
+  entity?: string
   createdAt: string
   updatedAt: string
   requester: {
@@ -169,6 +170,7 @@ export default function ApprovalsPage() {
                     <TableHead>Requester</TableHead>
                     <TableHead>Purpose</TableHead>
                     <TableHead>Amount</TableHead>
+                    <TableHead>Entity</TableHead>
                     <TableHead>Stage</TableHead>
                     <TableHead>Submitted</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -208,6 +210,9 @@ export default function ApprovalsPage() {
                       </TableCell>
                       <TableCell className="font-medium">
                         {formatCurrency(approval.totalAmountINR)}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {approval.entity || "—"}
                       </TableCell>
                       <TableCell>
                         <ApprovalLevelBadge level={approval.currentApprovalLevel as any} />

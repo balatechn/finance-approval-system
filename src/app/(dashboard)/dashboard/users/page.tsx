@@ -15,6 +15,7 @@ import {
   X,
   Eye,
   EyeOff,
+  Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,9 +52,16 @@ interface User {
   employeeId: string | null;
   isActive: boolean;
   createdAt: string;
+  assignedEntities?: { id: string; name: string; code: string }[];
   _count: {
     financeRequests: number;
   };
+}
+
+interface EntityOption {
+  id: string;
+  name: string;
+  code: string;
 }
 
 interface Pagination {
@@ -99,6 +107,8 @@ export default function UsersPage() {
     department: "",
     employeeId: "",
   });
+  const [selectedEntityIds, setSelectedEntityIds] = useState<string[]>([]);
+  const [entities, setEntities] = useState<EntityOption[]>([]);
   const [formError, setFormError] = useState("");
   const [formLoading, setFormLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -109,6 +119,22 @@ export default function UsersPage() {
       router.push("/dashboard");
     }
   }, [session, router]);
+
+  // Fetch entities for assignment dropdown
+  useEffect(() => {
+    async function fetchEntities() {
+      try {
+        const res = await fetch("/api/settings?type=entity");
+        if (res.ok) {
+          const data = await res.json();
+          setEntities((data.entities || data || []).filter((e: any) => e.isActive));
+        }
+      } catch (error) {
+        console.error("Error fetching entities:", error);
+      }
+    }
+    fetchEntities();
+  }, []);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -146,6 +172,7 @@ export default function UsersPage() {
       department: "",
       employeeId: "",
     });
+    setSelectedEntityIds([]);
     setFormError("");
     setShowPassword(false);
     setShowModal(true);
@@ -161,6 +188,7 @@ export default function UsersPage() {
       department: user.department || "",
       employeeId: user.employeeId || "",
     });
+    setSelectedEntityIds(user.assignedEntities?.map((e) => e.id) || []);
     setFormError("");
     setShowPassword(false);
     setShowModal(true);
@@ -181,6 +209,7 @@ export default function UsersPage() {
         role: formData.role,
         department: formData.department,
         employeeId: formData.employeeId,
+        entityIds: formData.role === "FINANCE_TEAM" ? selectedEntityIds : [],
       };
 
       if (formData.password) {
@@ -359,6 +388,7 @@ export default function UsersPage() {
                       <TableHead>Role</TableHead>
                       <TableHead>Department</TableHead>
                       <TableHead>Employee ID</TableHead>
+                      <TableHead>Entities</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Requests</TableHead>
                       <TableHead>Created</TableHead>
@@ -388,6 +418,22 @@ export default function UsersPage() {
                         </TableCell>
                         <TableCell className="text-sm text-gray-600">
                           {user.employeeId || "—"}
+                        </TableCell>
+                        <TableCell className="text-sm text-gray-600">
+                          {user.assignedEntities && user.assignedEntities.length > 0 ? (
+                            <div className="flex flex-wrap gap-1">
+                              {user.assignedEntities.map((e) => (
+                                <span
+                                  key={e.id}
+                                  className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                                >
+                                  {e.name}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            "—"
+                          )}
                         </TableCell>
                         <TableCell>
                           <span
@@ -615,6 +661,59 @@ export default function UsersPage() {
                   placeholder="e.g. EMP001"
                 />
               </div>
+
+              {/* Entity assignment for FINANCE_TEAM */}
+              {formData.role === "FINANCE_TEAM" && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <div className="flex items-center gap-1.5">
+                      <Building2 className="h-4 w-4" />
+                      Assigned Entities *
+                    </div>
+                  </label>
+                  <p className="text-xs text-gray-500 mb-2">
+                    Select entities this user can process disbursements for
+                  </p>
+                  {entities.length === 0 ? (
+                    <p className="text-sm text-amber-600">
+                      No entities configured. Add entities in Settings first.
+                    </p>
+                  ) : (
+                    <div className="border rounded-lg p-3 max-h-40 overflow-y-auto space-y-2">
+                      {entities.map((entity) => (
+                        <label
+                          key={entity.id}
+                          className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedEntityIds.includes(entity.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedEntityIds((prev) => [...prev, entity.id]);
+                              } else {
+                                setSelectedEntityIds((prev) =>
+                                  prev.filter((id) => id !== entity.id)
+                                );
+                              }
+                            }}
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          />
+                          <span className="text-sm">
+                            {entity.name}{" "}
+                            <span className="text-gray-400">({entity.code})</span>
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                  {selectedEntityIds.length > 0 && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      {selectedEntityIds.length} entit{selectedEntityIds.length === 1 ? "y" : "ies"} selected
+                    </p>
+                  )}
+                </div>
+              )}
 
               <div className="flex gap-3 pt-4 border-t">
                 <Button
