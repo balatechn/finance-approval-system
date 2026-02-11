@@ -124,10 +124,10 @@ export default function UsersPage() {
   useEffect(() => {
     async function fetchEntities() {
       try {
-        const res = await fetch("/api/settings?type=entity");
+        const res = await fetch("/api/settings?section=entities");
         if (res.ok) {
           const data = await res.json();
-          setEntities((data.entities || data || []).filter((e: any) => e.isActive));
+          setEntities((data.entities || []).filter((e: any) => e.isActive));
         }
       } catch (error) {
         console.error("Error fetching entities:", error);
