@@ -389,6 +389,7 @@ function checkViewPermission(user: any, request: any): boolean {
     case 'MD':
     case 'DIRECTOR':
     case 'FINANCE_CONTROLLER':
+    case 'FINANCE_PLANNER':
     case 'FINANCE_TEAM':
       return true;
     default:
