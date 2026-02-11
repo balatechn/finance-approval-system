@@ -12,7 +12,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Parallelize all dashboard data fetches
+    const { searchParams } = new URL(request.url);
+    const fromParam = searchParams.get('from');
+    const toParam = searchParams.get('to');
+
+    // Build date range filter
+    let dateRange: { gte?: Date; lte?: Date } | undefined;
+    if (fromParam || toParam) {
+      dateRange = {};
+      if (fromParam) dateRange.gte = new Date(fromParam);
+      if (toParam) {
+        const toDate = new Date(toParam);
+        toDate.setHours(23, 59, 59, 999);
+        dateRange.lte = toDate;
+      }
+    }
+
     // For FINANCE_TEAM, fetch assigned entities first
     let userEntityNames: string[] = [];
     if (user.role === 'FINANCE_TEAM') {
@@ -28,11 +43,11 @@ export async function GET(request: NextRequest) {
     }
 
     const [stats, recentRequests, pendingApprovals, slaAlerts, entityStats] = await Promise.all([
-      getDashboardStats(user, userEntityNames),
+      getDashboardStats(user, userEntityNames, dateRange),
       getRecentRequests(user),
       getPendingApprovals(user, userEntityNames),
       getSLAAlerts(user),
-      getEntityWiseStats(user),
+      getEntityWiseStats(user, dateRange),
     ]);
 
     const response = NextResponse.json({
@@ -53,12 +68,17 @@ export async function GET(request: NextRequest) {
   }
 }
 
-async function getDashboardStats(user: any, userEntityNames: string[] = []) {
+async function getDashboardStats(user: any, userEntityNames: string[] = [], dateRange?: { gte?: Date; lte?: Date }) {
   const baseWhere: any = { isDeleted: false };
 
   // Apply role-based filtering
   if (user.role === 'EMPLOYEE') {
     baseWhere.requestorId = user.id;
+  }
+
+  // Apply date range filter
+  if (dateRange) {
+    baseWhere.createdAt = dateRange;
   }
 
   const [
@@ -173,15 +193,22 @@ async function getDashboardStats(user: any, userEntityNames: string[] = []) {
   };
 }
 
-async function getEntityWiseStats(user: any) {
-  const startOfMonth = new Date();
-  startOfMonth.setDate(1);
-  startOfMonth.setHours(0, 0, 0, 0);
+async function getEntityWiseStats(user: any, dateRange?: { gte?: Date; lte?: Date }) {
+  // Use date range if provided, otherwise default to current month
+  let dateFilter: { gte?: Date; lte?: Date };
+  if (dateRange) {
+    dateFilter = dateRange;
+  } else {
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+    dateFilter = { gte: startOfMonth };
+  }
 
   const baseWhere: any = {
     isDeleted: false,
     status: { not: 'DRAFT' },
-    createdAt: { gte: startOfMonth },
+    createdAt: dateFilter,
   };
 
   if (user.role === 'EMPLOYEE') {

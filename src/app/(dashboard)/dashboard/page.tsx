@@ -12,9 +12,11 @@ import {
   IndianRupee,
   ArrowRight,
   Building2,
+  CalendarDays,
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { StatusBadge } from "@/components/status-badge"
 import { formatCurrency, formatRelativeTime } from "@/lib/utils"
 
@@ -69,10 +71,20 @@ export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
 
+  // Date range filter state - default to current month
+  const now = new Date()
+  const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+  const [fromDate, setFromDate] = useState(firstOfMonth.toISOString().split("T")[0])
+  const [toDate, setToDate] = useState(now.toISOString().split("T")[0])
+
   useEffect(() => {
     async function fetchDashboard() {
       try {
-        const response = await fetch("/api/dashboard")
+        setLoading(true)
+        const params = new URLSearchParams()
+        if (fromDate) params.set("from", fromDate)
+        if (toDate) params.set("to", toDate)
+        const response = await fetch(`/api/dashboard?${params.toString()}`)
         if (response.ok) {
           const result = await response.json()
           setData(result)
@@ -85,7 +97,7 @@ export default function DashboardPage() {
     }
 
     fetchDashboard()
-  }, [])
+  }, [fromDate, toDate])
 
   if (loading) {
     return (
@@ -158,6 +170,72 @@ export default function DashboardPage() {
         </Button>
       </div>
 
+      {/* Date Range Filter */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+              <CalendarDays className="h-4 w-4" />
+              Date Range
+            </div>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 flex-1">
+              <Input
+                type="date"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+                className="w-full sm:w-auto"
+              />
+              <span className="text-sm text-muted-foreground">to</span>
+              <Input
+                type="date"
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+                className="w-full sm:w-auto"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const t = new Date()
+                  const f = new Date(t.getFullYear(), t.getMonth(), 1)
+                  setFromDate(f.toISOString().split("T")[0])
+                  setToDate(t.toISOString().split("T")[0])
+                }}
+              >
+                This Month
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const t = new Date()
+                  const f = new Date(t.getFullYear(), t.getMonth() - 1, 1)
+                  const l = new Date(t.getFullYear(), t.getMonth(), 0)
+                  setFromDate(f.toISOString().split("T")[0])
+                  setToDate(l.toISOString().split("T")[0])
+                }}
+              >
+                Last Month
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const t = new Date()
+                  const f = new Date(t.getFullYear(), 0, 1)
+                  setFromDate(f.toISOString().split("T")[0])
+                  setToDate(t.toISOString().split("T")[0])
+                }}
+              >
+                This Year
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Stats Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat) => (
@@ -179,7 +257,7 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* This Month Summary */}
+      {/* Period Summary */}
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
@@ -187,7 +265,7 @@ export default function DashboardPage() {
               <TrendingUp className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h3 className="font-medium">This Month</h3>
+              <h3 className="font-medium">Selected Period</h3>
               <p className="text-sm text-muted-foreground">
                 {stats.thisMonthCount} requests totaling{" "}
                 {formatCurrency(stats.thisMonthAmount)}
@@ -205,7 +283,7 @@ export default function DashboardPage() {
               <Building2 className="h-5 w-5 text-indigo-600" />
               <CardTitle className="text-lg">Entity-wise Summary</CardTitle>
             </div>
-            <CardDescription>Current month breakdown by entity</CardDescription>
+            <CardDescription>Breakdown by entity for selected period</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
