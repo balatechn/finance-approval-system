@@ -28,24 +28,29 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // For FINANCE_TEAM, fetch assigned entities first
-    let userEntityNames: string[] = [];
+    // For FINANCE_TEAM, fetch assigned entities first (both names and codes for matching)
+    let userEntityIdentifiers: string[] = [];
     if (user.role === 'FINANCE_TEAM') {
       const fullUser = await prisma.user.findUnique({
         where: { id: user.id },
         select: {
           assignedEntities: {
-            select: { name: true },
+            select: { name: true, code: true },
           },
         },
       });
-      userEntityNames = fullUser?.assignedEntities?.map((e: { name: string }) => e.name) || [];
+      const entities = fullUser?.assignedEntities || [];
+      // Include both names and codes since requests may store either
+      userEntityIdentifiers = [
+        ...entities.map((e: { name: string }) => e.name.trim()),
+        ...entities.map((e: { code: string }) => e.code.trim()),
+      ].filter(Boolean);
     }
 
     const [stats, recentRequests, pendingApprovals, slaAlerts, entityStats] = await Promise.all([
-      getDashboardStats(user, userEntityNames, dateRange),
+      getDashboardStats(user, userEntityIdentifiers, dateRange),
       getRecentRequests(user),
-      getPendingApprovals(user, userEntityNames),
+      getPendingApprovals(user, userEntityIdentifiers),
       getSLAAlerts(user),
       getEntityWiseStats(user, dateRange),
     ]);
@@ -68,7 +73,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-async function getDashboardStats(user: any, userEntityNames: string[] = [], dateRange?: { gte?: Date; lte?: Date }) {
+async function getDashboardStats(user: any, userEntityIdentifiers: string[] = [], dateRange?: { gte?: Date; lte?: Date }) {
   const baseWhere: any = { isDeleted: false };
 
   // Apply role-based filtering
@@ -133,7 +138,7 @@ async function getDashboardStats(user: any, userEntityNames: string[] = [], date
     myPendingWhere = {
       status: { in: ['PENDING_FINANCE_VETTING', 'APPROVED'] },
       isDeleted: false,
-      ...(userEntityNames.length > 0 ? { entity: { in: userEntityNames } } : {}),
+      ...(userEntityIdentifiers.length > 0 ? { entity: { in: userEntityIdentifiers } } : {}),
     };
   } else if (user.role === 'FINANCE_PLANNER') {
     myPendingWhere = { status: 'PENDING_FINANCE_PLANNER', isDeleted: false };
@@ -305,7 +310,7 @@ async function getRecentRequests(user: any) {
   }));
 }
 
-async function getPendingApprovals(user: any, userEntityNames: string[] = []) {
+async function getPendingApprovals(user: any, userEntityIdentifiers: string[] = []) {
   let whereClause: any = { isDeleted: false };
 
   switch (user.role) {
@@ -314,8 +319,8 @@ async function getPendingApprovals(user: any, userEntityNames: string[] = []) {
         in: ['PENDING_FINANCE_VETTING', 'APPROVED'],
       };
       // Filter by assigned entities
-      if (userEntityNames.length > 0) {
-        whereClause.entity = { in: userEntityNames };
+      if (userEntityIdentifiers.length > 0) {
+        whereClause.entity = { in: userEntityIdentifiers };
       }
       break;
     case 'FINANCE_PLANNER':

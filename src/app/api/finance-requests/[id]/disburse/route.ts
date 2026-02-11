@@ -54,10 +54,14 @@ export async function POST(
         },
       });
 
-      const assignedEntityNames = currentUser?.assignedEntities?.map((e) => e.name) || [];
+      const assignedEntityNames = currentUser?.assignedEntities?.map((e) => e.name.trim()) || [];
+      const assignedEntityCodes = currentUser?.assignedEntities?.map((e) => e.code.trim()) || [];
 
       if (assignedEntityNames.length > 0 && financeRequest.entity) {
-        if (!assignedEntityNames.includes(financeRequest.entity)) {
+        const requestEntity = financeRequest.entity.trim();
+        const isAssigned = assignedEntityNames.some((n) => n.toLowerCase() === requestEntity.toLowerCase()) ||
+          assignedEntityCodes.some((c) => c.toLowerCase() === requestEntity.toLowerCase());
+        if (!isAssigned) {
           return NextResponse.json(
             { error: `You are not assigned to entity "${financeRequest.entity}". You can only disburse requests for: ${assignedEntityNames.join(', ')}` },
             { status: 403 }
