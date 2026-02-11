@@ -27,11 +27,12 @@ export async function GET(request: NextRequest) {
       userEntityNames = fullUser?.assignedEntities?.map((e: { name: string }) => e.name) || [];
     }
 
-    const [stats, recentRequests, pendingApprovals, slaAlerts] = await Promise.all([
+    const [stats, recentRequests, pendingApprovals, slaAlerts, entityStats] = await Promise.all([
       getDashboardStats(user, userEntityNames),
       getRecentRequests(user),
       getPendingApprovals(user, userEntityNames),
       getSLAAlerts(user),
+      getEntityWiseStats(user),
     ]);
 
     const response = NextResponse.json({
@@ -39,6 +40,7 @@ export async function GET(request: NextRequest) {
       recentRequests,
       pendingApprovals,
       slaAlerts,
+      entityStats,
     });
     response.headers.set('Cache-Control', 'private, max-age=15, stale-while-revalidate=30');
     return response;
@@ -169,6 +171,80 @@ async function getDashboardStats(user: any, userEntityNames: string[] = []) {
     slaBreaches,
     myPendingApprovals,
   };
+}
+
+async function getEntityWiseStats(user: any) {
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
+
+  const baseWhere: any = {
+    isDeleted: false,
+    status: { not: 'DRAFT' },
+    createdAt: { gte: startOfMonth },
+  };
+
+  if (user.role === 'EMPLOYEE') {
+    baseWhere.requestorId = user.id;
+  }
+
+  const requests = await prisma.financeRequest.groupBy({
+    by: ['entity'],
+    where: baseWhere,
+    _count: { id: true },
+    _sum: { totalAmount: true },
+  });
+
+  // Also get status breakdown per entity
+  const statusBreakdown = await prisma.financeRequest.groupBy({
+    by: ['entity', 'status'],
+    where: baseWhere,
+    _count: { id: true },
+  });
+
+  const entityMap: Record<string, {
+    entity: string;
+    count: number;
+    amount: number;
+    pending: number;
+    approved: number;
+    disbursed: number;
+    rejected: number;
+  }> = {};
+
+  for (const r of requests) {
+    const name = r.entity || 'Unassigned';
+    entityMap[name] = {
+      entity: name,
+      count: r._count.id,
+      amount: Number(r._sum.totalAmount || 0),
+      pending: 0,
+      approved: 0,
+      disbursed: 0,
+      rejected: 0,
+    };
+  }
+
+  const pendingStatuses = [
+    'SUBMITTED', 'PENDING_FINANCE_VETTING', 'PENDING_FINANCE_PLANNER',
+    'PENDING_FINANCE_CONTROLLER', 'PENDING_DIRECTOR', 'PENDING_MD',
+  ];
+
+  for (const s of statusBreakdown) {
+    const name = s.entity || 'Unassigned';
+    if (!entityMap[name]) continue;
+    if (pendingStatuses.includes(s.status)) {
+      entityMap[name].pending += s._count.id;
+    } else if (s.status === 'APPROVED') {
+      entityMap[name].approved += s._count.id;
+    } else if (s.status === 'DISBURSED') {
+      entityMap[name].disbursed += s._count.id;
+    } else if (s.status === 'REJECTED') {
+      entityMap[name].rejected += s._count.id;
+    }
+  }
+
+  return Object.values(entityMap).sort((a, b) => b.amount - a.amount);
 }
 
 async function getRecentRequests(user: any) {

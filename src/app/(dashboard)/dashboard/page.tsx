@@ -11,6 +11,7 @@ import {
   TrendingUp,
   IndianRupee,
   ArrowRight,
+  Building2,
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -51,6 +52,15 @@ interface DashboardData {
     referenceNumber: string
     currentApprovalLevel: string
     updatedAt: string
+  }>
+  entityStats: Array<{
+    entity: string
+    count: number
+    amount: number
+    pending: number
+    approved: number
+    disbursed: number
+    rejected: number
   }>
 }
 
@@ -186,6 +196,82 @@ export default function DashboardPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Entity-wise KPI */}
+      {data?.entityStats && data.entityStats.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Building2 className="h-5 w-5 text-indigo-600" />
+              <CardTitle className="text-lg">Entity-wise Summary</CardTitle>
+            </div>
+            <CardDescription>Current month breakdown by entity</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left">
+                    <th className="pb-3 font-medium text-muted-foreground">Entity</th>
+                    <th className="pb-3 font-medium text-muted-foreground text-center">Requests</th>
+                    <th className="pb-3 font-medium text-muted-foreground text-center">Pending</th>
+                    <th className="pb-3 font-medium text-muted-foreground text-center">Approved</th>
+                    <th className="pb-3 font-medium text-muted-foreground text-center">Disbursed</th>
+                    <th className="pb-3 font-medium text-muted-foreground text-center">Rejected</th>
+                    <th className="pb-3 font-medium text-muted-foreground text-right">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.entityStats.map((es) => (
+                    <tr key={es.entity} className="border-b last:border-0">
+                      <td className="py-3 font-medium">
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex h-2 w-2 rounded-full bg-indigo-500" />
+                          {es.entity}
+                        </div>
+                      </td>
+                      <td className="py-3 text-center">{es.count}</td>
+                      <td className="py-3 text-center">
+                        <span className={es.pending > 0 ? "inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800" : ""}>
+                          {es.pending}
+                        </span>
+                      </td>
+                      <td className="py-3 text-center">
+                        <span className={es.approved > 0 ? "inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800" : ""}>
+                          {es.approved}
+                        </span>
+                      </td>
+                      <td className="py-3 text-center">
+                        <span className={es.disbursed > 0 ? "inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800" : ""}>
+                          {es.disbursed}
+                        </span>
+                      </td>
+                      <td className="py-3 text-center">
+                        <span className={es.rejected > 0 ? "inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800" : ""}>
+                          {es.rejected}
+                        </span>
+                      </td>
+                      <td className="py-3 text-right font-medium">
+                        {formatCurrency(es.amount)}
+                      </td>
+                    </tr>
+                  ))}
+                  {/* Totals row */}
+                  <tr className="bg-gray-50 font-semibold">
+                    <td className="py-3">Total</td>
+                    <td className="py-3 text-center">{data.entityStats.reduce((s, e) => s + e.count, 0)}</td>
+                    <td className="py-3 text-center">{data.entityStats.reduce((s, e) => s + e.pending, 0)}</td>
+                    <td className="py-3 text-center">{data.entityStats.reduce((s, e) => s + e.approved, 0)}</td>
+                    <td className="py-3 text-center">{data.entityStats.reduce((s, e) => s + e.disbursed, 0)}</td>
+                    <td className="py-3 text-center">{data.entityStats.reduce((s, e) => s + e.rejected, 0)}</td>
+                    <td className="py-3 text-right">{formatCurrency(data.entityStats.reduce((s, e) => s + e.amount, 0))}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* SLA Alerts */}
       {data?.slaAlerts && data.slaAlerts.length > 0 && (
