@@ -4,12 +4,12 @@ import { getCurrentUser } from '@/lib/auth/session';
 
 export const dynamic = 'force-dynamic';
 
-// GET /api/settings - Get all settings data
+// GET /api/settings - Get all settings data (accessible to all authenticated users)
 export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser();
-    if (!user || user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
