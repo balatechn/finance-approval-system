@@ -8,7 +8,6 @@ import {
   Clock,
   CheckCircle,
   AlertTriangle,
-  TrendingUp,
   IndianRupee,
   ArrowRight,
   Building2,
@@ -19,6 +18,19 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { StatusBadge } from "@/components/status-badge"
 import { formatCurrency, formatRelativeTime } from "@/lib/utils"
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from "recharts"
 
 interface DashboardData {
   stats: {
@@ -257,23 +269,156 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Period Summary */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="rounded-full bg-primary/10 p-3">
-              <TrendingUp className="h-6 w-6 text-primary" />
+      {/* Charts Section */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Status Distribution Bar Chart */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Status Breakdown</CardTitle>
+            <CardDescription>Request counts by status</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[260px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={[
+                    { name: "Pending", value: stats.pending, fill: "#f59e0b" },
+                    { name: "Approved", value: stats.approved, fill: "#22c55e" },
+                    { name: "Rejected", value: stats.rejected, fill: "#ef4444" },
+                  ]}
+                  margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+                  <Tooltip
+                    formatter={(value) => [value, "Requests"]}
+                    contentStyle={{ borderRadius: "8px", fontSize: "13px" }}
+                  />
+                  <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                    {[
+                      { name: "Pending", fill: "#f59e0b" },
+                      { name: "Approved", fill: "#22c55e" },
+                      { name: "Rejected", fill: "#ef4444" },
+                    ].map((entry, index) => (
+                      <Cell key={index} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
             </div>
-            <div>
-              <h3 className="font-medium">Selected Period</h3>
-              <p className="text-sm text-muted-foreground">
-                {stats.thisMonthCount} requests totaling{" "}
-                {formatCurrency(stats.thisMonthAmount)}
-              </p>
+          </CardContent>
+        </Card>
+
+        {/* Status Distribution Donut Chart */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Status Distribution</CardTitle>
+            <CardDescription>Percentage split by status</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[260px]">
+              {stats.total > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: "Pending", value: stats.pending },
+                        { name: "Approved", value: stats.approved },
+                        { name: "Rejected", value: stats.rejected },
+                      ].filter((d) => d.value > 0)}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={55}
+                      outerRadius={90}
+                      paddingAngle={3}
+                      dataKey="value"
+                      label={({ name, percent }: any) =>
+                        `${name} ${((percent || 0) * 100).toFixed(0)}%`
+                      }
+                      labelLine={false}
+                    >
+                      {[
+                        { fill: "#f59e0b" },
+                        { fill: "#22c55e" },
+                        { fill: "#ef4444" },
+                      ].map((entry, index) => (
+                        <Cell key={index} fill={entry.fill} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value) => [value, "Requests"]}
+                      contentStyle={{ borderRadius: "8px", fontSize: "13px" }}
+                    />
+                    <Legend
+                      iconType="circle"
+                      wrapperStyle={{ fontSize: "12px" }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                  No data for selected period
+                </div>
+              )}
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Entity-wise Amount Bar Chart */}
+      {data?.entityStats && data.entityStats.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-2">
+              <Building2 className="h-5 w-5 text-indigo-600" />
+              <CardTitle className="text-lg">Entity-wise Amounts</CardTitle>
+            </div>
+            <CardDescription>Total amount by entity for selected period</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={data.entityStats.map((es) => ({
+                    name: es.entity.length > 18 ? es.entity.substring(0, 16) + ".." : es.entity,
+                    fullName: es.entity,
+                    amount: es.amount,
+                  }))}
+                  margin={{ top: 10, right: 10, left: 20, bottom: 40 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 11 }}
+                    angle={-25}
+                    textAnchor="end"
+                    interval={0}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11 }}
+                    tickFormatter={(value) =>
+                      value >= 100000
+                        ? `${(value / 100000).toFixed(1)}L`
+                        : value >= 1000
+                        ? `${(value / 1000).toFixed(0)}K`
+                        : value.toString()
+                    }
+                  />
+                  <Tooltip
+                    formatter={(value) => [formatCurrency(value as number), "Amount"]}
+                    labelFormatter={(_label, payload) =>
+                      payload?.[0]?.payload?.fullName || _label
+                    }
+                    contentStyle={{ borderRadius: "8px", fontSize: "13px" }}
+                  />
+                  <Bar dataKey="amount" fill="#6366f1" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Entity-wise KPI */}
       {data?.entityStats && data.entityStats.length > 0 && (
