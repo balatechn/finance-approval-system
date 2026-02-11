@@ -270,15 +270,14 @@ export default function DashboardPage() {
       </div>
 
       {/* Charts Section */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-3">
         {/* Status Distribution Bar Chart */}
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Status Breakdown</CardTitle>
-            <CardDescription>Request counts by status</CardDescription>
+          <CardHeader className="p-4 pb-1">
+            <CardTitle className="text-sm font-semibold">Status Breakdown</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="h-[260px]">
+          <CardContent className="p-4 pt-0">
+            <div className="h-[180px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={[
@@ -286,11 +285,12 @@ export default function DashboardPage() {
                     { name: "Approved", value: stats.approved, fill: "#22c55e" },
                     { name: "Rejected", value: stats.rejected, fill: "#ef4444" },
                   ]}
-                  margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+                  margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
+                  barSize={32}
                 >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                  <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+                  <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 10 }} />
                   <Tooltip
                     formatter={(value) => [value, "Requests"]}
                     contentStyle={{ borderRadius: "8px", fontSize: "13px" }}
@@ -312,12 +312,11 @@ export default function DashboardPage() {
 
         {/* Status Distribution Donut Chart */}
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Status Distribution</CardTitle>
-            <CardDescription>Percentage split by status</CardDescription>
+          <CardHeader className="p-4 pb-1">
+            <CardTitle className="text-sm font-semibold">Status Distribution</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="h-[260px]">
+          <CardContent className="p-4 pt-0">
+            <div className="h-[180px]">
               {stats.total > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -329,8 +328,8 @@ export default function DashboardPage() {
                       ].filter((d) => d.value > 0)}
                       cx="50%"
                       cy="50%"
-                      innerRadius={55}
-                      outerRadius={90}
+                      innerRadius={40}
+                      outerRadius={65}
                       paddingAngle={3}
                       dataKey="value"
                       label={({ name, percent }: any) =>
@@ -352,7 +351,8 @@ export default function DashboardPage() {
                     />
                     <Legend
                       iconType="circle"
-                      wrapperStyle={{ fontSize: "12px" }}
+                      wrapperStyle={{ fontSize: "11px", paddingTop: 0 }}
+                      iconSize={8}
                     />
                   </PieChart>
                 </ResponsiveContainer>
@@ -364,20 +364,18 @@ export default function DashboardPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
 
-      {/* Entity-wise Amount Bar Chart */}
-      {data?.entityStats && data.entityStats.length > 0 && (
-        <Card>
-          <CardHeader className="pb-2">
+        {/* Entity-wise Amount Bar Chart */}
+        {data?.entityStats && data.entityStats.length > 0 && (
+        <Card className="lg:col-span-1">
+          <CardHeader className="p-4 pb-1">
             <div className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-indigo-600" />
-              <CardTitle className="text-lg">Entity-wise Amounts</CardTitle>
+              <Building2 className="h-4 w-4 text-indigo-600" />
+              <CardTitle className="text-sm font-semibold">Entity-wise Amounts</CardTitle>
             </div>
-            <CardDescription>Total amount by entity for selected period</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
+          <CardContent className="p-4 pt-0">
+            <div className="h-[180px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={data.entityStats.map((es) => ({
@@ -385,18 +383,19 @@ export default function DashboardPage() {
                     fullName: es.entity,
                     amount: es.amount,
                   }))}
-                  margin={{ top: 10, right: 10, left: 20, bottom: 40 }}
+                  margin={{ top: 5, right: 5, left: 10, bottom: 30 }}
+                  barSize={28}
                 >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis
                     dataKey="name"
-                    tick={{ fontSize: 11 }}
-                    angle={-25}
+                    tick={{ fontSize: 9 }}
+                    angle={-30}
                     textAnchor="end"
                     interval={0}
                   />
                   <YAxis
-                    tick={{ fontSize: 11 }}
+                    tick={{ fontSize: 10 }}
                     tickFormatter={(value) =>
                       value >= 100000
                         ? `${(value / 100000).toFixed(1)}L`
@@ -412,13 +411,14 @@ export default function DashboardPage() {
                     }
                     contentStyle={{ borderRadius: "8px", fontSize: "13px" }}
                   />
-                  <Bar dataKey="amount" fill="#6366f1" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="amount" fill="#6366f1" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
       )}
+      </div>
 
       {/* Entity-wise KPI */}
       {data?.entityStats && data.entityStats.length > 0 && (
