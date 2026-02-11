@@ -24,6 +24,14 @@ export async function GET(request: NextRequest) {
     const [notifications, unreadCount] = await Promise.all([
       prisma.notification.findMany({
         where: whereClause,
+        include: {
+          financeRequest: {
+            select: {
+              referenceNumber: true,
+              status: true,
+            },
+          },
+        },
         orderBy: { createdAt: 'desc' },
         take: limit,
       }),

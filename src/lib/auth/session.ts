@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from './auth-options';
 import { Role } from '@prisma/client';
-import { hasPermission } from './permissions';
+import { hasPermission, canApproveLevel } from './permissions';
 
 export async function getSession() {
   return await getServerSession(authOptions);
@@ -41,4 +41,7 @@ export async function requirePermission(permission: string) {
   return user;
 }
 
-
+export async function canApprove(level: string) {
+  const user = await requireAuth();
+  return canApproveLevel(user.role, level);
+}

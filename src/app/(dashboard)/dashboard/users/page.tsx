@@ -51,7 +51,9 @@ interface User {
   employeeId: string | null;
   isActive: boolean;
   createdAt: string;
-
+  _count: {
+    financeRequests: number;
+  };
 }
 
 interface Pagination {
@@ -358,6 +360,7 @@ export default function UsersPage() {
                       <TableHead>Department</TableHead>
                       <TableHead>Employee ID</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Requests</TableHead>
                       <TableHead>Created</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -396,6 +399,9 @@ export default function UsersPage() {
                           >
                             {user.isActive ? "Active" : "Inactive"}
                           </span>
+                        </TableCell>
+                        <TableCell className="text-sm text-gray-600">
+                          {user._count.financeRequests}
                         </TableCell>
                         <TableCell className="text-sm text-gray-600">
                           {formatDate(user.createdAt)}
