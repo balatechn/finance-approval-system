@@ -2,10 +2,20 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Plus, Search, Filter, ChevronLeft, ChevronRight } from "lucide-react"
+import { Plus, Search, Filter, ChevronLeft, ChevronRight, Trash2 } from "lucide-react"
+import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { useToast } from "@/hooks/use-toast"
 import {
   Select,
   SelectContent,
@@ -49,6 +59,8 @@ interface PaginationInfo {
 }
 
 export default function RequestsPage() {
+  const { data: session } = useSession()
+  const { toast } = useToast()
   const [requests, setRequests] = useState<FinanceRequest[]>([])
   const [pagination, setPagination] = useState<PaginationInfo>({
     total: 0,
@@ -59,6 +71,32 @@ export default function RequestsPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [deleteTarget, setDeleteTarget] = useState<FinanceRequest | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const isAdmin = session?.user?.role === "ADMIN"
+
+  async function handleDelete() {
+    if (!deleteTarget) return
+    try {
+      setIsDeleting(true)
+      const response = await fetch(`/api/finance-requests/${deleteTarget.referenceNumber}`, {
+        method: "DELETE",
+      })
+      if (response.ok) {
+        toast({ title: "Deleted", description: `Request ${deleteTarget.referenceNumber} deleted successfully`, variant: "success" })
+        fetchRequests()
+      } else {
+        const data = await response.json()
+        throw new Error(data.error || "Failed to delete")
+      }
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to delete request", variant: "destructive" })
+    } finally {
+      setIsDeleting(false)
+      setDeleteTarget(null)
+    }
+  }
 
   useEffect(() => {
     fetchRequests()
@@ -238,11 +276,23 @@ export default function RequestsPage() {
                           {formatDate(request.createdAt)}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Link href={`/dashboard/requests/${request.referenceNumber}`}>
-                            <Button variant="ghost" size="sm">
-                              View
-                            </Button>
-                          </Link>
+                          <div className="flex items-center justify-end gap-1">
+                            <Link href={`/dashboard/requests/${request.referenceNumber}`}>
+                              <Button variant="ghost" size="sm">
+                                View
+                              </Button>
+                            </Link>
+                            {isAdmin && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                onClick={() => setDeleteTarget(request)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -286,6 +336,27 @@ export default function RequestsPage() {
           )}
         </CardContent>
       </Card>
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Request</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete request{" "}
+              <span className="font-semibold">{deleteTarget?.referenceNumber}</span>?
+              This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+              {isDeleting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
