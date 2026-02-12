@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-// Build trigger: resubmission-comments-feature
+// Build v2: resubmission-comments-with-error-handling
 const nextConfig = {
   experimental: {
     serverActions: {
