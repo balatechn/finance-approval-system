@@ -22,6 +22,7 @@ import {
   ChevronsRight,
   Check,
   Lock,
+  MessageSquare,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -63,6 +64,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const [showOnlineDropdown, setShowOnlineDropdown] = useState(false)
   const [notifications, setNotifications] = useState<any[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
+  const [unreadDiscussionCount, setUnreadDiscussionCount] = useState(0)
   const [showNotifications, setShowNotifications] = useState(false)
 
   const user = session?.user
@@ -96,6 +98,11 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         const data = await res.json()
         setNotifications(data.notifications || [])
         setUnreadCount(data.unreadCount || 0)
+        // Count unread discussion notifications (MENTION or DISCUSSION type)
+        const discussionNotifs = (data.notifications || []).filter(
+          (n: any) => !n.isRead && (n.type === 'MENTION' || n.type === 'DISCUSSION')
+        )
+        setUnreadDiscussionCount(discussionNotifs.length)
       }
     } catch {}
   }, [])
@@ -402,6 +409,22 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                       </div>
                     </>
                   )}
+                </div>
+              )}
+
+              {/* Discussion Alerts */}
+              {unreadDiscussionCount > 0 && (
+                <div className="relative">
+                  <button
+                    className="relative rounded-full p-2 hover:bg-gray-100"
+                    onClick={() => { setShowNotifications(true); setShowOnlineDropdown(false) }}
+                    title="New discussion messages"
+                  >
+                    <MessageSquare className="h-5 w-5 text-red-500 animate-pulse" />
+                    <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white animate-pulse">
+                      {unreadDiscussionCount > 9 ? '9+' : unreadDiscussionCount}
+                    </span>
+                  </button>
                 </div>
               )}
 
