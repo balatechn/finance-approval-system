@@ -390,6 +390,56 @@ export async function sendSLABreachEmail(
   }
 }
 
+/**
+ * Send SLA reminder email (twice daily for overdue requests)
+ */
+export async function sendSLAReminderEmail(
+  approverEmail: string,
+  approverName: string,
+  referenceNumber: string,
+  level: string,
+  hoursOverdue: number,
+  reminderCount: number
+): Promise<void> {
+  const daysOverdue = Math.floor(hoursOverdue / 24);
+  const remainingHours = Math.round(hoursOverdue % 24);
+  const overdueText = daysOverdue > 0 
+    ? `${daysOverdue} day${daysOverdue > 1 ? 's' : ''} ${remainingHours} hours` 
+    : `${hoursOverdue.toFixed(1)} hours`;
+
+  const html = emailWrapper(`
+    <h2 style="color: #dc2626; margin-top: 0;">⏰ REMINDER: Action Required - Request Overdue</h2>
+    <p>Dear ${approverName},</p>
+    <p style="color: #dc2626; font-weight: bold;">This is reminder #${reminderCount}: A finance request is still pending your approval and is significantly overdue.</p>
+    <div style="background: #fef2f2; padding: 16px; border-radius: 8px; margin: 16px 0; border: 2px solid #dc2626;">
+      <p style="margin: 4px 0;"><strong>Reference:</strong> ${referenceNumber}</p>
+      <p style="margin: 4px 0;"><strong>Pending Stage:</strong> ${LEVEL_LABELS[level] || level}</p>
+      <p style="margin: 4px 0; color: #dc2626;"><strong>Overdue By:</strong> ${overdueText}</p>
+    </div>
+    <p style="color: #dc2626;">⚠️ This request requires your immediate attention. Please approve, reject, or send back this request to proceed.</p>
+    <p>You will continue to receive reminders twice daily until action is taken.</p>
+    ${actionButton(`${APP_URL}/dashboard/approvals/${referenceNumber}`, 'Take Action Now', '#dc2626')}
+  `);
+
+  await sendEmail({
+    to: approverEmail,
+    subject: `⏰ REMINDER #${reminderCount}: Pending Approval - ${referenceNumber} (Overdue ${overdueText})`,
+    html,
+  });
+
+  // BCC admins on reminders
+  const adminEmails = await getAdminEmails();
+  const adminBcc = adminEmails.filter((e) => e !== approverEmail);
+  if (adminBcc.length > 0) {
+    await sendEmail({
+      to: adminBcc[0],
+      bcc: adminBcc.slice(1),
+      subject: `[Admin] REMINDER #${reminderCount}: ${referenceNumber} - Pending at ${LEVEL_LABELS[level] || level}`,
+      html,
+    });
+  }
+}
+
 // ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================

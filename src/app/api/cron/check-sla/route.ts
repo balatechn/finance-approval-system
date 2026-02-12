@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { ApprovalLevel, RequestStatus } from '@prisma/client';
 import {
   sendSLABreachEmail,
+  sendSLAReminderEmail,
   createNotification,
   getApproversForLevel,
 } from '@/lib/email/email-service';
@@ -20,6 +21,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Check for reminder mode (send reminders twice daily at 9 AM and 3 PM IST)
+    const { searchParams } = new URL(request.url);
+    const mode = searchParams.get('mode');
+
+    if (mode === 'reminder') {
+      // Send reminder emails for all breached requests
+      const reminderResults = await sendBreachedReminders();
+      return NextResponse.json({
+        message: 'SLA reminder emails sent',
+        ...reminderResults,
+      });
+    }
+
+    // Default: Check for new breaches
     const results = await checkSLABreaches();
     
     return NextResponse.json({
@@ -33,6 +48,88 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+/**
+ * Send reminder emails for ALL currently breached/overdue requests
+ * Called twice daily (9 AM and 3 PM IST)
+ */
+async function sendBreachedReminders() {
+  const now = new Date();
+  let remindersSent = 0;
+  let requestsProcessed = 0;
+
+  // Get all approval steps that are breached and still pending
+  const breachedSteps = await prisma.approvalStep.findMany({
+    where: {
+      status: 'PENDING',
+      slaBreached: true,
+    },
+    include: {
+      financeRequest: {
+        select: {
+          id: true,
+          referenceNumber: true,
+          requestor: {
+            select: { name: true, email: true },
+          },
+        },
+      },
+    },
+  });
+
+  for (const step of breachedSteps) {
+    requestsProcessed++;
+
+    // Calculate hours overdue
+    const startDate = await getStepStartTime(step.financeRequestId, step.level);
+    if (!startDate) continue;
+
+    const hoursElapsed = (now.getTime() - startDate.getTime()) / (1000 * 60 * 60);
+    const hoursOverdue = hoursElapsed - step.slaHours;
+
+    if (hoursOverdue <= 0) continue;
+
+    // Calculate reminder count (2 per day since breach)
+    // Use SLA logs to find when breach was first recorded
+    const breachLog = await prisma.sLALog.findFirst({
+      where: {
+        financeRequestId: step.financeRequestId,
+        level: step.level,
+        isBreached: true,
+      },
+      orderBy: { breachedAt: 'asc' },
+    });
+
+    let reminderCount = 1;
+    if (breachLog?.breachedAt) {
+      const hoursSinceBreach = (now.getTime() - breachLog.breachedAt.getTime()) / (1000 * 60 * 60);
+      // 2 reminders per day = every 12 hours, +1 for initial breach email
+      reminderCount = Math.max(1, Math.floor(hoursSinceBreach / 12) + 1);
+    }
+
+    // Get approvers for this level
+    const approvers = await getApproversForLevel(step.level);
+
+    for (const approver of approvers) {
+      await sendSLAReminderEmail(
+        approver.email,
+        approver.name || 'Approver',
+        step.financeRequest.referenceNumber,
+        step.level,
+        hoursOverdue,
+        reminderCount
+      );
+
+      remindersSent++;
+    }
+  }
+
+  return {
+    requestsProcessed,
+    remindersSent,
+    timestamp: now.toISOString(),
+  };
 }
 
 async function checkSLABreaches() {
