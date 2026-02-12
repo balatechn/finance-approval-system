@@ -280,6 +280,25 @@ export async function PATCH(
         prisma.sLALog.deleteMany({ where: { financeRequestId: existingRequest.id } }),
       ]);
 
+      // Get resubmission comments from the request body
+      const resubmissionComments = body.resubmissionComments || null;
+
+      // Validate required resubmission comments
+      if (!resubmissionComments || resubmissionComments.trim() === '') {
+        return NextResponse.json(
+          { error: 'Please provide comments describing the changes you made for resubmission.' },
+          { status: 400 }
+        );
+      }
+
+      // Validate resubmission comments length (max 300 characters)
+      if (resubmissionComments.trim().length > 300) {
+        return NextResponse.json(
+          { error: 'Resubmission comments must be 300 characters or less.' },
+          { status: 400 }
+        );
+      }
+
       // Update the request with new data, restart workflow, and increment resubmission count
       const updatedRequest = await prisma.financeRequest.update({
         where: { id: existingRequest.id },
@@ -288,6 +307,7 @@ export async function PATCH(
           status: 'PENDING_FINANCE_VETTING',
           currentApprovalLevel: 'FINANCE_VETTING',
           resubmissionCount: currentCount + 1,
+          lastResubmissionComments: resubmissionComments.trim(),
           completedAt: null,
         },
       });

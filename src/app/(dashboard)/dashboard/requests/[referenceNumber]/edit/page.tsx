@@ -66,6 +66,7 @@ export default function EditRequestPage() {
   const [loading, setLoading] = useState(true)
   const [requestData, setRequestData] = useState<any>(null)
   const [sentBackComments, setSentBackComments] = useState<SentBackComment[]>([])
+  const [resubmissionComments, setResubmissionComments] = useState("")
   const isDraftRef = useRef(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
@@ -317,6 +318,28 @@ export default function EditRequestPage() {
       const isSentBack = requestData?.status === "SENT_BACK"
       const savingAsDraft = isDraftRef.current
 
+      // Validate resubmission comments when resubmitting
+      if (isSentBack && !savingAsDraft && !resubmissionComments.trim()) {
+        toast({
+          title: "Comments Required",
+          description: "Please describe the changes you made before resubmitting.",
+          variant: "destructive",
+        })
+        setIsSubmitting(false)
+        return
+      }
+
+      // Validate resubmission comments length
+      if (isSentBack && !savingAsDraft && resubmissionComments.trim().length > 300) {
+        toast({
+          title: "Comments Too Long",
+          description: "Resubmission comments must be 300 characters or less.",
+          variant: "destructive",
+        })
+        setIsSubmitting(false)
+        return
+      }
+
       const submitData: any = {
         ...data,
         saveAsDraft: savingAsDraft,
@@ -325,6 +348,7 @@ export default function EditRequestPage() {
       // If resubmitting a sent-back request
       if (isSentBack && !savingAsDraft) {
         submitData.status = "RESUBMITTED"
+        submitData.resubmissionComments = resubmissionComments.trim()
       } else if (savingAsDraft) {
         submitData.status = "DRAFT"
       } else {
@@ -439,6 +463,30 @@ export default function EditRequestPage() {
                 The approver sent this request back. Please review and update as needed.
               </p>
             )}
+
+            {/* Resubmission Comments - Required */}
+            <div className="mt-4 pt-4 border-t border-amber-200">
+              <Label htmlFor="resubmissionComments" className="text-amber-900 font-medium">
+                Your Response / Changes Made <span className="text-red-500">*</span>
+              </Label>
+              <Textarea
+                id="resubmissionComments"
+                placeholder="Describe the changes you made in response to the feedback above..."
+                value={resubmissionComments}
+                onChange={(e) => setResubmissionComments(e.target.value.slice(0, 300))}
+                maxLength={300}
+                rows={4}
+                className="mt-2 border-amber-300 focus:border-amber-500 focus:ring-amber-500"
+              />
+              <div className="mt-1 flex justify-between items-center">
+                <p className="text-xs text-amber-600">
+                  This comment will be visible to approvers so they can see what changes you made.
+                </p>
+                <span className={`text-xs ${resubmissionComments.length >= 300 ? 'text-red-500 font-medium' : 'text-amber-600'}`}>
+                  {resubmissionComments.length}/300
+                </span>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}

@@ -67,6 +67,8 @@ interface FinanceRequest {
   tdsPercentage: number | null
   netPayableAmount: number | null
   remarks: string | null
+  resubmissionCount: number
+  lastResubmissionComments: string | null
   createdAt: string
   updatedAt: string
   requester: {
@@ -361,6 +363,26 @@ export default function ApprovalDetailPage() {
               <p className="text-sm text-red-700">
                 This request has exceeded the expected approval time. Please take action immediately.
               </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Resubmission Comments Banner */}
+      {request.resubmissionCount > 0 && request.lastResubmissionComments && (
+        <Card className="border-blue-200 bg-blue-50">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-blue-800 text-base">
+              <RefreshCw className="h-4 w-4" />
+              Resubmission #{request.resubmissionCount} - Requester&apos;s Response
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="rounded-lg bg-white border border-blue-200 p-3">
+              <p className="text-sm font-medium text-blue-900 mb-1">
+                {request.requester.name} responded:
+              </p>
+              <p className="text-sm text-blue-800">{request.lastResubmissionComments}</p>
             </div>
           </CardContent>
         </Card>

@@ -209,6 +209,7 @@ model FinanceRequest {
   status                RequestStatus @default(DRAFT)
   currentApprovalLevel  ApprovalLevel?
   resubmissionCount     Int           @default(0)
+  lastResubmissionComments String?   @db.Text  // Comments from requester on last resubmission
   
   // Declaration
   declarationConfirmed  Boolean       @default(false)
