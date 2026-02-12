@@ -111,6 +111,8 @@ model User {
   financeRequests        FinanceRequest[]  @relation("Requestor")
   approvalActions        ApprovalAction_Record[]
   notifications          Notification[]
+  discussions            Discussion[]
+  mentionedInDiscussions Discussion[]      @relation("MentionedUsers")
   accounts               Account[]
   sessions               Session[]
   assignedEntities       Entity[]          @relation("UserEntities")
@@ -233,6 +235,7 @@ model FinanceRequest {
   approvalActions       ApprovalAction_Record[]
   slaLogs               SLALog[]
   notifications         Notification[]
+  discussions           Discussion[]
 
   @@index([referenceNumber])
   @@index([requestorId])
@@ -388,6 +391,33 @@ model Notification {
   @@index([userId])
   @@index([financeRequestId])
   @@index([isRead])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// DISCUSSION / COMMENTS
+// ============================================================================
+
+model Discussion {
+  id                String         @id @default(cuid())
+  financeRequestId  String
+  userId            String
+  
+  message           String         @db.Text
+  attachmentUrl     String?        // Optional file attachment
+  attachmentName    String?
+  
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  isDeleted         Boolean        @default(false)
+  
+  // Relations
+  financeRequest    FinanceRequest @relation(fields: [financeRequestId], references: [id])
+  user              User           @relation(fields: [userId], references: [id])
+  mentionedUsers    User[]         @relation("MentionedUsers")
+  
+  @@index([financeRequestId])
+  @@index([userId])
   @@index([createdAt])
 }
 

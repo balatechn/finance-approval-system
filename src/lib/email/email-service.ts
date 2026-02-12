@@ -731,6 +731,78 @@ export async function sendUserDeactivatedEmail(
 }
 
 /**
+ * Send email when someone is mentioned in a discussion
+ */
+export async function sendMentionNotificationEmail(
+  mentionedUserEmail: string,
+  mentionedUserName: string,
+  mentionerName: string,
+  referenceNumber: string,
+  requestPurpose: string,
+  messagePreview: string
+): Promise<void> {
+  const html = emailWrapper(`
+    <h2 style="color: #2563eb; margin-bottom: 16px;">You were mentioned in a discussion</h2>
+    <p style="color: #374151; margin-bottom: 16px;">
+      Hi ${mentionedUserName},
+    </p>
+    <p style="color: #374151; margin-bottom: 16px;">
+      <strong>${mentionerName}</strong> mentioned you in a comment on finance request <strong>${referenceNumber}</strong>.
+    </p>
+    ${requestInfoBox({
+      referenceNumber,
+      purpose: requestPurpose,
+    })}
+    <div style="background: #eff6ff; border-left: 4px solid #2563eb; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0;">
+      <p style="color: #1e40af; margin: 0; font-style: italic;">"${messagePreview}"</p>
+    </div>
+    ${actionButton(`${APP_URL}/dashboard/requests/${referenceNumber}`, 'View Discussion', '#2563eb')}
+  `);
+
+  await sendEmail({
+    to: mentionedUserEmail,
+    subject: `@Mentioned: ${referenceNumber} - ${mentionerName} mentioned you`,
+    html,
+  });
+}
+
+/**
+ * Send email when someone comments on your request
+ */
+export async function sendDiscussionNotificationEmail(
+  requestorEmail: string,
+  requestorName: string,
+  commenterName: string,
+  referenceNumber: string,
+  requestPurpose: string,
+  messagePreview: string
+): Promise<void> {
+  const html = emailWrapper(`
+    <h2 style="color: #2563eb; margin-bottom: 16px;">New comment on your request</h2>
+    <p style="color: #374151; margin-bottom: 16px;">
+      Hi ${requestorName},
+    </p>
+    <p style="color: #374151; margin-bottom: 16px;">
+      <strong>${commenterName}</strong> commented on your finance request <strong>${referenceNumber}</strong>.
+    </p>
+    ${requestInfoBox({
+      referenceNumber,
+      purpose: requestPurpose,
+    })}
+    <div style="background: #f3f4f6; border-left: 4px solid #6b7280; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0;">
+      <p style="color: #374151; margin: 0; font-style: italic;">"${messagePreview}"</p>
+    </div>
+    ${actionButton(`${APP_URL}/dashboard/requests/${referenceNumber}`, 'View Discussion')}
+  `);
+
+  await sendEmail({
+    to: requestorEmail,
+    subject: `New Comment: ${referenceNumber} - ${commenterName} commented`,
+    html,
+  });
+}
+
+/**
  * Create in-app notification
  */
 export async function createNotification(

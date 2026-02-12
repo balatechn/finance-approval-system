@@ -25,6 +25,7 @@ import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { StatusBadge, ApprovalLevelBadge } from "@/components/status-badge"
 import { ApprovalTimeline } from "@/components/approval-timeline"
+import { DiscussionThread } from "@/components/discussion-thread"
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import {
@@ -728,6 +729,12 @@ export default function ApprovalDetailPage() {
           </Card>
         </div>
       </div>
+
+      {/* Discussion Thread */}
+      <DiscussionThread 
+        requestId={request.id}
+        referenceNumber={request.referenceNumber}
+      />
 
       {/* Action Dialog */}
       <Dialog open={actionDialogOpen} onOpenChange={setActionDialogOpen}>
