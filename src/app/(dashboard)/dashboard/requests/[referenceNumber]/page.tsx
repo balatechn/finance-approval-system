@@ -118,6 +118,7 @@ export default function RequestDetailPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [previewFile, setPreviewFile] = useState<{ url: string; type: string; name: string } | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const referenceNumber = params.referenceNumber as string
 
@@ -135,9 +136,23 @@ export default function RequestDetailPage() {
             variant: "destructive",
           })
           router.push("/dashboard/requests")
+        } else {
+          const errorData = await response.json().catch(() => ({}))
+          setError(errorData.error || "Failed to load request")
+          toast({
+            title: "Error",
+            description: errorData.error || "Failed to load request",
+            variant: "destructive",
+          })
         }
       } catch (error) {
         console.error("Failed to fetch request:", error)
+        setError("Network error - please try again")
+        toast({
+          title: "Network Error",
+          description: "Failed to connect. Please check your connection.",
+          variant: "destructive",
+        })
       } finally {
         setLoading(false)
       }
@@ -184,7 +199,20 @@ export default function RequestDetailPage() {
   }
 
   if (!request) {
-    return null
+    return (
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <AlertTriangle className="h-12 w-12 text-amber-500" />
+        <p className="text-lg font-medium text-gray-700">
+          {error || "Unable to load request"}
+        </p>
+        <Link href="/dashboard/requests">
+          <Button variant="outline">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Requests
+          </Button>
+        </Link>
+      </div>
+    )
   }
 
   const userRole = session?.user?.role
