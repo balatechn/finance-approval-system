@@ -216,7 +216,7 @@ export function DiscussionThread({ requestId, referenceNumber }: DiscussionThrea
           <MessageSquare className="h-5 w-5 text-blue-600" />
           Discussion
           {discussions.length > 0 && (
-            <span className="ml-auto bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded-full">
+            <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full animate-pulse shadow-sm">
               {discussions.length}
             </span>
           )}
