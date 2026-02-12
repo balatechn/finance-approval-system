@@ -259,10 +259,88 @@ async function checkSLABreaches() {
     }
   }
 
+  // AUTOMATIC REMINDERS: Send reminders for all already-breached requests
+  // This runs every hour but only sends reminders every 4 hours to avoid spamming
+  let remindersSent = 0;
+  const REMINDER_INTERVAL_HOURS = 4; // Send reminder every 4 hours
+
+  const breachedSteps = await prisma.approvalStep.findMany({
+    where: {
+      status: 'PENDING',
+      slaBreached: true,
+    },
+    include: {
+      financeRequest: {
+        select: {
+          id: true,
+          referenceNumber: true,
+          requestor: {
+            select: { name: true, email: true },
+          },
+        },
+      },
+    },
+  });
+
+  for (const step of breachedSteps) {
+    // Check when breach first happened
+    const breachLog = await prisma.sLALog.findFirst({
+      where: {
+        financeRequestId: step.financeRequestId,
+        level: step.level,
+        isBreached: true,
+      },
+      orderBy: { breachedAt: 'asc' },
+    });
+
+    if (!breachLog?.breachedAt) continue;
+    
+    const hoursSinceBreach = (now.getTime() - breachLog.breachedAt.getTime()) / (1000 * 60 * 60);
+    
+    // Skip if breach just happened (within first interval - they got the breach email)
+    if (hoursSinceBreach < REMINDER_INTERVAL_HOURS) continue;
+
+    // Only send reminder at 4-hour intervals (4, 8, 12, 16, 20, 24 hours, etc.)
+    // Check if we're at a reminder interval point (within 1 hour window)
+    const intervalNumber = Math.floor(hoursSinceBreach / REMINDER_INTERVAL_HOURS);
+    const hoursSinceLastInterval = hoursSinceBreach - (intervalNumber * REMINDER_INTERVAL_HOURS);
+    
+    // Skip if not at a reminder interval (within first hour of the interval)
+    if (hoursSinceLastInterval >= 1) continue;
+
+    // Calculate hours overdue
+    const startDate = await getStepStartTime(step.financeRequestId, step.level);
+    if (!startDate) continue;
+
+    const hoursElapsed = (now.getTime() - startDate.getTime()) / (1000 * 60 * 60);
+    const hoursOverdue = hoursElapsed - step.slaHours;
+
+    if (hoursOverdue <= 0) continue;
+
+    // Reminder count = interval number (1st reminder at 4 hours, 2nd at 8 hours, etc.)
+    const reminderCount = intervalNumber;
+
+    // Get approvers for this level
+    const approvers = await getApproversForLevel(step.level);
+
+    for (const approver of approvers) {
+      await sendSLAReminderEmail(
+        approver.email,
+        approver.name || 'Approver',
+        step.financeRequest.referenceNumber,
+        step.level,
+        hoursOverdue,
+        reminderCount
+      );
+      remindersSent++;
+    }
+  }
+
   return {
     processedCount,
     breachedCount,
     notificationsSent,
+    remindersSent,
     timestamp: now.toISOString(),
   };
 }
