@@ -1,5 +1,7 @@
 # Finance Approval System — National Group India
 
+**Version:** 1.0.1
+
 ## Overview
 
 The **Finance Approval System** is a web-based enterprise application built for **National Group India** to streamline and automate the purchase/finance request and approval workflow. It replaces manual, paper-based processes with a digital, role-based approval pipeline — ensuring transparency, accountability, SLA compliance, and audit trails.
@@ -23,6 +25,7 @@ The **Finance Approval System** is a web-based enterprise application built for 
 11. [API Endpoints](#api-endpoints)
 12. [Email Notifications](#email-notifications)
 13. [SLA Management](#sla-management)
+14. [Changelog](#changelog)
 
 ---
 
@@ -37,9 +40,12 @@ The **Finance Approval System** is a web-based enterprise application built for 
 - **Interactive Charts** — Status breakdown bar chart, status distribution donut chart, and entity-wise amounts bar chart (powered by Recharts).
 - **Entity-wise Management** — Multi-entity support with user-entity assignment; Finance Team can only disburse requests for their assigned entities.
 - **SLA Tracking & Enforcement** — Configurable SLA hours per approval level with breach detection, alerts, and cron-based monitoring.
+- **Daily SLA Reminder Emails** — Automated emails sent daily at 8:30 AM IST to approvers for requests pending over 24 hours.
 - **Email Notifications** — Automated email alerts for submissions, approvals, rejections, send-backs, disbursement, SLA breaches, and user management events.
 - **Real-Time Notifications** — In-app notification bell with unread count, auto-polling, and mark-as-read functionality.
 - **Force Password Change** — New users must change their temporary password on first login.
+- **Cost-Focused Dashboard** — Dashboard displays expense metrics: Total Expenses, Total Disbursed, and Total Pending Disbursement.
+- **Forecast Card** — "Next Month" forecast button on dashboard shows projected expenses based on historical data.
 
 ### Request Features
 - Multiple payment types: Critical, Non-Critical, Petty Cash, Invoice, Advance, Reimbursement, Vendor Payment, Salary, Bonus, Other.
@@ -51,6 +57,9 @@ The **Finance Approval System** is a web-based enterprise application built for 
 - File attachments (quotes, invoices, supporting documents — max 5MB each).
 - Draft saving and submission workflow.
 - Send-back mechanism for requesting corrections.
+- **Resubmission Limit** — Maximum 2 resubmissions allowed; after limit reached, Admin review required.
+- **Required Resubmission Comments** — Requesters must explain changes made when resubmitting (300 character limit).
+- **Resubmission History** — Approvers see requester's response/changes in a dedicated banner.
 
 ### UI/UX Features
 - Responsive design (desktop + mobile).
@@ -361,15 +370,35 @@ The application will be available at `http://localhost:3000`.
 
 The application is deployed on **Vercel** with automatic deployments from the `master` branch.
 
-### Vercel Configuration (`vercel.json`)
-- Auto-deploy on push to `master`
-- Cron job for SLA checks (`/api/cron/check-sla`)
-- Edge middleware for route protection
+### Deployment Workflow
+```
+git add -A
+git commit -m "your message"
+git push origin master
+```
+→ Vercel automatically detects the push and deploys.
 
-### Deployment Steps
-1. Push to `master` branch on GitHub.
-2. Vercel automatically builds and deploys.
-3. Database migrations should be run before deployment if schema changes: `npx prisma db push`.
+### Build Process (`vercel.json`)
+The build command runs:
+1. `prisma generate` — Generate Prisma client
+2. `prisma db push` — Apply schema changes to database  
+3. `next build` — Build Next.js application
+
+### Vercel Configuration
+- **Auto-deploy:** On push to `master` branch
+- **Cron job:** Daily SLA check at 8:30 AM IST (`0 3 * * *` UTC)
+- **Edge middleware:** Route protection with NextAuth
+
+### Manual Deployment (if needed)
+```bash
+npx vercel --prod
+```
+
+### Clear Cache (if deployment issues)
+```bash
+npx vercel cache purge --yes
+npx vercel --prod --force
+```
 
 ---
 
@@ -466,6 +495,32 @@ All reports support:
 - Department/status/payment type filters
 - CSV export
 - Popup dialog display
+
+---
+
+## Changelog
+
+### v1.0.1 (February 2026)
+- **Resubmission Limit** — Maximum 2 resubmissions; Admin review required after limit.
+- **Required Resubmission Comments** — Requesters must provide explanation when resubmitting (300 char limit).
+- **Resubmission Comments Banner** — Approvers see requester's response in blue info card.
+- **Daily SLA Reminder Emails** — Auto-sent at 8:30 AM IST for requests pending 24+ hours.
+- **Cost-Focused Dashboard** — Expense-centric KPIs (Total Expenses, Disbursed, Pending).
+- **Forecast Card** — "Next Month" button for expense projections.
+- **Fix:** Admin now receives SLA reminder emails.
+- **Fix:** Email duplicates resolved.
+- **Deployment:** Auto-deploy via `git push` with `prisma db push` in build.
+
+### v1.0.0 (January 2026)
+- Initial release with full approval workflow.
+- 6-level approval pipeline.
+- Role-based access control (7 roles).
+- Email notifications via Gmail SMTP.
+- File attachments support.
+- SLA tracking with breach detection.
+- Dashboard with charts and date filtering.
+- Entity-wise management.
+- Reports generation with CSV export.
 
 ---
 
