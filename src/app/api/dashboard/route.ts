@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
       ].filter(Boolean);
     }
 
-    const [stats, recentRequests, pendingApprovals, slaAlerts, entityStats, monthlyTrend, departmentStats, topVendors] = await Promise.all([
+    const [stats, recentRequests, pendingApprovals, slaAlerts, entityStats, monthlyTrend, departmentStats, topVendors, forecast] = await Promise.all([
       getDashboardStats(user, userEntityIdentifiers, dateRange),
       getRecentRequests(user),
       getPendingApprovals(user, userEntityIdentifiers),
@@ -56,6 +56,7 @@ export async function GET(request: NextRequest) {
       getMonthlyTrend(user, dateRange),
       getDepartmentStats(user, dateRange),
       getTopVendors(user, dateRange),
+      getForecast(user),
     ]);
 
     const response = NextResponse.json({
@@ -67,6 +68,7 @@ export async function GET(request: NextRequest) {
       monthlyTrend,
       departmentStats,
       topVendors,
+      forecast,
     });
     response.headers.set('Cache-Control', 'private, max-age=15, stale-while-revalidate=30');
     return response;
@@ -577,4 +579,132 @@ async function getTopVendors(user: any, dateRange?: { gte?: Date; lte?: Date }) 
     }))
     .sort((a, b) => b.amount - a.amount)
     .slice(0, 5);
+}
+
+// Get next month forecast
+async function getForecast(user: any) {
+  const baseWhere: any = { isDeleted: false, status: { not: 'DRAFT' } };
+  if (user.role === 'EMPLOYEE') {
+    baseWhere.requestorId = user.id;
+  }
+
+  const now = new Date();
+  const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const nextMonthName = nextMonth.toLocaleString('en-IN', { month: 'long', year: 'numeric' });
+
+  // Get last 3 months data for average calculation
+  const threeMonthsAgo = new Date();
+  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+  threeMonthsAgo.setDate(1);
+  threeMonthsAgo.setHours(0, 0, 0, 0);
+
+  const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  // Parallel queries for forecast calculation
+  const [
+    last3MonthsData,
+    pendingPipelineData,
+    approvedAwaitingData,
+    currentMonthData,
+    lastMonthData,
+  ] = await Promise.all([
+    // Last 3 months total (excluding current month)
+    prisma.financeRequest.aggregate({
+      where: {
+        ...baseWhere,
+        createdAt: { gte: threeMonthsAgo, lt: startOfThisMonth },
+      },
+      _sum: { totalAmount: true },
+      _count: { id: true },
+    }),
+    // Pending pipeline (all pending requests)
+    prisma.financeRequest.aggregate({
+      where: {
+        ...baseWhere,
+        status: {
+          in: ['SUBMITTED', 'PENDING_FINANCE_VETTING', 'PENDING_FINANCE_PLANNER', 'PENDING_FINANCE_CONTROLLER', 'PENDING_DIRECTOR', 'PENDING_MD'],
+        },
+      },
+      _sum: { totalAmount: true },
+      _count: { id: true },
+    }),
+    // Approved awaiting disbursement
+    prisma.financeRequest.aggregate({
+      where: {
+        ...baseWhere,
+        status: 'APPROVED',
+      },
+      _sum: { totalAmount: true },
+      _count: { id: true },
+    }),
+    // Current month total
+    prisma.financeRequest.aggregate({
+      where: {
+        ...baseWhere,
+        createdAt: { gte: startOfThisMonth },
+      },
+      _sum: { totalAmount: true },
+    }),
+    // Last month total
+    prisma.financeRequest.aggregate({
+      where: {
+        ...baseWhere,
+        createdAt: {
+          gte: new Date(now.getFullYear(), now.getMonth() - 1, 1),
+          lt: startOfThisMonth,
+        },
+      },
+      _sum: { totalAmount: true },
+    }),
+  ]);
+
+  // Calculate 3-month average
+  const last3MonthsTotal = Number(last3MonthsData._sum.totalAmount || 0);
+  const monthlyAverage = last3MonthsTotal / 3;
+
+  // Pending pipeline
+  const pendingPipelineAmount = Number(pendingPipelineData._sum.totalAmount || 0);
+  const pendingPipelineCount = pendingPipelineData._count.id || 0;
+
+  // Approved awaiting
+  const approvedAwaitingAmount = Number(approvedAwaitingData._sum.totalAmount || 0);
+  const approvedAwaitingCount = approvedAwaitingData._count.id || 0;
+
+  // Projected amount = average + portion of pending pipeline likely to be approved
+  // Using 70% of pending as a conservative estimate
+  const projectedAmount = monthlyAverage + (pendingPipelineAmount * 0.7);
+
+  // Calculate trend (current month vs last month, prorated)
+  const currentMonthAmount = Number(currentMonthData._sum.totalAmount || 0);
+  const lastMonthAmount = Number(lastMonthData._sum.totalAmount || 0);
+  
+  // Prorate current month to estimate full month
+  const dayOfMonth = now.getDate();
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const proratedCurrentMonth = (currentMonthAmount / dayOfMonth) * daysInMonth;
+  
+  let trendPercent = 0;
+  let trendDirection: 'up' | 'down' | 'stable' = 'stable';
+  if (lastMonthAmount > 0) {
+    trendPercent = ((proratedCurrentMonth - lastMonthAmount) / lastMonthAmount) * 100;
+    trendDirection = trendPercent > 5 ? 'up' : trendPercent < -5 ? 'down' : 'stable';
+  }
+
+  return {
+    nextMonth: nextMonthName,
+    projectedAmount: Math.round(projectedAmount),
+    monthlyAverage: Math.round(monthlyAverage),
+    pendingPipeline: {
+      amount: pendingPipelineAmount,
+      count: pendingPipelineCount,
+    },
+    approvedAwaiting: {
+      amount: approvedAwaitingAmount,
+      count: approvedAwaitingCount,
+    },
+    trend: {
+      percent: Math.abs(Math.round(trendPercent)),
+      direction: trendDirection,
+    },
+  };
 }
