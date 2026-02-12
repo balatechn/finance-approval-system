@@ -1,6 +1,6 @@
 # Finance Approval System — National Group India
 
-**Version:** 1.0.2
+**Version:** 1.0.3
 
 ## Overview
 
@@ -45,7 +45,8 @@ The **Finance Approval System** is a web-based enterprise application built for 
 - **Real-Time Notifications** — In-app notification bell with unread count, auto-polling, and mark-as-read functionality.
 - **Force Password Change** — New users must change their temporary password on first login.
 - **Cost-Focused Dashboard** — Dashboard displays expense metrics: Total Expenses, Total Disbursed, and Total Pending Disbursement.
-- **Forecast Card** — "Next Month" forecast button on dashboard shows projected expenses based on historical data.
+- **Forecast Tab** — Dedicated forecast page with projected expenses, pipeline breakdown, trend charts, and insights.
+- **Support Ticket System** — In-app support chat with ticket management, attachments, and staff replies.
 
 ### Request Features
 - Multiple payment types: Critical, Non-Critical, Petty Cash, Invoice, Advance, Reimbursement, Vendor Payment, Salary, Bonus, Other.
@@ -60,6 +61,7 @@ The **Finance Approval System** is a web-based enterprise application built for 
 - **Resubmission Limit** — Maximum 2 resubmissions allowed; after limit reached, Admin review required.
 - **Required Resubmission Comments** — Requesters must explain changes made when resubmitting (300 character limit).
 - **Resubmission History** — Approvers see requester's response/changes in a dedicated banner.
+- **Edit Permissions** — Only request creator and Admin can edit requests.
 - **Discussion Thread** — Request-specific comments/chat for requesters and approvers to communicate.
 - **@Mention Support** — Tag users in discussions with @username for notifications.
 - **Discussion Notifications** — Email and in-app alerts when mentioned or when comments are added.
@@ -74,6 +76,16 @@ The **Finance Approval System** is a web-based enterprise application built for 
 - Toast notifications for user feedback.
 - Admin can delete any request with confirmation dialog.
 - Entity selector for user assignment (visible for all roles).
+
+### Support Ticket Features
+- **Ticket Management** — Create, track, and resolve support tickets with unique ticket numbers (TKT-YYYY-XXXX).
+- **Chat Interface** — Split-view layout with ticket list and message thread.
+- **Priority Levels** — Low, Medium, High, Urgent with color-coded badges.
+- **Status Workflow** — Open → In Progress → Resolved → Closed.
+- **File Attachments** — Attach screenshots and documents to tickets and messages.
+- **Staff Replies** — Admin/Finance Team can view all tickets and reply.
+- **Auto-Status Updates** — Ticket auto-changes to In Progress when staff replies.
+- **Notifications** — Email and in-app alerts for new tickets and replies.
 
 ---
 
@@ -502,6 +514,13 @@ All reports support:
 ---
 
 ## Changelog
+
+### v1.0.3 (February 2026)
+- **Support Ticket System** — Full ticketing system with chat UI, attachments, and status management.
+- **Forecast Tab** — Moved forecast to dedicated navigation tab with enhanced charts and insights.
+- **Edit Permission Restriction** — Only request creator and Admin can edit requests.
+- **Discussion Alert Icon** — Header indicator for unread discussion notifications.
+- **Orange Support Tab** — Highlighted Support navigation item.
 
 ### v1.0.2 (February 2026)
 - **Discussion Thread** — Request-specific comments/chat for requesters and approvers.
