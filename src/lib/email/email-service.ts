@@ -93,6 +93,7 @@ const LEVEL_LABELS: Record<string, string> = {
   DIRECTOR: 'Director',
   MD: 'Managing Director',
   DISBURSEMENT: 'Disbursement',
+  ADMIN_REVIEW: 'Admin Review',
 };
 
 // ============================================================================

@@ -13,6 +13,8 @@ import {
   Download,
   AlertTriangle,
   IndianRupee,
+  ShieldCheck,
+  RefreshCw,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -100,7 +102,9 @@ export default function ApprovalDetailPage() {
   const [loading, setLoading] = useState(true)
   const [actionDialogOpen, setActionDialogOpen] = useState(false)
   const [disbursementDialogOpen, setDisbursementDialogOpen] = useState(false)
+  const [adminReviewDialogOpen, setAdminReviewDialogOpen] = useState(false)
   const [currentAction, setCurrentAction] = useState<"APPROVED" | "REJECTED" | "SENT_BACK">("APPROVED")
+  const [adminReviewAction, setAdminReviewAction] = useState<"APPROVE" | "REJECT" | "ALLOW_RESUBMISSION">("APPROVE")
   const [comments, setComments] = useState("")
   const [paymentReference, setPaymentReference] = useState("")
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split("T")[0])
@@ -243,6 +247,64 @@ export default function ApprovalDetailPage() {
     setActionDialogOpen(true)
   }
 
+  const openAdminReviewDialog = (action: "APPROVE" | "REJECT" | "ALLOW_RESUBMISSION") => {
+    setAdminReviewAction(action)
+    setComments("")
+    setAdminReviewDialogOpen(true)
+  }
+
+  const handleAdminReview = async () => {
+    if (adminReviewAction !== "APPROVE" && !comments.trim()) {
+      toast({
+        title: "Comments Required",
+        description: "Please provide comments for rejection or allowing resubmission",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+
+      const response = await fetch(`/api/finance-requests/${referenceNumber}/admin-review`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: adminReviewAction,
+          comments: comments.trim() || undefined,
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Admin review action failed")
+      }
+
+      const actionLabels = {
+        APPROVE: "approved and disbursed",
+        REJECT: "rejected",
+        ALLOW_RESUBMISSION: "sent back for resubmission",
+      }
+
+      toast({
+        title: "Admin Review Completed",
+        description: `Request has been ${actionLabels[adminReviewAction]}`,
+        variant: "success",
+      })
+
+      router.push("/dashboard/approvals")
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to process admin review",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
+      setAdminReviewDialogOpen(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -258,6 +320,7 @@ export default function ApprovalDetailPage() {
   const isPendingDisbursement = request.status === "APPROVED" && (
     session?.user?.role === "FINANCE_TEAM" || session?.user?.role === "ADMIN"
   )
+  const isPendingAdminReview = request.status === "PENDING_ADMIN_REVIEW" && session?.user?.role === "ADMIN"
   const currentStep = request.approvalSteps.find((s) => s.level === request.currentApprovalLevel)
   const isOverdue = currentStep?.isOverdue
 
@@ -306,14 +369,54 @@ export default function ApprovalDetailPage() {
       {/* Action Buttons */}
       <Card>
         <CardHeader>
-          <CardTitle>Take Action</CardTitle>
+          <CardTitle>
+            {isPendingAdminReview ? "Admin Review Required" : "Take Action"}
+          </CardTitle>
           <CardDescription>
-            Review the request details and take appropriate action
+            {isPendingAdminReview 
+              ? "This request has exceeded the maximum resubmission limit. As administrator, you can approve, reject, or allow one more resubmission."
+              : "Review the request details and take appropriate action"
+            }
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {isPendingAdminReview && (
+            <div className="mb-4 rounded-lg bg-amber-50 border border-amber-200 p-3">
+              <div className="flex items-center gap-2 text-amber-800">
+                <AlertTriangle className="h-4 w-4" />
+                <span className="text-sm font-medium">
+                  This request was sent back 2 times and requires admin decision.
+                </span>
+              </div>
+            </div>
+          )}
           <div className="flex flex-wrap gap-3">
-            {isPendingDisbursement ? (
+            {isPendingAdminReview ? (
+              <>
+                <Button
+                  onClick={() => openAdminReviewDialog("APPROVE")}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <ShieldCheck className="mr-2 h-4 w-4" />
+                  Approve &amp; Disburse
+                </Button>
+                <Button
+                  onClick={() => openAdminReviewDialog("ALLOW_RESUBMISSION")}
+                  variant="outline"
+                  className="border-blue-500 text-blue-600 hover:bg-blue-50"
+                >
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Allow Resubmission
+                </Button>
+                <Button
+                  onClick={() => openAdminReviewDialog("REJECT")}
+                  variant="destructive"
+                >
+                  <XCircle className="mr-2 h-4 w-4" />
+                  Reject Request
+                </Button>
+              </>
+            ) : isPendingDisbursement ? (
               <Button
                 onClick={() => {
                   setComments("")
@@ -754,6 +857,121 @@ export default function ApprovalDetailPage() {
             >
               <IndianRupee className="mr-2 h-4 w-4" />
               Confirm Disbursement
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Admin Review Dialog */}
+      <Dialog open={adminReviewDialogOpen} onOpenChange={setAdminReviewDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5" />
+              {adminReviewAction === "APPROVE" && "Approve & Disburse Request"}
+              {adminReviewAction === "REJECT" && "Reject Request"}
+              {adminReviewAction === "ALLOW_RESUBMISSION" && "Allow Resubmission"}
+            </DialogTitle>
+            <DialogDescription>
+              {adminReviewAction === "APPROVE" && "This will approve the request and mark it as disbursed, bypassing further approval steps."}
+              {adminReviewAction === "REJECT" && "This will permanently reject the request. The requester will be notified."}
+              {adminReviewAction === "ALLOW_RESUBMISSION" && "This will reset the resubmission counter and send the request back for editing."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {/* Amount Summary for Approve */}
+            {adminReviewAction === "APPROVE" && request && (
+              <div className="rounded-lg bg-green-50 border border-green-200 p-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-green-700">Amount to Disburse</span>
+                  <span className="text-xl font-bold text-green-800">
+                    {formatCurrency(request.netPayableAmount || request.totalAmountINR)}
+                  </span>
+                </div>
+                <div className="mt-1 text-xs text-green-600">
+                  {request.vendorName} &bull; {request.referenceNumber}
+                </div>
+              </div>
+            )}
+            
+            {/* Warning for Reject */}
+            {adminReviewAction === "REJECT" && (
+              <div className="rounded-lg bg-red-50 border border-red-200 p-4">
+                <div className="flex items-center gap-2 text-red-800">
+                  <AlertTriangle className="h-4 w-4" />
+                  <span className="text-sm font-medium">
+                    This action cannot be undone. The request will be permanently rejected.
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Info for Allow Resubmission */}
+            {adminReviewAction === "ALLOW_RESUBMISSION" && (
+              <div className="rounded-lg bg-blue-50 border border-blue-200 p-4">
+                <div className="flex items-center gap-2 text-blue-800">
+                  <RefreshCw className="h-4 w-4" />
+                  <span className="text-sm font-medium">
+                    The resubmission counter will be reset to 0. The requester can edit and resubmit.
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Comments */}
+            <div className="space-y-2">
+              <Label htmlFor="adminComments">
+                {adminReviewAction === "APPROVE" ? "Comments (Optional)" : "Comments *"}
+              </Label>
+              <Textarea
+                id="adminComments"
+                placeholder={
+                  adminReviewAction === "APPROVE"
+                    ? "Enter any notes about the approval..."
+                    : adminReviewAction === "REJECT"
+                    ? "Explain why the request is being rejected..."
+                    : "Provide guidance for the requester..."
+                }
+                value={comments}
+                onChange={(e) => setComments(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAdminReviewDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAdminReview}
+              loading={isSubmitting}
+              variant={adminReviewAction === "REJECT" ? "destructive" : "default"}
+              className={
+                adminReviewAction === "APPROVE"
+                  ? "bg-green-600 hover:bg-green-700"
+                  : adminReviewAction === "ALLOW_RESUBMISSION"
+                  ? "bg-blue-600 hover:bg-blue-700"
+                  : ""
+              }
+            >
+              {adminReviewAction === "APPROVE" && (
+                <>
+                  <ShieldCheck className="mr-2 h-4 w-4" />
+                  Approve & Disburse
+                </>
+              )}
+              {adminReviewAction === "REJECT" && (
+                <>
+                  <XCircle className="mr-2 h-4 w-4" />
+                  Reject Request
+                </>
+              )}
+              {adminReviewAction === "ALLOW_RESUBMISSION" && (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Allow Resubmission
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

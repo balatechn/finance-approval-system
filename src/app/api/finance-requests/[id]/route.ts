@@ -253,6 +253,15 @@ export async function PATCH(
 
     // If resubmitting a sent-back request
     if (body.status === 'RESUBMITTED' && existingRequest.status === 'SENT_BACK') {
+      // Check resubmission limit (max 2 resubmissions allowed)
+      const currentCount = existingRequest.resubmissionCount || 0;
+      if (currentCount >= 2) {
+        return NextResponse.json(
+          { error: 'Maximum resubmission limit (2) reached. This request requires admin review.' },
+          { status: 400 }
+        );
+      }
+
       const prismaUpdateData = mapFormToPrisma(body);
 
       // Delete old approval steps, actions, and SLA logs
@@ -271,13 +280,14 @@ export async function PATCH(
         prisma.sLALog.deleteMany({ where: { financeRequestId: existingRequest.id } }),
       ]);
 
-      // Update the request with new data and restart workflow
+      // Update the request with new data, restart workflow, and increment resubmission count
       const updatedRequest = await prisma.financeRequest.update({
         where: { id: existingRequest.id },
         data: {
           ...prismaUpdateData,
           status: 'PENDING_FINANCE_VETTING',
           currentApprovalLevel: 'FINANCE_VETTING',
+          resubmissionCount: currentCount + 1,
           completedAt: null,
         },
       });

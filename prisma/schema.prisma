@@ -32,6 +32,7 @@ enum RequestStatus {
   PENDING_FINANCE_CONTROLLER
   PENDING_DIRECTOR
   PENDING_MD
+  PENDING_ADMIN_REVIEW
   APPROVED
   REJECTED
   SENT_BACK
@@ -207,6 +208,7 @@ model FinanceRequest {
   // Status
   status                RequestStatus @default(DRAFT)
   currentApprovalLevel  ApprovalLevel?
+  resubmissionCount     Int           @default(0)
   
   // Declaration
   declarationConfirmed  Boolean       @default(false)

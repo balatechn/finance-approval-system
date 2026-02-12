@@ -127,8 +127,14 @@ export async function POST(
     } else if (action === 'REJECTED') {
       newStatus = 'REJECTED';
     } else {
-      // SENT_BACK
-      newStatus = 'SENT_BACK';
+      // SENT_BACK - Check if max resubmissions reached
+      const resubmissionCount = (financeRequest as any).resubmissionCount || 0;
+      if (resubmissionCount >= 2) {
+        // After 2 resubmissions, send to admin review instead of allowing another resubmission
+        newStatus = 'PENDING_ADMIN_REVIEW';
+      } else {
+        newStatus = 'SENT_BACK';
+      }
     }
 
     // Update finance request status
