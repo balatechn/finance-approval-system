@@ -101,8 +101,9 @@ const LEVEL_LABELS: Record<string, string> = {
 
 /**
  * Send email when a NEW request is submitted
- * - To: Requestor (confirmation)
+ * - To: Requestor (confirmation) - skipped if requestor is admin
  * - To: Finance Team approvers (action required for vetting)
+ * - To: Admins (one [Admin Copy] per activity)
  */
 export async function sendRequestSubmittedEmails(
   requestorEmail: string,
@@ -111,7 +112,10 @@ export async function sendRequestSubmittedEmails(
   amount: string,
   purpose: string
 ): Promise<void> {
-  // 1. Confirmation to requestor
+  // Get admin emails first to check if requestor is admin
+  const adminEmails = await getAdminEmails();
+  const isRequestorAdmin = adminEmails.includes(requestorEmail);
+
   const confirmHtml = emailWrapper(`
     <h2 style="color: #1e40af; margin-top: 0;">Request Submitted Successfully</h2>
     <p>Dear ${requestorName},</p>
@@ -122,17 +126,19 @@ export async function sendRequestSubmittedEmails(
     ${actionButton(`${APP_URL}/dashboard/requests/${referenceNumber}`, 'View Request')}
   `);
 
-  await sendEmail({
-    to: requestorEmail,
-    subject: `Request Submitted - ${referenceNumber}`,
-    html: confirmHtml,
-  });
+  // 1. Confirmation to requestor (skip if requestor is admin - they get [Admin Copy])
+  if (!isRequestorAdmin) {
+    await sendEmail({
+      to: requestorEmail,
+      subject: `Request Submitted - ${referenceNumber}`,
+      html: confirmHtml,
+    });
+  }
 
   // 2. Notify Finance Team approvers (first step)
   await sendPendingApprovalEmails(referenceNumber, requestorName, amount, purpose, 'FINANCE_VETTING');
 
-  // 3. BCC admins on submission
-  const adminEmails = await getAdminEmails();
+  // 3. Single admin notification (one email per activity)
   if (adminEmails.length > 0) {
     await sendEmail({
       to: adminEmails[0],
@@ -145,8 +151,9 @@ export async function sendRequestSubmittedEmails(
 
 /**
  * Send email when a SENT_BACK request is resubmitted
- * - To: Requestor (confirmation)
+ * - To: Requestor (confirmation) - skipped if requestor is admin
  * - To: Finance Team approvers (action required)
+ * - To: Admins (one [Admin Copy] per activity)
  */
 export async function sendRequestResubmittedEmails(
   requestorEmail: string,
@@ -155,6 +162,10 @@ export async function sendRequestResubmittedEmails(
   amount: string,
   purpose: string
 ): Promise<void> {
+  // Get admin emails first to check if requestor is admin
+  const adminEmails = await getAdminEmails();
+  const isRequestorAdmin = adminEmails.includes(requestorEmail);
+
   const html = emailWrapper(`
     <h2 style="color: #1e40af; margin-top: 0;">Request Resubmitted</h2>
     <p>Dear ${requestorName},</p>
@@ -164,17 +175,19 @@ export async function sendRequestResubmittedEmails(
     ${actionButton(`${APP_URL}/dashboard/requests/${referenceNumber}`, 'View Request')}
   `);
 
-  await sendEmail({
-    to: requestorEmail,
-    subject: `Request Resubmitted - ${referenceNumber}`,
-    html,
-  });
+  // 1. Confirmation to requestor (skip if requestor is admin - they get [Admin Copy])
+  if (!isRequestorAdmin) {
+    await sendEmail({
+      to: requestorEmail,
+      subject: `Request Resubmitted - ${referenceNumber}`,
+      html,
+    });
+  }
 
-  // Notify Finance Team
+  // 2. Notify Finance Team
   await sendPendingApprovalEmails(referenceNumber, requestorName, amount, purpose, 'FINANCE_VETTING');
 
-  // BCC admins on resubmission
-  const adminEmails = await getAdminEmails();
+  // 3. Single admin notification (one email per activity)
   if (adminEmails.length > 0) {
     await sendEmail({
       to: adminEmails[0],
@@ -187,6 +200,7 @@ export async function sendRequestResubmittedEmails(
 
 /**
  * Send "pending approval" emails to all approvers at a given level
+ * Sends ONE consolidated email to all approvers (no admin BCC - admins get separate [Admin Copy])
  */
 export async function sendPendingApprovalEmails(
   referenceNumber: string,
@@ -202,27 +216,25 @@ export async function sendPendingApprovalEmails(
     return;
   }
 
-  for (const approver of approvers) {
-    const html = emailWrapper(`
-      <h2 style="color: #1e40af; margin-top: 0;">Action Required - Approval Pending</h2>
-      <p>Dear ${approver.name},</p>
-      <p>A finance request requires your review and approval at the <strong>${LEVEL_LABELS[level]}</strong> stage.</p>
-      ${requestInfoBox({ referenceNumber, requester: requestorName, amount, purpose, level: LEVEL_LABELS[level] })}
-      <p>Please review and take action on this request at your earliest convenience.</p>
-      ${actionButton(`${APP_URL}/dashboard/approvals/${referenceNumber}`, 'Review & Approve', '#1e40af')}
-    `);
+  // Get approver emails and names
+  const approverEmails = approvers.map((a) => a.email);
+  const approverNames = approvers.map((a) => a.name).join(', ');
 
-    // BCC admins on every approver notification
-    const adminEmails = await getAdminEmails();
-    const adminBcc = adminEmails.filter((e) => e !== approver.email);
+  const html = emailWrapper(`
+    <h2 style="color: #1e40af; margin-top: 0;">Action Required - Approval Pending</h2>
+    <p>Dear ${approverNames},</p>
+    <p>A finance request requires your review and approval at the <strong>${LEVEL_LABELS[level]}</strong> stage.</p>
+    ${requestInfoBox({ referenceNumber, requester: requestorName, amount, purpose, level: LEVEL_LABELS[level] })}
+    <p>Please review and take action on this request at your earliest convenience.</p>
+    ${actionButton(`${APP_URL}/dashboard/approvals/${referenceNumber}`, 'Review & Approve', '#1e40af')}
+  `);
 
-    await sendEmail({
-      to: approver.email,
-      ...(adminBcc.length > 0 ? { bcc: adminBcc } : {}),
-      subject: `Action Required: ${referenceNumber} - ${LEVEL_LABELS[level]}`,
-      html,
-    });
-  }
+  // No admin BCC here - admins receive separate [Admin Copy] emails to avoid duplicates
+  await sendEmail({
+    to: approverEmails,
+    subject: `Action Required: ${referenceNumber} - ${LEVEL_LABELS[level]}`,
+    html,
+  });
 }
 
 /**
