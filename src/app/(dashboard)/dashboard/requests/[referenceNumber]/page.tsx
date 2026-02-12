@@ -219,10 +219,10 @@ export default function RequestDetailPage() {
   const userRole = session?.user?.role
   const isOwner = session?.user?.id === request.requester?.id
   const isAdmin = userRole === "ADMIN"
-  // Admin can edit any request; owner can edit draft, sent-back, or pre-approval requests
-  const canEdit = isAdmin || request.status === "DRAFT" || request.status === "SENT_BACK" || 
-    (isOwner && (request.status === "SUBMITTED" || request.status === "PENDING_FINANCE_VETTING"))
-  const canDelete = request.status === "DRAFT" || isAdmin
+  // Only owner or admin can edit, and only for specific statuses
+  const editableStatuses = ["DRAFT", "SENT_BACK", "SUBMITTED", "PENDING_FINANCE_VETTING"]
+  const canEdit = (isOwner || isAdmin) && editableStatuses.includes(request.status)
+  const canDelete = (isOwner || isAdmin) && (request.status === "DRAFT" || isAdmin)
   const isSentBack = request.status === "SENT_BACK"
 
   // Extract sent-back comments from approval steps

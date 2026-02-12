@@ -179,12 +179,11 @@ export default function EditRequestPage() {
         setRequestData(data)
         if (data.attachments) setExistingAttachments(data.attachments)
 
-        // Check edit permissions: admin can edit any, owner can edit pre-approval
+        // Check edit permissions: only owner or admin can edit
         const isAdmin = session?.user?.role === "ADMIN"
         const isOwner = session?.user?.id === data.requester?.id
         const editableStatuses = ["DRAFT", "SENT_BACK", "SUBMITTED", "PENDING_FINANCE_VETTING"]
-        const canEditRequest = isAdmin || 
-          (editableStatuses.includes(data.status) && (isOwner || data.status === "DRAFT" || data.status === "SENT_BACK"))
+        const canEditRequest = (isOwner || isAdmin) && editableStatuses.includes(data.status)
         
         if (!canEditRequest) {
           toast({
