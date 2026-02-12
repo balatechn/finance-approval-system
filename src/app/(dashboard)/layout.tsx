@@ -23,6 +23,7 @@ import {
   Check,
   Lock,
   MessageSquare,
+  Target,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -44,6 +45,7 @@ const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "My Requests", href: "/dashboard/requests", icon: FileText },
   { name: "Approvals", href: "/dashboard/approvals", icon: CheckSquare, roles: ["FINANCE_TEAM", "FINANCE_PLANNER", "FINANCE_CONTROLLER", "DIRECTOR", "MD", "ADMIN"] },
+  { name: "Forecast", href: "/dashboard/forecast", icon: Target, roles: ["FINANCE_TEAM", "FINANCE_PLANNER", "FINANCE_CONTROLLER", "DIRECTOR", "MD", "ADMIN"] },
   { name: "Reports", href: "/dashboard/reports", icon: BarChart3, roles: ["FINANCE_TEAM", "FINANCE_PLANNER", "FINANCE_CONTROLLER", "DIRECTOR", "MD", "ADMIN"] },
   { name: "Users", href: "/dashboard/users", icon: Users, roles: ["ADMIN"] },
   { name: "Settings", href: "/dashboard/settings", icon: Settings, roles: ["ADMIN"] },

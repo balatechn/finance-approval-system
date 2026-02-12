@@ -18,10 +18,7 @@ import {
   CreditCard,
   Store,
   Users,
-  ArrowUpRight,
-  ArrowDownRight,
   Target,
-  PiggyBank,
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -344,81 +341,6 @@ export default function DashboardPage() {
           </Card>
         ))}
       </div>
-
-      {/* Forecast Card */}
-      {data?.forecast && (
-        <Card className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-blue-200">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Target className="h-5 w-5 text-blue-600" />
-                <CardTitle className="text-lg text-blue-900">{data.forecast.nextMonth} Forecast</CardTitle>
-              </div>
-              <div className="flex items-center gap-1.5 text-sm">
-                {data.forecast.trend.direction === 'up' && (
-                  <>
-                    <ArrowUpRight className="h-4 w-4 text-red-500" />
-                    <span className="text-red-600 font-medium">+{data.forecast.trend.percent}%</span>
-                  </>
-                )}
-                {data.forecast.trend.direction === 'down' && (
-                  <>
-                    <ArrowDownRight className="h-4 w-4 text-green-500" />
-                    <span className="text-green-600 font-medium">-{data.forecast.trend.percent}%</span>
-                  </>
-                )}
-                {data.forecast.trend.direction === 'stable' && (
-                  <span className="text-gray-600 font-medium">Stable trend</span>
-                )}
-                <span className="text-muted-foreground ml-1">vs last month</span>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 sm:grid-cols-4">
-              {/* Projected Expenses */}
-              <div className="bg-white rounded-lg p-4 border border-blue-100 shadow-sm">
-                <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className="h-4 w-4 text-blue-600" />
-                  <span className="text-xs font-medium text-blue-700 uppercase tracking-wide">Projected</span>
-                </div>
-                <p className="text-2xl font-bold text-blue-900">{formatCurrency(data.forecast.projectedAmount)}</p>
-                <p className="text-xs text-muted-foreground mt-1">Based on 3-month avg + pipeline</p>
-              </div>
-
-              {/* Monthly Average */}
-              <div className="bg-white rounded-lg p-4 border border-gray-100 shadow-sm">
-                <div className="flex items-center gap-2 mb-2">
-                  <PiggyBank className="h-4 w-4 text-gray-600" />
-                  <span className="text-xs font-medium text-gray-700 uppercase tracking-wide">3-Month Avg</span>
-                </div>
-                <p className="text-2xl font-bold text-gray-900">{formatCurrency(data.forecast.monthlyAverage)}</p>
-                <p className="text-xs text-muted-foreground mt-1">Historical average</p>
-              </div>
-
-              {/* Pending Pipeline */}
-              <div className="bg-white rounded-lg p-4 border border-amber-100 shadow-sm">
-                <div className="flex items-center gap-2 mb-2">
-                  <Clock className="h-4 w-4 text-amber-600" />
-                  <span className="text-xs font-medium text-amber-700 uppercase tracking-wide">Pending Pipeline</span>
-                </div>
-                <p className="text-2xl font-bold text-amber-900">{formatCurrency(data.forecast.pendingPipeline.amount)}</p>
-                <p className="text-xs text-muted-foreground mt-1">{data.forecast.pendingPipeline.count} requests awaiting approval</p>
-              </div>
-
-              {/* Approved Awaiting */}
-              <div className="bg-white rounded-lg p-4 border border-green-100 shadow-sm">
-                <div className="flex items-center gap-2 mb-2">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <span className="text-xs font-medium text-green-700 uppercase tracking-wide">Ready to Disburse</span>
-                </div>
-                <p className="text-2xl font-bold text-green-900">{formatCurrency(data.forecast.approvedAwaiting.amount)}</p>
-                <p className="text-xs text-muted-foreground mt-1">{data.forecast.approvedAwaiting.count} requests approved</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Charts Section - Cost Focused */}
       <div className="grid gap-4 lg:grid-cols-2">
