@@ -12,6 +12,11 @@ import {
   ArrowRight,
   Building2,
   CalendarDays,
+  TrendingUp,
+  Wallet,
+  CreditCard,
+  Store,
+  Users,
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -30,6 +35,10 @@ import {
   Pie,
   Cell,
   Legend,
+  LineChart,
+  Line,
+  Area,
+  AreaChart,
 } from "recharts"
 
 interface DashboardData {
@@ -38,8 +47,11 @@ interface DashboardData {
     pending: number
     approved: number
     rejected: number
+    disbursed: number
     totalAmount: number
     pendingAmount: number
+    approvedAmount: number
+    disbursedAmount: number
     thisMonthCount: number
     thisMonthAmount: number
   }
@@ -75,6 +87,25 @@ interface DashboardData {
     approved: number
     disbursed: number
     rejected: number
+  }>
+  monthlyTrend: Array<{
+    month: string
+    total: number
+    approved: number
+    pending: number
+    disbursed: number
+  }>
+  departmentStats: Array<{
+    department: string
+    amount: number
+    count: number
+    percentage: string
+  }>
+  topVendors: Array<{
+    vendor: string
+    amount: number
+    count: number
+    percentage: string
   }>
 }
 
@@ -124,41 +155,48 @@ export default function DashboardPage() {
     pending: 0,
     approved: 0,
     rejected: 0,
+    disbursed: 0,
     totalAmount: 0,
     pendingAmount: 0,
+    approvedAmount: 0,
+    disbursedAmount: 0,
     thisMonthCount: 0,
     thisMonthAmount: 0,
   }
 
+  // Cost-focused stat cards
   const statCards = [
     {
-      title: "Total Requests",
-      value: stats.total,
-      icon: FileText,
+      title: "Total Expenses",
+      value: formatCurrency(stats.totalAmount),
+      subtext: `${stats.total} requests`,
+      icon: IndianRupee,
       color: "text-blue-600",
       bgColor: "bg-blue-100",
     },
     {
       title: "Pending Approval",
-      value: stats.pending,
+      value: formatCurrency(stats.pendingAmount),
+      subtext: `${stats.pending} requests`,
       icon: Clock,
       color: "text-amber-600",
       bgColor: "bg-amber-100",
     },
     {
-      title: "Approved",
-      value: stats.approved,
+      title: "Approved (Awaiting)",
+      value: formatCurrency(stats.approvedAmount),
+      subtext: `${stats.approved} requests`,
       icon: CheckCircle,
       color: "text-green-600",
       bgColor: "bg-green-100",
     },
     {
-      title: "Total Value",
-      value: formatCurrency(stats.totalAmount),
-      icon: IndianRupee,
+      title: "Disbursed",
+      value: formatCurrency(stats.disbursedAmount),
+      subtext: `${stats.disbursed} requests`,
+      icon: Wallet,
       color: "text-indigo-600",
       bgColor: "bg-indigo-100",
-      isAmount: true,
     },
   ]
 
@@ -248,7 +286,7 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      {/* Stats Grid */}
+      {/* Stats Grid - Cost Focused */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat) => (
           <Card key={stat.title}>
@@ -256,9 +294,10 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">{stat.title}</p>
-                  <p className={`text-2xl font-bold ${stat.isAmount ? "text-lg" : ""}`}>
-                    {stat.value}
-                  </p>
+                  <p className="text-xl font-bold">{stat.value}</p>
+                  {stat.subtext && (
+                    <p className="text-xs text-muted-foreground mt-1">{stat.subtext}</p>
+                  )}
                 </div>
                 <div className={`rounded-full p-3 ${stat.bgColor}`}>
                   <stat.icon className={`h-5 w-5 ${stat.color}`} />
@@ -269,62 +308,189 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Charts Section */}
-      <div className="grid gap-4 lg:grid-cols-3">
-        {/* Status Distribution Bar Chart */}
-        <Card>
+      {/* Charts Section - Cost Focused */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        {/* Monthly Expense Trend */}
+        <Card className="lg:col-span-2">
           <CardHeader className="p-4 pb-1">
-            <CardTitle className="text-sm font-semibold">Status Breakdown</CardTitle>
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-blue-600" />
+              <CardTitle className="text-sm font-semibold">Monthly Expense Trend</CardTitle>
+            </div>
           </CardHeader>
           <CardContent className="p-4 pt-0">
-            <div className="h-[180px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={[
-                    { name: "Pending", value: stats.pending, fill: "#f59e0b" },
-                    { name: "Approved", value: stats.approved, fill: "#22c55e" },
-                    { name: "Rejected", value: stats.rejected, fill: "#ef4444" },
-                  ]}
-                  margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
-                  barSize={32}
-                >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                  <YAxis allowDecimals={false} tick={{ fontSize: 10 }} />
-                  <Tooltip
-                    formatter={(value) => [value, "Requests"]}
-                    contentStyle={{ borderRadius: "8px", fontSize: "13px" }}
-                  />
-                  <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-                    {[
-                      { name: "Pending", fill: "#f59e0b" },
-                      { name: "Approved", fill: "#22c55e" },
-                      { name: "Rejected", fill: "#ef4444" },
-                    ].map((entry, index) => (
-                      <Cell key={index} fill={entry.fill} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+            <div className="h-[200px]">
+              {data?.monthlyTrend && data.monthlyTrend.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart
+                    data={data.monthlyTrend}
+                    margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+                  >
+                    <defs>
+                      <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                    <YAxis
+                      tick={{ fontSize: 10 }}
+                      tickFormatter={(value) =>
+                        value >= 100000
+                          ? `${(value / 100000).toFixed(0)}L`
+                          : value >= 1000
+                          ? `${(value / 1000).toFixed(0)}K`
+                          : value.toString()
+                      }
+                    />
+                    <Tooltip
+                      formatter={(value) => [formatCurrency(value as number), ""]}
+                      contentStyle={{ borderRadius: "8px", fontSize: "13px" }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="total"
+                      name="Total Expenses"
+                      stroke="#3b82f6"
+                      fillOpacity={1}
+                      fill="url(#colorTotal)"
+                      strokeWidth={2}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="disbursed"
+                      name="Disbursed"
+                      stroke="#22c55e"
+                      strokeWidth={2}
+                      dot={{ fill: "#22c55e", strokeWidth: 2, r: 3 }}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                  No trend data available
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Status Distribution Donut Chart */}
+        {/* Department-wise Expenses */}
         <Card>
           <CardHeader className="p-4 pb-1">
-            <CardTitle className="text-sm font-semibold">Status Distribution</CardTitle>
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-purple-600" />
+              <CardTitle className="text-sm font-semibold">Department-wise Expenses</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="p-4 pt-0">
+            <div className="h-[200px]">
+              {data?.departmentStats && data.departmentStats.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={data.departmentStats}
+                    layout="vertical"
+                    margin={{ top: 5, right: 10, left: 60, bottom: 5 }}
+                    barSize={16}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                    <XAxis
+                      type="number"
+                      tick={{ fontSize: 10 }}
+                      tickFormatter={(value) =>
+                        value >= 100000
+                          ? `${(value / 100000).toFixed(0)}L`
+                          : value >= 1000
+                          ? `${(value / 1000).toFixed(0)}K`
+                          : value.toString()
+                      }
+                    />
+                    <YAxis
+                      type="category"
+                      dataKey="department"
+                      tick={{ fontSize: 10 }}
+                      width={55}
+                    />
+                    <Tooltip
+                      formatter={(value, name, props) => [
+                        `${formatCurrency(value as number)} (${props.payload.percentage}%)`,
+                        "Amount",
+                      ]}
+                      contentStyle={{ borderRadius: "8px", fontSize: "13px" }}
+                    />
+                    <Bar dataKey="amount" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                  No department data
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Top Vendors by Spend */}
+        <Card>
+          <CardHeader className="p-4 pb-1">
+            <div className="flex items-center gap-2">
+              <Store className="h-4 w-4 text-orange-600" />
+              <CardTitle className="text-sm font-semibold">Top Vendors by Spend</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="p-4 pt-2">
+            {data?.topVendors && data.topVendors.length > 0 ? (
+              <div className="space-y-3">
+                {data.topVendors.map((vendor, index) => (
+                  <div key={vendor.vendor} className="flex items-center gap-3">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-100 text-xs font-medium text-orange-700">
+                      {index + 1}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{vendor.vendor}</p>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-orange-500 rounded-full"
+                            style={{ width: `${Math.min(parseFloat(vendor.percentage), 100)}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-muted-foreground w-10">
+                          {vendor.percentage}%
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-sm font-medium">{formatCurrency(vendor.amount)}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex h-[180px] items-center justify-center text-sm text-muted-foreground">
+                No vendor data
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Entity-wise Amount Summary */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        {/* Expense Distribution Pie */}
+        <Card>
+          <CardHeader className="p-4 pb-1">
+            <CardTitle className="text-sm font-semibold">Expense Distribution</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <div className="h-[180px]">
-              {stats.total > 0 ? (
+              {stats.totalAmount > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={[
-                        { name: "Pending", value: stats.pending },
-                        { name: "Approved", value: stats.approved },
-                        { name: "Rejected", value: stats.rejected },
+                        { name: "Pending", value: stats.pendingAmount },
+                        { name: "Approved", value: stats.approvedAmount },
+                        { name: "Disbursed", value: stats.disbursedAmount },
                       ].filter((d) => d.value > 0)}
                       cx="50%"
                       cy="50%"
@@ -333,20 +499,20 @@ export default function DashboardPage() {
                       paddingAngle={3}
                       dataKey="value"
                       label={({ name, percent }: any) =>
-                        `${name} ${((percent || 0) * 100).toFixed(0)}%`
+                        `${((percent || 0) * 100).toFixed(0)}%`
                       }
                       labelLine={false}
                     >
                       {[
                         { fill: "#f59e0b" },
                         { fill: "#22c55e" },
-                        { fill: "#ef4444" },
+                        { fill: "#6366f1" },
                       ].map((entry, index) => (
                         <Cell key={index} fill={entry.fill} />
                       ))}
                     </Pie>
                     <Tooltip
-                      formatter={(value) => [value, "Requests"]}
+                      formatter={(value) => [formatCurrency(value as number), ""]}
                       contentStyle={{ borderRadius: "8px", fontSize: "13px" }}
                     />
                     <Legend
@@ -367,11 +533,11 @@ export default function DashboardPage() {
 
         {/* Entity-wise Amount Bar Chart */}
         {data?.entityStats && data.entityStats.length > 0 && (
-        <Card className="lg:col-span-1">
+        <Card className="lg:col-span-2">
           <CardHeader className="p-4 pb-1">
             <div className="flex items-center gap-2">
               <Building2 className="h-4 w-4 text-indigo-600" />
-              <CardTitle className="text-sm font-semibold">Entity-wise Amounts</CardTitle>
+              <CardTitle className="text-sm font-semibold">Entity-wise Expenses</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="p-4 pt-0">
@@ -379,12 +545,12 @@ export default function DashboardPage() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={data.entityStats.map((es) => ({
-                    name: es.entity.length > 18 ? es.entity.substring(0, 16) + ".." : es.entity,
+                    name: es.entity.length > 12 ? es.entity.substring(0, 10) + ".." : es.entity,
                     fullName: es.entity,
                     amount: es.amount,
                   }))}
                   margin={{ top: 5, right: 5, left: 10, bottom: 30 }}
-                  barSize={28}
+                  barSize={32}
                 >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis
@@ -420,15 +586,17 @@ export default function DashboardPage() {
       )}
       </div>
 
-      {/* Entity-wise KPI */}
-      {data?.entityStats && data.entityStats.length > 0 && (
+      {/* Entity-wise Expense Summary */}
+      {data?.entityStats && data.entityStats.length > 0 && (() => {
+        const totalEntityAmount = data.entityStats.reduce((s, e) => s + e.amount, 0);
+        return (
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
               <Building2 className="h-5 w-5 text-indigo-600" />
-              <CardTitle className="text-lg">Entity-wise Summary</CardTitle>
+              <CardTitle className="text-lg">Entity-wise Expense Summary</CardTitle>
             </div>
-            <CardDescription>Breakdown by entity for selected period</CardDescription>
+            <CardDescription>Cost breakdown by entity for selected period</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
@@ -436,16 +604,19 @@ export default function DashboardPage() {
                 <thead>
                   <tr className="border-b text-left">
                     <th className="pb-3 font-medium text-muted-foreground">Entity</th>
+                    <th className="pb-3 font-medium text-muted-foreground text-right">Total Amount</th>
+                    <th className="pb-3 font-medium text-muted-foreground text-center">% Share</th>
                     <th className="pb-3 font-medium text-muted-foreground text-center">Requests</th>
+                    <th className="pb-3 font-medium text-muted-foreground text-right">Avg/Request</th>
                     <th className="pb-3 font-medium text-muted-foreground text-center">Pending</th>
-                    <th className="pb-3 font-medium text-muted-foreground text-center">Approved</th>
                     <th className="pb-3 font-medium text-muted-foreground text-center">Disbursed</th>
-                    <th className="pb-3 font-medium text-muted-foreground text-center">Rejected</th>
-                    <th className="pb-3 font-medium text-muted-foreground text-right">Amount</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {data.entityStats.map((es) => (
+                  {data.entityStats.map((es) => {
+                    const percentage = totalEntityAmount > 0 ? ((es.amount / totalEntityAmount) * 100).toFixed(1) : '0';
+                    const avgPerRequest = es.count > 0 ? es.amount / es.count : 0;
+                    return (
                     <tr key={es.entity} className="border-b last:border-0">
                       <td className="py-3 font-medium">
                         <div className="flex items-center gap-2">
@@ -453,48 +624,56 @@ export default function DashboardPage() {
                           {es.entity}
                         </div>
                       </td>
-                      <td className="py-3 text-center">{es.count}</td>
+                      <td className="py-3 text-right font-semibold text-indigo-700">
+                        {formatCurrency(es.amount)}
+                      </td>
                       <td className="py-3 text-center">
-                        <span className={es.pending > 0 ? "inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800" : ""}>
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="w-16 h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-indigo-500 rounded-full"
+                              style={{ width: `${Math.min(parseFloat(percentage), 100)}%` }}
+                            />
+                          </div>
+                          <span className="text-xs font-medium w-10">{percentage}%</span>
+                        </div>
+                      </td>
+                      <td className="py-3 text-center">{es.count}</td>
+                      <td className="py-3 text-right text-muted-foreground">
+                        {formatCurrency(avgPerRequest)}
+                      </td>
+                      <td className="py-3 text-center">
+                        <span className={es.pending > 0 ? "inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800" : "text-muted-foreground"}>
                           {es.pending}
                         </span>
                       </td>
                       <td className="py-3 text-center">
-                        <span className={es.approved > 0 ? "inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800" : ""}>
-                          {es.approved}
-                        </span>
-                      </td>
-                      <td className="py-3 text-center">
-                        <span className={es.disbursed > 0 ? "inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800" : ""}>
+                        <span className={es.disbursed > 0 ? "inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800" : "text-muted-foreground"}>
                           {es.disbursed}
                         </span>
                       </td>
-                      <td className="py-3 text-center">
-                        <span className={es.rejected > 0 ? "inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800" : ""}>
-                          {es.rejected}
-                        </span>
-                      </td>
-                      <td className="py-3 text-right font-medium">
-                        {formatCurrency(es.amount)}
-                      </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                   {/* Totals row */}
                   <tr className="bg-gray-50 font-semibold">
                     <td className="py-3">Total</td>
+                    <td className="py-3 text-right text-indigo-700">{formatCurrency(totalEntityAmount)}</td>
+                    <td className="py-3 text-center">100%</td>
                     <td className="py-3 text-center">{data.entityStats.reduce((s, e) => s + e.count, 0)}</td>
+                    <td className="py-3 text-right text-muted-foreground">
+                      {formatCurrency(totalEntityAmount / Math.max(data.entityStats.reduce((s, e) => s + e.count, 0), 1))}
+                    </td>
                     <td className="py-3 text-center">{data.entityStats.reduce((s, e) => s + e.pending, 0)}</td>
-                    <td className="py-3 text-center">{data.entityStats.reduce((s, e) => s + e.approved, 0)}</td>
                     <td className="py-3 text-center">{data.entityStats.reduce((s, e) => s + e.disbursed, 0)}</td>
-                    <td className="py-3 text-center">{data.entityStats.reduce((s, e) => s + e.rejected, 0)}</td>
-                    <td className="py-3 text-right">{formatCurrency(data.entityStats.reduce((s, e) => s + e.amount, 0))}</td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </CardContent>
         </Card>
-      )}
+        );
+      })()}
 
       {/* SLA Alerts */}
       {data?.slaAlerts && data.slaAlerts.length > 0 && (

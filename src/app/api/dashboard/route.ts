@@ -47,12 +47,15 @@ export async function GET(request: NextRequest) {
       ].filter(Boolean);
     }
 
-    const [stats, recentRequests, pendingApprovals, slaAlerts, entityStats] = await Promise.all([
+    const [stats, recentRequests, pendingApprovals, slaAlerts, entityStats, monthlyTrend, departmentStats, topVendors] = await Promise.all([
       getDashboardStats(user, userEntityIdentifiers, dateRange),
       getRecentRequests(user),
       getPendingApprovals(user, userEntityIdentifiers),
       getSLAAlerts(user),
       getEntityWiseStats(user, dateRange),
+      getMonthlyTrend(user, dateRange),
+      getDepartmentStats(user, dateRange),
+      getTopVendors(user, dateRange),
     ]);
 
     const response = NextResponse.json({
@@ -61,6 +64,9 @@ export async function GET(request: NextRequest) {
       pendingApprovals,
       slaAlerts,
       entityStats,
+      monthlyTrend,
+      departmentStats,
+      topVendors,
     });
     response.headers.set('Cache-Control', 'private, max-age=15, stale-while-revalidate=30');
     return response;
@@ -172,6 +178,16 @@ async function getDashboardStats(user: any, userEntityIdentifiers: string[] = []
       },
       _sum: { totalAmount: true },
     }),
+    // Approved amount (awaiting disbursement)
+    prisma.financeRequest.aggregate({
+      where: { ...baseWhere, status: 'APPROVED' },
+      _sum: { totalAmount: true },
+    }),
+    // Disbursed amount
+    prisma.financeRequest.aggregate({
+      where: { ...baseWhere, status: 'DISBURSED' },
+      _sum: { totalAmount: true },
+    }),
   ];
   if (myPendingWhere) {
     secondBatchPromises.push(prisma.financeRequest.count({ where: myPendingWhere }));
@@ -181,7 +197,9 @@ async function getDashboardStats(user: any, userEntityIdentifiers: string[] = []
   const thisMonthCount = secondBatch[0];
   const thisMonthAmount = secondBatch[1];
   const pendingAmount = secondBatch[2];
-  const myPendingApprovals = secondBatch[3] || 0;
+  const approvedAmount = secondBatch[3];
+  const disbursedAmount = secondBatch[4];
+  const myPendingApprovals = secondBatch[5] || 0;
 
   return {
     total: totalRequests,
@@ -191,6 +209,8 @@ async function getDashboardStats(user: any, userEntityIdentifiers: string[] = []
     disbursed: disbursedRequests,
     totalAmount: Number(totalAmount._sum.totalAmount || 0),
     pendingAmount: Number(pendingAmount._sum.totalAmount || 0),
+    approvedAmount: Number(approvedAmount._sum.totalAmount || 0),
+    disbursedAmount: Number(disbursedAmount._sum.totalAmount || 0),
     thisMonthCount,
     thisMonthAmount: Number(thisMonthAmount._sum.totalAmount || 0),
     slaBreaches,
@@ -439,4 +459,122 @@ async function getSLAAlerts(user: any) {
       slaDueAt: step?.slaDueAt,
     };
   });
+}
+
+// Get monthly expense trend (last 6 months)
+async function getMonthlyTrend(user: any, dateRange?: { gte?: Date; lte?: Date }) {
+  const baseWhere: any = { isDeleted: false, status: { not: 'DRAFT' } };
+  if (user.role === 'EMPLOYEE') {
+    baseWhere.requestorId = user.id;
+  }
+
+  // Get last 6 months of data
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+  sixMonthsAgo.setDate(1);
+  sixMonthsAgo.setHours(0, 0, 0, 0);
+
+  const requests = await prisma.financeRequest.findMany({
+    where: {
+      ...baseWhere,
+      createdAt: { gte: sixMonthsAgo },
+    },
+    select: {
+      createdAt: true,
+      totalAmount: true,
+      status: true,
+    },
+  });
+
+  // Group by month
+  const monthlyData: Record<string, { month: string; total: number; approved: number; pending: number; disbursed: number }> = {};
+
+  const pendingStatuses = ['SUBMITTED', 'PENDING_FINANCE_VETTING', 'PENDING_FINANCE_PLANNER', 'PENDING_FINANCE_CONTROLLER', 'PENDING_DIRECTOR', 'PENDING_MD'];
+
+  for (const req of requests) {
+    const date = new Date(req.createdAt);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const monthName = date.toLocaleString('en-IN', { month: 'short', year: '2-digit' });
+
+    if (!monthlyData[monthKey]) {
+      monthlyData[monthKey] = { month: monthName, total: 0, approved: 0, pending: 0, disbursed: 0 };
+    }
+
+    const amount = Number(req.totalAmount || 0);
+    monthlyData[monthKey].total += amount;
+
+    if (req.status === 'APPROVED') {
+      monthlyData[monthKey].approved += amount;
+    } else if (req.status === 'DISBURSED') {
+      monthlyData[monthKey].disbursed += amount;
+    } else if (pendingStatuses.includes(req.status)) {
+      monthlyData[monthKey].pending += amount;
+    }
+  }
+
+  // Sort by month key and return as array
+  return Object.entries(monthlyData)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([, data]) => data);
+}
+
+// Get department-wise expense breakdown
+async function getDepartmentStats(user: any, dateRange?: { gte?: Date; lte?: Date }) {
+  const baseWhere: any = { isDeleted: false, status: { not: 'DRAFT' } };
+  if (user.role === 'EMPLOYEE') {
+    baseWhere.requestorId = user.id;
+  }
+  if (dateRange) {
+    baseWhere.createdAt = dateRange;
+  }
+
+  const results = await prisma.financeRequest.groupBy({
+    by: ['department'],
+    where: baseWhere,
+    _sum: { totalAmount: true },
+    _count: { id: true },
+  });
+
+  const totalAmount = results.reduce((sum, r) => sum + Number(r._sum.totalAmount || 0), 0);
+
+  return results
+    .map((r) => ({
+      department: r.department || 'Unassigned',
+      amount: Number(r._sum.totalAmount || 0),
+      count: r._count.id,
+      percentage: totalAmount > 0 ? ((Number(r._sum.totalAmount || 0) / totalAmount) * 100).toFixed(1) : '0',
+    }))
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 8);
+}
+
+// Get top vendors by spend
+async function getTopVendors(user: any, dateRange?: { gte?: Date; lte?: Date }) {
+  const baseWhere: any = { isDeleted: false, status: { not: 'DRAFT' } };
+  if (user.role === 'EMPLOYEE') {
+    baseWhere.requestorId = user.id;
+  }
+  if (dateRange) {
+    baseWhere.createdAt = dateRange;
+  }
+
+  const results = await prisma.financeRequest.groupBy({
+    by: ['vendorName'],
+    where: baseWhere,
+    _sum: { totalAmount: true },
+    _count: { id: true },
+  });
+
+  const totalAmount = results.reduce((sum, r) => sum + Number(r._sum.totalAmount || 0), 0);
+
+  return results
+    .filter((r) => r.vendorName)
+    .map((r) => ({
+      vendor: r.vendorName || 'Unknown',
+      amount: Number(r._sum.totalAmount || 0),
+      count: r._count.id,
+      percentage: totalAmount > 0 ? ((Number(r._sum.totalAmount || 0) / totalAmount) * 100).toFixed(1) : '0',
+    }))
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 5);
 }
