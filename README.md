@@ -1,6 +1,6 @@
 # Finance Approval System — National Group India
 
-**Version:** 1.0.1
+**Version:** 1.0.2
 
 ## Overview
 
@@ -60,6 +60,9 @@ The **Finance Approval System** is a web-based enterprise application built for 
 - **Resubmission Limit** — Maximum 2 resubmissions allowed; after limit reached, Admin review required.
 - **Required Resubmission Comments** — Requesters must explain changes made when resubmitting (300 character limit).
 - **Resubmission History** — Approvers see requester's response/changes in a dedicated banner.
+- **Discussion Thread** — Request-specific comments/chat for requesters and approvers to communicate.
+- **@Mention Support** — Tag users in discussions with @username for notifications.
+- **Discussion Notifications** — Email and in-app alerts when mentioned or when comments are added.
 
 ### UI/UX Features
 - Responsive design (desktop + mobile).
@@ -499,6 +502,12 @@ All reports support:
 ---
 
 ## Changelog
+
+### v1.0.2 (February 2026)
+- **Discussion Thread** — Request-specific comments/chat for requesters and approvers.
+- **@Mention Support** — Tag users with @username for notifications.
+- **Discussion Email Alerts** — Email notifications for mentions and new comments.
+- **Discussion Bell Notifications** — In-app notifications for discussions.
 
 ### v1.0.1 (February 2026)
 - **Resubmission Limit** — Maximum 2 resubmissions; Admin review required after limit.
