@@ -116,6 +116,11 @@ model User {
   accounts               Account[]
   sessions               Session[]
   assignedEntities       Entity[]          @relation("UserEntities")
+  
+  // Support ticket relations
+  createdTickets         SupportTicket[]   @relation("UserTickets")
+  assignedTickets        SupportTicket[]   @relation("AssignedTickets")
+  supportMessages        SupportMessage[]  @relation("UserMessages")
 
   @@index([email])
   @@index([department])
@@ -471,4 +476,97 @@ model SystemConfig {
   value           String
   description     String?
   updatedAt       DateTime @updatedAt
+}
+
+// ============================================================================
+// SUPPORT TICKET SYSTEM
+// ============================================================================
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model SupportTicket {
+  id              String         @id @default(cuid())
+  ticketNumber    String         @unique
+  subject         String
+  description     String
+  status          TicketStatus   @default(OPEN)
+  priority        TicketPriority @default(MEDIUM)
+  
+  // Relations
+  createdById     String
+  createdBy       User           @relation("UserTickets", fields: [createdById], references: [id])
+  assignedToId    String?
+  assignedTo      User?          @relation("AssignedTickets", fields: [assignedToId], references: [id])
+  
+  messages        SupportMessage[]
+  attachments     TicketAttachment[]
+  
+  // Timestamps
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  resolvedAt      DateTime?
+  
+  @@index([createdById])
+  @@index([assignedToId])
+  @@index([status])
+}
+
+model SupportMessage {
+  id              String         @id @default(cuid())
+  content         String
+  isStaffReply    Boolean        @default(false)
+  
+  // Relations
+  ticketId        String
+  ticket          SupportTicket  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  senderId        String
+  sender          User           @relation("UserMessages", fields: [senderId], references: [id])
+  
+  attachments     MessageAttachment[]
+  
+  createdAt       DateTime       @default(now())
+  
+  @@index([ticketId])
+}
+
+model TicketAttachment {
+  id              String         @id @default(cuid())
+  fileName        String
+  fileType        String
+  fileSize        Int
+  fileUrl         String
+  
+  ticketId        String
+  ticket          SupportTicket  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  
+  uploadedAt      DateTime       @default(now())
+  
+  @@index([ticketId])
+}
+
+model MessageAttachment {
+  id              String         @id @default(cuid())
+  fileName        String
+  fileType        String
+  fileSize        Int
+  fileUrl         String
+  
+  messageId       String
+  message         SupportMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  
+  uploadedAt      DateTime       @default(now())
+  
+  @@index([messageId])
 }

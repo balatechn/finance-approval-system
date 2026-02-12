@@ -24,6 +24,7 @@ import {
   Lock,
   MessageSquare,
   Target,
+  Headphones,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -47,6 +48,7 @@ const navigation = [
   { name: "Approvals", href: "/dashboard/approvals", icon: CheckSquare, roles: ["FINANCE_TEAM", "FINANCE_PLANNER", "FINANCE_CONTROLLER", "DIRECTOR", "MD", "ADMIN"] },
   { name: "Forecast", href: "/dashboard/forecast", icon: Target, roles: ["FINANCE_TEAM", "FINANCE_PLANNER", "FINANCE_CONTROLLER", "DIRECTOR", "MD", "ADMIN"] },
   { name: "Reports", href: "/dashboard/reports", icon: BarChart3, roles: ["FINANCE_TEAM", "FINANCE_PLANNER", "FINANCE_CONTROLLER", "DIRECTOR", "MD", "ADMIN"] },
+  { name: "Support", href: "/dashboard/support", icon: Headphones, highlight: true },
   { name: "Users", href: "/dashboard/users", icon: Users, roles: ["ADMIN"] },
   { name: "Settings", href: "/dashboard/settings", icon: Settings, roles: ["ADMIN"] },
 ]
@@ -248,6 +250,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
             )}>
               {filteredNavigation.map((item) => {
                 const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
+                const isHighlight = (item as any).highlight
                 const linkContent = (
                   <Link
                     key={item.name}
@@ -257,8 +260,12 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                       "flex items-center rounded-lg text-sm font-medium transition-colors",
                       sidebarCollapsed ? "justify-center p-3" : "gap-3 px-3 py-2",
                       isActive
-                        ? "bg-primary text-white"
-                        : "text-gray-700 hover:bg-gray-100"
+                        ? isHighlight
+                          ? "bg-orange-500 text-white"
+                          : "bg-primary text-white"
+                        : isHighlight
+                          ? "bg-orange-100 text-orange-700 hover:bg-orange-200"
+                          : "text-gray-700 hover:bg-gray-100"
                     )}
                   >
                     <item.icon className="h-5 w-5 flex-shrink-0" />
