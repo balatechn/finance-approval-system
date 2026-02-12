@@ -378,17 +378,8 @@ export async function sendSLABreachEmail(
     html,
   });
 
-  // BCC admins on SLA breach
-  const adminEmails = await getAdminEmails();
-  const adminBcc = adminEmails.filter((e) => e !== approverEmail);
-  if (adminBcc.length > 0) {
-    await sendEmail({
-      to: adminBcc[0],
-      bcc: adminBcc.slice(1),
-      subject: `[Admin Copy] URGENT: SLA Breach - ${referenceNumber}`,
-      html,
-    });
-  }
+  // Note: Admins are now included as direct recipients via getApproversForLevel()
+  // No need for separate BCC as they receive the email directly
 }
 
 /**
@@ -428,17 +419,8 @@ export async function sendSLAReminderEmail(
     html,
   });
 
-  // BCC admins on reminders
-  const adminEmails = await getAdminEmails();
-  const adminBcc = adminEmails.filter((e) => e !== approverEmail);
-  if (adminBcc.length > 0) {
-    await sendEmail({
-      to: adminBcc[0],
-      bcc: adminBcc.slice(1),
-      subject: `[Admin] REMINDER #${reminderCount}: ${referenceNumber} - Pending at ${LEVEL_LABELS[level] || level}`,
-      html,
-    });
-  }
+  // Note: Admins are now included as direct recipients via getApproversForLevel()
+  // No need for separate BCC as they receive the email directly
 }
 
 // ============================================================================
@@ -478,6 +460,7 @@ export async function getApproversForLevel(
 
   const roles = roleMap[level] || [];
 
+  // Get approvers for this level
   const approvers = await prisma.user.findMany({
     where: {
       role: { in: roles as any[] },
@@ -490,7 +473,28 @@ export async function getApproversForLevel(
     },
   });
 
-  return approvers;
+  // Also include all ADMIN users as they should receive all notifications
+  const admins = await prisma.user.findMany({
+    where: {
+      role: 'ADMIN' as any,
+      isActive: true,
+    },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+    },
+  });
+
+  // Combine approvers and admins, avoiding duplicates
+  const allRecipients = [...approvers];
+  for (const admin of admins) {
+    if (!allRecipients.some(a => a.email === admin.email)) {
+      allRecipients.push(admin);
+    }
+  }
+
+  return allRecipients;
 }
 
 // ============================================================================
