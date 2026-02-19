@@ -548,7 +548,13 @@ export default function ApprovalDetailPage() {
             </CardContent>
           </Card>
 
-          {/* Amount Details */}
+          {/* Discussion Thread */}
+          <DiscussionThread 
+            requestId={request.id}
+            referenceNumber={request.referenceNumber}
+          />
+
+          {/* Amount Details */}}
           <Card>
             <CardHeader>
               <CardTitle>Amount Details</CardTitle>
@@ -730,13 +736,7 @@ export default function ApprovalDetailPage() {
         </div>
       </div>
 
-      {/* Discussion Thread */}
-      <DiscussionThread 
-        requestId={request.id}
-        referenceNumber={request.referenceNumber}
-      />
-
-      {/* Action Dialog */}
+      {/* Action Dialog */}}
       <Dialog open={actionDialogOpen} onOpenChange={setActionDialogOpen}>
         <DialogContent>
           <DialogHeader>

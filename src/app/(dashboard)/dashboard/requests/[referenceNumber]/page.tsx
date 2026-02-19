@@ -398,7 +398,13 @@ export default function RequestDetailPage() {
             </CardContent>
           </Card>
 
-          {/* Amount Details */}
+          {/* Discussion Thread */}
+          <DiscussionThread 
+            requestId={request.id}
+            referenceNumber={request.referenceNumber}
+          />
+
+          {/* Amount Details */}}
           <Card>
             <CardHeader>
               <CardTitle>Amount Details</CardTitle>
@@ -757,12 +763,6 @@ export default function RequestDetailPage() {
           )}
         </div>
       </div>
-
-      {/* Discussion Thread */}
-      <DiscussionThread 
-        requestId={request.id}
-        referenceNumber={request.referenceNumber}
-      />
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

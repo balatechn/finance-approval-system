@@ -208,9 +208,9 @@ export function DiscussionThread({ requestId, referenceNumber }: DiscussionThrea
   }
 
   return (
-    <Card className="mt-6">
+    <Card>
       <CardHeader 
-        className="cursor-pointer hover:bg-muted/50 transition-colors"
+        className="cursor-pointer hover:bg-muted/50 transition-colors py-3"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <CardTitle className="flex items-center gap-2 text-lg">
