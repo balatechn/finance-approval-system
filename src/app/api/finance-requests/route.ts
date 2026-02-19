@@ -51,6 +51,11 @@ export async function GET(request: NextRequest) {
           whereClause.status = 'PENDING_FINANCE_CONTROLLER';
         }
         break;
+      case 'FINANCE_COORDINATOR':
+        if (type === 'pending-approvals') {
+          whereClause.status = 'PENDING_FINANCE_COORDINATOR';
+        }
+        break;
       case 'DIRECTOR':
         if (type === 'pending-approvals') {
           whereClause.status = 'PENDING_DIRECTOR';
@@ -296,6 +301,7 @@ async function createApprovalSteps(
     FINANCE_VETTING: paymentType === 'CRITICAL' ? 24 : 72,
     FINANCE_PLANNER: 24,
     FINANCE_CONTROLLER: 24,
+    FINANCE_COORDINATOR: 24,
     DIRECTOR: 24,
     MD: 24,
     DISBURSEMENT: 24,
@@ -305,6 +311,7 @@ async function createApprovalSteps(
     'FINANCE_VETTING',
     'FINANCE_PLANNER',
     'FINANCE_CONTROLLER',
+    'FINANCE_COORDINATOR',
     'DIRECTOR',
     'MD',
     'DISBURSEMENT',
@@ -314,6 +321,7 @@ async function createApprovalSteps(
     FINANCE_VETTING: 'FINANCE_TEAM',
     FINANCE_PLANNER: 'FINANCE_PLANNER',
     FINANCE_CONTROLLER: 'FINANCE_CONTROLLER',
+    FINANCE_COORDINATOR: 'FINANCE_COORDINATOR',
     DIRECTOR: 'DIRECTOR',
     MD: 'MD',
     DISBURSEMENT: 'FINANCE_TEAM',

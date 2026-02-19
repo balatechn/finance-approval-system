@@ -76,6 +76,7 @@ const ROLES = [
   { value: "FINANCE_TEAM", label: "Finance Team" },
   { value: "FINANCE_PLANNER", label: "Finance Planner" },
   { value: "FINANCE_CONTROLLER", label: "Finance Controller" },
+  { value: "FINANCE_COORDINATOR", label: "Finance Co-Ordinator" },
   { value: "DIRECTOR", label: "Director" },
   { value: "MD", label: "Managing Director" },
   { value: "ADMIN", label: "Administrator" },

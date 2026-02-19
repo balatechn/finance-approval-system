@@ -41,6 +41,7 @@ const levelConfig: Record<string, { label: string; color: string }> = {
   FINANCE_VETTING: { label: "Finance Vetting", color: "bg-orange-100 text-orange-800" },
   FINANCE_PLANNER: { label: "Finance Planner", color: "bg-cyan-100 text-cyan-800" },
   FINANCE_CONTROLLER: { label: "Finance Controller", color: "bg-blue-100 text-blue-800" },
+  FINANCE_COORDINATOR: { label: "Finance Co-Ordinator", color: "bg-teal-100 text-teal-800" },
   DIRECTOR: { label: "Director", color: "bg-purple-100 text-purple-800" },
   MD: { label: "Managing Director", color: "bg-indigo-100 text-indigo-800" },
   ADMIN: { label: "Admin Review", color: "bg-red-100 text-red-800" },

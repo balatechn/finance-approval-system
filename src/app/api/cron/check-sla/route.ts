@@ -354,6 +354,7 @@ async function getStepStartTime(requestId: string, level: ApprovalLevel): Promis
     'FINANCE_VETTING',
     'FINANCE_PLANNER',
     'FINANCE_CONTROLLER',
+    'FINANCE_COORDINATOR',
     'DIRECTOR',
     'MD',
     'DISBURSEMENT',

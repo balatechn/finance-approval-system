@@ -6,6 +6,7 @@ export const ROLE_HIERARCHY: Record<Role, number> = {
   ADMIN: 100,
   MD: 90,
   DIRECTOR: 80,
+  FINANCE_COORDINATOR: 75,
   FINANCE_CONTROLLER: 70,
   FINANCE_PLANNER: 65,
   FINANCE_TEAM: 60,
@@ -37,6 +38,12 @@ export const ROLE_PERMISSIONS: Record<Role, string[]> = {
   FINANCE_CONTROLLER: [
     'request:view:all',
     'approval:finance:controller',
+    'dashboard:all',
+    'reports:all',
+  ],
+  FINANCE_COORDINATOR: [
+    'request:view:all',
+    'approval:finance:coordinator',
     'dashboard:all',
     'reports:all',
   ],
@@ -85,6 +92,8 @@ export function canApproveLevel(role: Role, level: string): boolean {
       return role === 'FINANCE_PLANNER' || role === 'ADMIN';
     case 'FINANCE_CONTROLLER':
       return role === 'FINANCE_CONTROLLER' || role === 'ADMIN';
+    case 'FINANCE_COORDINATOR':
+      return role === 'FINANCE_COORDINATOR' || role === 'ADMIN';
     case 'DIRECTOR':
       return role === 'DIRECTOR' || role === 'ADMIN';
     case 'MD':
@@ -102,6 +111,7 @@ export function getRoleLabel(role: Role): string {
     FINANCE_TEAM: 'Finance Team',
     FINANCE_PLANNER: 'Finance Planner',
     FINANCE_CONTROLLER: 'Finance Controller',
+    FINANCE_COORDINATOR: 'Finance Co-Ordinator',
     DIRECTOR: 'Director',
     MD: 'Managing Director',
     ADMIN: 'Administrator',

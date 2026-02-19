@@ -36,6 +36,7 @@ const roleDisplayNames: Record<string, string> = {
   ADMIN: "Admin",
   MD: "Managing Director",
   DIRECTOR: "Director",
+  FINANCE_COORDINATOR: "Finance Co-Ordinator",
   FINANCE_CONTROLLER: "Finance Controller",
   FINANCE_PLANNER: "Finance Planner",
   FINANCE_TEAM: "Finance Team",
