@@ -1,6 +1,6 @@
 # Finance Approval System — National Group India
 
-**Version:** 1.0.3
+**Version:** 1.0.4
 
 ## Overview
 
@@ -33,8 +33,8 @@ The **Finance Approval System** is a web-based enterprise application built for 
 
 ### Core Features
 - **Finance Request Management** — Create, edit, submit, and track finance/purchase requests with auto-generated reference numbers.
-- **Multi-Level Approval Workflow** — 6-step approval pipeline: Finance Vetting → Finance Planner → Finance Controller → Director → Managing Director → Disbursement.
-- **Role-Based Access Control (RBAC)** — 7 roles with granular permissions (Employee, Finance Team, Finance Planner, Finance Controller, Director, MD, Admin).
+- **Multi-Level Approval Workflow** — 7-step approval pipeline: Finance Vetting → Finance Planner → Finance Controller → Finance Co-Ordinator → Director → Managing Director → Disbursement.
+- **Role-Based Access Control (RBAC)** — 8 roles with granular permissions (Employee, Finance Team, Finance Planner, Finance Controller, Finance Co-Ordinator, Director, MD, Admin).
 - **Real-Time Dashboard** — Role-specific dashboards with KPIs, charts (bar, donut), entity-wise summary, pending approvals, and recent requests.
 - **Dashboard Date Range Filter** — Filter all KPIs, charts, and entity summary by custom date range with quick presets (This Month, Last Month, This Year).
 - **Interactive Charts** — Status breakdown bar chart, status distribution donut chart, and entity-wise amounts bar chart (powered by Recharts).
@@ -147,6 +147,7 @@ The **Finance Approval System** is a web-based enterprise application built for 
 | **Finance Team** | 60 | Finance vetting, disbursement processing, view all requests, reports |
 | **Finance Planner** | 65 | Finance planner approval, view all requests, dashboard, reports |
 | **Finance Controller** | 70 | Finance controller approval, view all requests, dashboard, reports |
+| **Finance Co-Ordinator** | 75 | Finance co-ordinator approval, view all requests, dashboard, reports |
 | **Director** | 80 | Director-level approval, view all requests, dashboard, reports |
 | **Managing Director** | 90 | Final approval authority, view all requests, dashboard, reports |
 | **Administrator** | 100 | Full system access, user management, settings, override approvals |
@@ -155,7 +156,7 @@ The **Finance Approval System** is a web-based enterprise application built for 
 
 ## Approval Workflow
 
-The system implements a **6-level sequential approval pipeline**:
+The system implements a **7-level sequential approval pipeline**:
 
 ```
 ┌──────────────────┐     ┌──────────────────┐     ┌──────────────────────┐
@@ -166,15 +167,22 @@ The system implements a **6-level sequential approval pipeline**:
                                                             │
                                                             ▼
 ┌──────────────────┐     ┌──────────────────┐     ┌──────────────────────┐
-│  6. DISBURSEMENT │     │  5. MANAGING     │     │  4. DIRECTOR         │
+│  7. DISBURSEMENT │     │  6. MANAGING     │     │  5. DIRECTOR         │
 │  (Finance Team)  │◀────│     DIRECTOR     │◀────│     (Director)       │
 └──────────────────┘     └──────────────────┘     └──────────────────────┘
+                                  ▲
+                                  │
+                         ┌────────┴───────────┐
+                         │ 4. FINANCE         │
+                         │    CO-ORDINATOR    │
+                         │(Finance Co-Ordinator)│
+                         └────────────────────┘
 ```
 
 ### Status Flow
 ```
 DRAFT → SUBMITTED → PENDING_FINANCE_VETTING → PENDING_FINANCE_PLANNER →
-PENDING_FINANCE_CONTROLLER → PENDING_DIRECTOR → PENDING_MD → APPROVED → DISBURSED
+PENDING_FINANCE_CONTROLLER → PENDING_FINANCE_COORDINATOR → PENDING_DIRECTOR → PENDING_MD → APPROVED → DISBURSED
 ```
 
 ### Additional Statuses
@@ -187,6 +195,7 @@ PENDING_FINANCE_CONTROLLER → PENDING_DIRECTOR → PENDING_MD → APPROVED → 
 | Finance Vetting | 24 hours | 72 hours |
 | Finance Planner | 24 hours | 24 hours |
 | Finance Controller | 24 hours | 24 hours |
+| Finance Co-Ordinator | 24 hours | 24 hours |
 | Director | 24 hours | 24 hours |
 | Managing Director | 24 hours | 24 hours |
 | Disbursement | 24 hours | 24 hours |
@@ -515,6 +524,17 @@ All reports support:
 
 ## Changelog
 
+### v1.0.4 (February 2026)
+- **Finance Co-Ordinator Role** — New approval level (Level 4) between Finance Controller and Director.
+- **7-Level Approval Workflow** — Extended pipeline with Finance Co-Ordinator.
+- **Performance Optimizations:**
+  - Reduced API polling intervals (notifications: 30s→60s, heartbeat: 2min→5min).
+  - Pause all polling when browser tab is hidden.
+  - Database keep-alive ping every 1 hour to prevent cold starts.
+  - Increased dashboard cache from 15s to 60s.
+  - ~62% reduction in API calls per user.
+- **SLA Config** — Added SLA settings for Finance Planner and Finance Co-Ordinator.
+
 ### v1.0.3 (February 2026)
 - **Support Ticket System** — Full ticketing system with chat UI, attachments, and status management.
 - **Forecast Tab** — Moved forecast to dedicated navigation tab with enhanced charts and insights.
@@ -541,8 +561,8 @@ All reports support:
 
 ### v1.0.0 (January 2026)
 - Initial release with full approval workflow.
-- 6-level approval pipeline.
-- Role-based access control (7 roles).
+- 7-level approval pipeline.
+- Role-based access control (8 roles).
 - Email notifications via Gmail SMTP.
 - File attachments support.
 - SLA tracking with breach detection.
