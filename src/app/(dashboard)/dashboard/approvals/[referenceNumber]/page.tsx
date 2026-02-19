@@ -328,7 +328,7 @@ export default function ApprovalDetailPage() {
   const isOverdue = currentStep?.isOverdue
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="mx-auto max-w-5xl space-y-4">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
@@ -339,7 +339,7 @@ export default function ApprovalDetailPage() {
           </Link>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-xl font-bold text-gray-900">
                 {request.referenceNumber}
               </h1>
               <StatusBadge status={request.status as any} />
@@ -391,8 +391,8 @@ export default function ApprovalDetailPage() {
 
       {/* Action Buttons */}
       <Card>
-        <CardHeader>
-          <CardTitle>
+        <CardHeader className="py-3 px-4">
+          <CardTitle className="text-base">
             {isPendingAdminReview ? "Admin Review Required" : "Take Action"}
           </CardTitle>
           <CardDescription>
@@ -402,7 +402,7 @@ export default function ApprovalDetailPage() {
             }
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 pb-4">
           {isPendingAdminReview && (
             <div className="mb-4 rounded-lg bg-amber-50 border border-amber-200 p-3">
               <div className="flex items-center gap-2 text-amber-800">
@@ -481,43 +481,43 @@ export default function ApprovalDetailPage() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-3">
         {/* Main Content */}
-        <div className="space-y-6 lg:col-span-2">
+        <div className="space-y-4 lg:col-span-2">
           {/* Request Summary */}
           <Card>
-            <CardHeader>
-              <CardTitle>Request Details</CardTitle>
+            <CardHeader className="py-3 px-4">
+              <CardTitle className="text-base">Request Details</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 px-4 pb-4">
               <div>
-                <h4 className="font-medium text-muted-foreground">Purpose</h4>
-                <p className="mt-1 text-lg">{request.purpose}</p>
+                <h4 className="text-sm font-medium text-muted-foreground">Purpose</h4>
+                <p className="mt-1">{request.purpose}</p>
               </div>
 
               {request.itemName && (
                 <div>
-                  <h4 className="font-medium text-muted-foreground">Item Name</h4>
-                  <p className="mt-1 font-medium">{request.itemName}</p>
+                  <h4 className="text-sm font-medium text-muted-foreground">Item Name</h4>
+                  <p className="mt-1 text-sm font-medium">{request.itemName}</p>
                 </div>
               )}
 
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <div>
-                  <p className="text-sm text-muted-foreground">Payment Type</p>
-                  <p className="font-medium">{request.paymentType.replace("_", " ")}</p>
+                  <p className="text-xs text-muted-foreground">Payment Type</p>
+                  <p className="text-sm font-medium">{request.paymentType.replace("_", " ")}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Payment Mode</p>
-                  <p className="font-medium">{request.paymentMode.replace("_", " ")}</p>
+                  <p className="text-xs text-muted-foreground">Payment Mode</p>
+                  <p className="text-sm font-medium">{request.paymentMode.replace("_", " ")}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Department</p>
-                  <p className="font-medium">{request.department}</p>
+                  <p className="text-xs text-muted-foreground">Department</p>
+                  <p className="text-sm font-medium">{request.department}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Cost Center</p>
-                  <p className="font-medium">{request.costCenter}</p>
+                  <p className="text-xs text-muted-foreground">Cost Center</p>
+                  <p className="text-sm font-medium">{request.costCenter}</p>
                 </div>
               </div>
 
@@ -525,23 +525,23 @@ export default function ApprovalDetailPage() {
 
               {/* Requester Info */}
               <div>
-                <h4 className="mb-3 font-medium">Requester Details</h4>
-                <div className="grid gap-4 sm:grid-cols-2">
+                <h4 className="mb-2 text-sm font-medium">Requester Details</h4>
+                <div className="grid gap-3 sm:grid-cols-2">
                   <div>
-                    <p className="text-sm text-muted-foreground">Name</p>
-                    <p className="font-medium">{request.requester.name}</p>
+                    <p className="text-xs text-muted-foreground">Name</p>
+                    <p className="text-sm font-medium">{request.requester.name}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Employee ID</p>
-                    <p className="font-medium">{request.requester.employeeId}</p>
+                    <p className="text-xs text-muted-foreground">Employee ID</p>
+                    <p className="text-sm font-medium">{request.requester.employeeId}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Email</p>
-                    <p className="font-medium">{request.requester.email}</p>
+                    <p className="text-xs text-muted-foreground">Email</p>
+                    <p className="text-sm font-medium">{request.requester.email}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Department</p>
-                    <p className="font-medium">{request.requester.department}</p>
+                    <p className="text-xs text-muted-foreground">Department</p>
+                    <p className="text-sm font-medium">{request.requester.department}</p>
                   </div>
                 </div>
               </div>
@@ -556,19 +556,19 @@ export default function ApprovalDetailPage() {
 
           {/* Amount Details */}
           <Card>
-            <CardHeader>
-              <CardTitle>Amount Details</CardTitle>
+            <CardHeader className="py-3 px-4">
+              <CardTitle className="text-base">Amount Details</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-lg bg-primary/5 p-4">
+            <CardContent className="space-y-3 px-4 pb-4">
+              <div className="rounded-lg bg-primary/5 p-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Total Amount</span>
-                  <span className="text-2xl font-bold">
+                  <span className="text-sm text-muted-foreground">Total Amount</span>
+                  <span className="text-xl font-bold">
                     {formatCurrency(request.totalAmountINR)}
                   </span>
                 </div>
                 {request.currency !== "INR" && (
-                  <p className="mt-1 text-sm text-muted-foreground">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     {request.currency} {request.totalAmount.toLocaleString()} @ {request.exchangeRate}
                   </p>
                 )}
@@ -586,10 +586,10 @@ export default function ApprovalDetailPage() {
               )}
 
               {request.netPayableAmount && (
-                <div className="rounded-lg bg-green-50 p-4">
+                <div className="rounded-lg bg-green-50 p-3">
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-green-800">Net Payable</span>
-                    <span className="text-xl font-bold text-green-800">
+                    <span className="text-sm font-medium text-green-800">Net Payable</span>
+                    <span className="text-lg font-bold text-green-800">
                       {formatCurrency(request.netPayableAmount)}
                     </span>
                   </div>
@@ -600,39 +600,39 @@ export default function ApprovalDetailPage() {
 
           {/* Vendor Details */}
           <Card>
-            <CardHeader>
-              <CardTitle>Vendor / Payee Details</CardTitle>
+            <CardHeader className="py-3 px-4">
+              <CardTitle className="text-base">Vendor / Payee Details</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
+            <CardContent className="space-y-3 px-4 pb-4">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <div>
-                  <p className="text-sm text-muted-foreground">Vendor Name</p>
-                  <p className="font-medium">{request.vendorName}</p>
+                  <p className="text-xs text-muted-foreground">Vendor Name</p>
+                  <p className="text-sm font-medium">{request.vendorName}</p>
                 </div>
                 {request.vendorCode && (
                   <div>
-                    <p className="text-sm text-muted-foreground">Vendor Code</p>
-                    <p className="font-medium">{request.vendorCode}</p>
+                    <p className="text-xs text-muted-foreground">Vendor Code</p>
+                    <p className="text-sm font-medium">{request.vendorCode}</p>
                   </div>
                 )}
               </div>
 
               {request.bankAccountNumber && (
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-3 sm:grid-cols-2">
                   <div>
-                    <p className="text-sm text-muted-foreground">Account Number</p>
-                    <p className="font-medium">{request.bankAccountNumber}</p>
+                    <p className="text-xs text-muted-foreground">Account Number</p>
+                    <p className="text-sm font-medium">{request.bankAccountNumber}</p>
                   </div>
                   {request.bankName && (
                     <div>
-                      <p className="text-sm text-muted-foreground">Bank Name</p>
-                      <p className="font-medium">{request.bankName}</p>
+                      <p className="text-xs text-muted-foreground">Bank Name</p>
+                      <p className="text-sm font-medium">{request.bankName}</p>
                     </div>
                   )}
                   {request.ifscCode && (
                     <div>
-                      <p className="text-sm text-muted-foreground">IFSC Code</p>
-                      <p className="font-medium">{request.ifscCode}</p>
+                      <p className="text-xs text-muted-foreground">IFSC Code</p>
+                      <p className="text-sm font-medium">{request.ifscCode}</p>
                     </div>
                   )}
                 </div>
@@ -640,28 +640,28 @@ export default function ApprovalDetailPage() {
 
               {request.upiId && (
                 <div>
-                  <p className="text-sm text-muted-foreground">UPI ID</p>
-                  <p className="font-medium">{request.upiId}</p>
+                  <p className="text-xs text-muted-foreground">UPI ID</p>
+                  <p className="text-sm font-medium">{request.upiId}</p>
                 </div>
               )}
 
               {request.panNumber && (
                 <div>
-                  <p className="text-sm text-muted-foreground">PAN Number</p>
-                  <p className="font-medium">{request.panNumber}</p>
+                  <p className="text-xs text-muted-foreground">PAN Number</p>
+                  <p className="text-sm font-medium">{request.panNumber}</p>
                 </div>
               )}
 
               {request.invoiceNumber && (
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-3 sm:grid-cols-2">
                   <div>
-                    <p className="text-sm text-muted-foreground">Invoice Number</p>
-                    <p className="font-medium">{request.invoiceNumber}</p>
+                    <p className="text-xs text-muted-foreground">Invoice Number</p>
+                    <p className="text-sm font-medium">{request.invoiceNumber}</p>
                   </div>
                   {request.invoiceDate && (
                     <div>
-                      <p className="text-sm text-muted-foreground">Invoice Date</p>
-                      <p className="font-medium">{formatDate(request.invoiceDate)}</p>
+                      <p className="text-xs text-muted-foreground">Invoice Date</p>
+                      <p className="text-sm font-medium">{formatDate(request.invoiceDate)}</p>
                     </div>
                   )}
                 </div>
@@ -672,20 +672,20 @@ export default function ApprovalDetailPage() {
           {/* Attachments */}
           {request.attachments && request.attachments.length > 0 && (
             <Card>
-              <CardHeader>
-                <CardTitle>Attachments</CardTitle>
+              <CardHeader className="py-3 px-4">
+                <CardTitle className="text-base">Attachments</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-4 pb-4">
                 <div className="space-y-2">
                   {request.attachments.map((attachment) => (
                     <div
                       key={attachment.id}
-                      className="flex items-center justify-between rounded-lg border p-3"
+                      className="flex items-center justify-between rounded-lg border p-2"
                     >
-                      <div className="flex items-center gap-3">
-                        <FileText className="h-5 w-5 text-muted-foreground" />
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="font-medium">{attachment.fileName}</p>
+                          <p className="text-sm font-medium">{attachment.fileName}</p>
                           <p className="text-xs text-muted-foreground">
                             {(attachment.fileSize / 1024).toFixed(1)} KB
                           </p>
@@ -706,11 +706,11 @@ export default function ApprovalDetailPage() {
           {/* Remarks */}
           {request.remarks && (
             <Card>
-              <CardHeader>
-                <CardTitle>Remarks</CardTitle>
+              <CardHeader className="py-3 px-4">
+                <CardTitle className="text-base">Remarks</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">{request.remarks}</p>
+              <CardContent className="px-4 pb-4">
+                <p className="text-sm text-muted-foreground">{request.remarks}</p>
               </CardContent>
             </Card>
           )}
@@ -719,14 +719,14 @@ export default function ApprovalDetailPage() {
         {/* Sidebar - Approval Timeline */}
         <div>
           <Card className="sticky top-4">
-            <CardHeader>
-              <CardTitle>Approval Progress</CardTitle>
-              <CardDescription>
+            <CardHeader className="py-3 px-4">
+              <CardTitle className="text-base">Approval Progress</CardTitle>
+              <CardDescription className="text-xs">
                 Current Stage:{" "}
                 <ApprovalLevelBadge level={request.currentApprovalLevel as any} />
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-4 pb-4">
               <ApprovalTimeline
                 steps={request.approvalSteps}
                 currentLevel={request.currentApprovalLevel as any}

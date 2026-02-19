@@ -236,7 +236,7 @@ export default function RequestDetailPage() {
     }))
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="mx-auto max-w-5xl space-y-4">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
@@ -247,7 +247,7 @@ export default function RequestDetailPage() {
           </Link>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-xl font-bold text-gray-900">
                 {request.referenceNumber}
               </h1>
               <StatusBadge status={request.status as any} />
@@ -335,15 +335,15 @@ export default function RequestDetailPage() {
         </Card>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-3">
         {/* Main Content */}
-        <div className="space-y-6 lg:col-span-2">
+        <div className="space-y-4 lg:col-span-2">
           {/* Request Summary */}
           <Card>
-            <CardHeader>
-              <CardTitle>Request Summary</CardTitle>
+            <CardHeader className="py-3 px-4">
+              <CardTitle className="text-base">Request Summary</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 px-4 pb-4">
               <div>
                 <h4 className="font-medium text-muted-foreground">Purpose</h4>
                 <p className="mt-1 text-lg">{request.purpose}</p>
@@ -356,42 +356,42 @@ export default function RequestDetailPage() {
                 </div>
               )}
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="flex items-center gap-3">
-                  <div className="rounded-lg bg-muted p-2">
-                    <CreditCard className="h-5 w-5 text-muted-foreground" />
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="flex items-center gap-2">
+                  <div className="rounded-lg bg-muted p-1.5">
+                    <CreditCard className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Payment Type</p>
-                    <p className="font-medium">{request.paymentType.replace("_", " ")}</p>
+                    <p className="text-xs text-muted-foreground">Payment Type</p>
+                    <p className="text-sm font-medium">{request.paymentType.replace("_", " ")}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="rounded-lg bg-muted p-2">
-                    <Building2 className="h-5 w-5 text-muted-foreground" />
+                <div className="flex items-center gap-2">
+                  <div className="rounded-lg bg-muted p-1.5">
+                    <Building2 className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Department</p>
-                    <p className="font-medium">{request.department}</p>
+                    <p className="text-xs text-muted-foreground">Department</p>
+                    <p className="text-sm font-medium">{request.department}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="rounded-lg bg-muted p-2">
-                    <User className="h-5 w-5 text-muted-foreground" />
+                <div className="flex items-center gap-2">
+                  <div className="rounded-lg bg-muted p-1.5">
+                    <User className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Requested By</p>
-                    <p className="font-medium">{request.requester.name}</p>
+                    <p className="text-xs text-muted-foreground">Requested By</p>
+                    <p className="text-sm font-medium">{request.requester.name}</p>
                     <p className="text-xs text-muted-foreground">{request.requester.employeeId}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="rounded-lg bg-muted p-2">
-                    <Calendar className="h-5 w-5 text-muted-foreground" />
+                <div className="flex items-center gap-2">
+                  <div className="rounded-lg bg-muted p-1.5">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Last Updated</p>
-                    <p className="font-medium">{formatDateTime(request.updatedAt)}</p>
+                    <p className="text-xs text-muted-foreground">Last Updated</p>
+                    <p className="text-sm font-medium">{formatDateTime(request.updatedAt)}</p>
                   </div>
                 </div>
               </div>
@@ -406,14 +406,14 @@ export default function RequestDetailPage() {
 
           {/* Amount Details */}
           <Card>
-            <CardHeader>
-              <CardTitle>Amount Details</CardTitle>
+            <CardHeader className="py-3 px-4">
+              <CardTitle className="text-base">Amount Details</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-lg bg-primary/5 p-4">
+            <CardContent className="space-y-3 px-4 pb-4">
+              <div className="rounded-lg bg-primary/5 p-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Total Amount</span>
-                  <span className="text-2xl font-bold">
+                  <span className="text-sm text-muted-foreground">Total Amount</span>
+                  <span className="text-xl font-bold">
                     {formatCurrency(request.totalAmountINR)}
                   </span>
                 </div>
@@ -424,18 +424,18 @@ export default function RequestDetailPage() {
                 )}
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-3">
                 <div>
-                  <p className="text-sm text-muted-foreground">Payment Mode</p>
-                  <p className="font-medium">{request.paymentMode.replace("_", " ")}</p>
+                  <p className="text-xs text-muted-foreground">Payment Mode</p>
+                  <p className="text-sm font-medium">{request.paymentMode.replace("_", " ")}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Cost Center</p>
-                  <p className="font-medium">{request.costCenter}</p>
+                  <p className="text-xs text-muted-foreground">Cost Center</p>
+                  <p className="text-sm font-medium">{request.costCenter}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Entity</p>
-                  <p className="font-medium">{request.entity}</p>
+                  <p className="text-xs text-muted-foreground">Entity</p>
+                  <p className="text-sm font-medium">{request.entity}</p>
                 </div>
               </div>
 
@@ -477,10 +477,10 @@ export default function RequestDetailPage() {
               )}
 
               {request.netPayableAmount && (
-                <div className="rounded-lg bg-green-50 p-4">
+                <div className="rounded-lg bg-green-50 p-3">
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-green-800">Net Payable</span>
-                    <span className="text-xl font-bold text-green-800">
+                    <span className="text-sm font-medium text-green-800">Net Payable</span>
+                    <span className="text-lg font-bold text-green-800">
                       {formatCurrency(request.netPayableAmount)}
                     </span>
                   </div>
@@ -491,19 +491,19 @@ export default function RequestDetailPage() {
 
           {/* Vendor Details */}
           <Card>
-            <CardHeader>
-              <CardTitle>Vendor / Payee Details</CardTitle>
+            <CardHeader className="py-3 px-4">
+              <CardTitle className="text-base">Vendor / Payee Details</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
+            <CardContent className="space-y-3 px-4 pb-4">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <div>
-                  <p className="text-sm text-muted-foreground">Vendor Name</p>
-                  <p className="font-medium">{request.vendorName}</p>
+                  <p className="text-xs text-muted-foreground">Vendor Name</p>
+                  <p className="text-sm font-medium">{request.vendorName}</p>
                 </div>
                 {request.vendorCode && (
                   <div>
-                    <p className="text-sm text-muted-foreground">Vendor Code</p>
-                    <p className="font-medium">{request.vendorCode}</p>
+                    <p className="text-xs text-muted-foreground">Vendor Code</p>
+                    <p className="text-sm font-medium">{request.vendorCode}</p>
                   </div>
                 )}
               </div>
@@ -511,40 +511,40 @@ export default function RequestDetailPage() {
               {(request.bankAccountNumber || request.upiId) && (
                 <>
                   <Separator />
-                  <h4 className="font-medium">Payment Information</h4>
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <h4 className="text-sm font-medium">Payment Information</h4>
+                  <div className="grid gap-3 sm:grid-cols-2">
                     {request.bankAccountNumber && (
                       <>
                         <div>
-                          <p className="text-sm text-muted-foreground">Account Number</p>
-                          <p className="font-medium">{request.bankAccountNumber}</p>
+                          <p className="text-xs text-muted-foreground">Account Number</p>
+                          <p className="text-sm font-medium">{request.bankAccountNumber}</p>
                         </div>
                         {request.bankName && (
                           <div>
-                            <p className="text-sm text-muted-foreground">Bank Name</p>
-                            <p className="font-medium">{request.bankName}</p>
+                            <p className="text-xs text-muted-foreground">Bank Name</p>
+                            <p className="text-sm font-medium">{request.bankName}</p>
                           </div>
                         )}
                         {request.ifscCode && (
                           <div>
-                            <p className="text-sm text-muted-foreground">IFSC Code</p>
-                            <p className="font-medium">{request.ifscCode}</p>
+                            <p className="text-xs text-muted-foreground">IFSC Code</p>
+                            <p className="text-sm font-medium">{request.ifscCode}</p>
                           </div>
                         )}
                       </>
                     )}
                     {request.upiId && (
                       <div>
-                        <p className="text-sm text-muted-foreground">UPI ID</p>
-                        <p className="font-medium">{request.upiId}</p>
+                        <p className="text-xs text-muted-foreground">UPI ID</p>
+                        <p className="text-sm font-medium">{request.upiId}</p>
                       </div>
                     )}
                     {request.panNumber && (
                       <div>
-                        <p className="text-sm text-muted-foreground">PAN Number</p>
-                        <p className="font-medium">{request.panNumber}</p>
+                        <p className="text-xs text-muted-foreground">PAN Number</p>
+                        <p className="text-sm font-medium">{request.panNumber}</p>
                       </div>
-                    )}
+                    )}  
                   </div>
                 </>
               )}
@@ -552,18 +552,18 @@ export default function RequestDetailPage() {
               {(request.invoiceNumber || request.invoiceDate) && (
                 <>
                   <Separator />
-                  <h4 className="font-medium">Invoice Details</h4>
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <h4 className="text-sm font-medium">Invoice Details</h4>
+                  <div className="grid gap-3 sm:grid-cols-2">
                     {request.invoiceNumber && (
                       <div>
-                        <p className="text-sm text-muted-foreground">Invoice Number</p>
-                        <p className="font-medium">{request.invoiceNumber}</p>
+                        <p className="text-xs text-muted-foreground">Invoice Number</p>
+                        <p className="text-sm font-medium">{request.invoiceNumber}</p>
                       </div>
                     )}
                     {request.invoiceDate && (
                       <div>
-                        <p className="text-sm text-muted-foreground">Invoice Date</p>
-                        <p className="font-medium">{formatDate(request.invoiceDate)}</p>
+                        <p className="text-xs text-muted-foreground">Invoice Date</p>
+                        <p className="text-sm font-medium">{formatDate(request.invoiceDate)}</p>
                       </div>
                     )}
                   </div>
@@ -575,11 +575,11 @@ export default function RequestDetailPage() {
           {/* Attachments */}
           {request.attachments && request.attachments.length > 0 && (
             <Card>
-              <CardHeader>
-                <CardTitle>Attachments ({request.attachments.length})</CardTitle>
+              <CardHeader className="py-3 px-4">
+                <CardTitle className="text-base">Attachments ({request.attachments.length})</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="grid gap-3 sm:grid-cols-2">
+              <CardContent className="px-4 pb-4">
+                <div className="grid gap-2 sm:grid-cols-2">
                   {request.attachments.map((attachment) => {
                     const isImage = attachment.fileUrl?.startsWith('data:image/') || 
                       /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(attachment.fileName)
@@ -689,27 +689,27 @@ export default function RequestDetailPage() {
           {/* Remarks */}
           {request.remarks && (
             <Card>
-              <CardHeader>
-                <CardTitle>Remarks</CardTitle>
+              <CardHeader className="py-3 px-4">
+                <CardTitle className="text-base">Remarks</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">{request.remarks}</p>
+              <CardContent className="px-4 pb-4">
+                <p className="text-sm text-muted-foreground">{request.remarks}</p>
               </CardContent>
             </Card>
           )}
         </div>
 
         {/* Sidebar - Approval Timeline */}
-        <div className="space-y-6">
+        <div className="space-y-4">
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5" />
+            <CardHeader className="py-3 px-4">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Clock className="h-4 w-4" />
                 Approval Timeline
               </CardTitle>
-              <CardDescription>Track the approval progress</CardDescription>
+              <CardDescription className="text-xs">Track the approval progress</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-4 pb-4">
               <ApprovalTimeline
                 steps={request.approvalSteps}
                 currentLevel={request.currentApprovalLevel as any}
@@ -720,39 +720,39 @@ export default function RequestDetailPage() {
           {/* Disbursement Info */}
           {request.status === "DISBURSED" && (
             <Card className="border-green-200 bg-green-50">
-              <CardHeader>
-                <CardTitle className="text-green-800">Payment Disbursed</CardTitle>
+              <CardHeader className="py-3 px-4">
+                <CardTitle className="text-base text-green-800">Payment Disbursed</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 sm:grid-cols-2">
+              <CardContent className="px-4 pb-4">
+                <div className="grid gap-3 sm:grid-cols-2">
                   {(request.actualPaymentDate || request.disbursedAt) && (
                     <div>
-                      <p className="text-sm text-green-700">Payment Date</p>
-                      <p className="font-medium text-green-800">
+                      <p className="text-xs text-green-700">Payment Date</p>
+                      <p className="text-sm font-medium text-green-800">
                         {formatDateTime(request.actualPaymentDate || request.disbursedAt || "")}
                       </p>
                     </div>
                   )}
                   {request.disbursementPaymentMode && (
                     <div>
-                      <p className="text-sm text-green-700">Payment Mode</p>
-                      <p className="font-medium text-green-800">
+                      <p className="text-xs text-green-700">Payment Mode</p>
+                      <p className="text-sm font-medium text-green-800">
                         {request.disbursementPaymentMode.replace(/_/g, " ")}
                       </p>
                     </div>
                   )}
                   {(request.paymentReferenceNumber || request.disbursementReference) && (
                     <div>
-                      <p className="text-sm text-green-700">UTR / Reference Number</p>
-                      <p className="font-medium text-green-800">
+                      <p className="text-xs text-green-700">UTR / Reference Number</p>
+                      <p className="text-sm font-medium text-green-800">
                         {request.paymentReferenceNumber || request.disbursementReference}
                       </p>
                     </div>
                   )}
                   {request.disbursementRemarks && (
                     <div>
-                      <p className="text-sm text-green-700">Remarks</p>
-                      <p className="font-medium text-green-800">
+                      <p className="text-xs text-green-700">Remarks</p>
+                      <p className="text-sm font-medium text-green-800">
                         {request.disbursementRemarks}
                       </p>
                     </div>
