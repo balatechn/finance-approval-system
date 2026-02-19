@@ -736,7 +736,7 @@ export default function ApprovalDetailPage() {
         </div>
       </div>
 
-      {/* Action Dialog */}}
+      {/* Action Dialog */}
       <Dialog open={actionDialogOpen} onOpenChange={setActionDialogOpen}>
         <DialogContent>
           <DialogHeader>
