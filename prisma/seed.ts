@@ -202,7 +202,9 @@ async function main() {
   const configs = [
     { key: 'SLA_FINANCE_VETTING_HOURS', value: '72', description: 'SLA hours for Finance vetting' },
     { key: 'SLA_FINANCE_VETTING_CRITICAL_HOURS', value: '24', description: 'SLA hours for Finance vetting (Critical)' },
+    { key: 'SLA_FINANCE_PLANNER_HOURS', value: '24', description: 'SLA hours for Finance Planner approval' },
     { key: 'SLA_FINANCE_CONTROLLER_HOURS', value: '24', description: 'SLA hours for Finance Controller approval' },
+    { key: 'SLA_FINANCE_COORDINATOR_HOURS', value: '24', description: 'SLA hours for Finance Co-Ordinator approval' },
     { key: 'SLA_DIRECTOR_HOURS', value: '24', description: 'SLA hours for Director approval' },
     { key: 'SLA_MD_HOURS', value: '24', description: 'SLA hours for MD approval' },
     { key: 'SLA_DISBURSEMENT_HOURS', value: '24', description: 'SLA hours for Disbursement processing' },
