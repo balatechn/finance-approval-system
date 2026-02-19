@@ -58,6 +58,26 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [isTabVisible, setIsTabVisible] = useState(true)
+
+  // Track tab visibility to pause polling when tab is hidden
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsTabVisible(document.visibilityState === 'visible')
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [])
+
+  // Database keep-alive: ping every 1 hour to prevent cold starts
+  useEffect(() => {
+    if (status !== 'authenticated') return
+    const keepAlive = () => {
+      fetch('/api/notifications?limit=1').catch(() => {})
+    }
+    const interval = setInterval(keepAlive, 60 * 60 * 1000) // 1 hour
+    return () => clearInterval(interval)
+  }, [status])
 
   // Hydrate sidebar state from localStorage after mount
   useEffect(() => {
@@ -83,16 +103,17 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     })
   }, [])
 
-  // Heartbeat: update last active timestamp every 2 minutes
+  // Heartbeat: update last active timestamp every 5 minutes (paused when tab hidden)
   useEffect(() => {
     if (status !== 'authenticated') return
     const sendHeartbeat = () => {
+      if (!isTabVisible) return // Skip if tab is hidden
       fetch('/api/users/online', { method: 'POST' }).catch(() => {})
     }
     sendHeartbeat() // Send immediately on mount
-    const interval = setInterval(sendHeartbeat, 2 * 60 * 1000)
+    const interval = setInterval(sendHeartbeat, 5 * 60 * 1000)
     return () => clearInterval(interval)
-  }, [status])
+  }, [status, isTabVisible])
 
   // Fetch notifications
   const fetchNotifications = useCallback(async () => {
@@ -114,9 +135,12 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (status !== 'authenticated') return
     fetchNotifications()
-    const interval = setInterval(fetchNotifications, 30 * 1000)
+    // Poll every 60s, but only when tab is visible
+    const interval = setInterval(() => {
+      if (isTabVisible) fetchNotifications()
+    }, 60 * 1000)
     return () => clearInterval(interval)
-  }, [fetchNotifications, status])
+  }, [fetchNotifications, status, isTabVisible])
 
   const markAllRead = async () => {
     try {
@@ -157,10 +181,13 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     if (status !== 'authenticated') return
     fetchOnlineUsers()
     if (userRole === 'ADMIN') {
-      const interval = setInterval(fetchOnlineUsers, 30 * 1000) // refresh every 30s
+      // Poll every 60s, but only when tab is visible
+      const interval = setInterval(() => {
+        if (isTabVisible) fetchOnlineUsers()
+      }, 60 * 1000)
       return () => clearInterval(interval)
     }
-  }, [fetchOnlineUsers, userRole, status])
+  }, [fetchOnlineUsers, userRole, status, isTabVisible])
 
   if (status === "loading") {
     return (

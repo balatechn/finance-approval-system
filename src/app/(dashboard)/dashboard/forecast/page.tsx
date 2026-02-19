@@ -105,8 +105,8 @@ export default function ForecastPage() {
 
   useEffect(() => {
     fetchData()
-    // Auto-refresh every 5 minutes
-    const interval = setInterval(fetchData, 5 * 60 * 1000)
+    // Auto-refresh every 10 minutes
+    const interval = setInterval(fetchData, 10 * 60 * 1000)
     return () => clearInterval(interval)
   }, [])
 

@@ -76,10 +76,10 @@ export function DiscussionThread({ requestId, referenceNumber }: DiscussionThrea
 
   useEffect(() => {
     fetchDiscussions()
-    // Poll for new discussions every 30 seconds when expanded
+    // Poll for new discussions every 60 seconds when expanded
     let interval: NodeJS.Timeout
     if (isExpanded) {
-      interval = setInterval(fetchDiscussions, 30000)
+      interval = setInterval(fetchDiscussions, 60000)
     }
     return () => {
       if (interval) clearInterval(interval)

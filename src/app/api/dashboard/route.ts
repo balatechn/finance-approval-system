@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
       topVendors,
       forecast,
     });
-    response.headers.set('Cache-Control', 'private, max-age=15, stale-while-revalidate=30');
+    response.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=120');
     return response;
   } catch (error) {
     console.error('Error fetching dashboard data:', error);
