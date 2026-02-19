@@ -404,7 +404,7 @@ export default function RequestDetailPage() {
             referenceNumber={request.referenceNumber}
           />
 
-          {/* Amount Details */}}
+          {/* Amount Details */}
           <Card>
             <CardHeader>
               <CardTitle>Amount Details</CardTitle>
