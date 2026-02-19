@@ -1,6 +1,6 @@
 # Finance Approval System — National Group India
 
-**Version:** 1.0.4
+**Version:** 1.0.5
 
 ## Overview
 
@@ -68,6 +68,7 @@ The **Finance Approval System** is a web-based enterprise application built for 
 
 ### UI/UX Features
 - Responsive design (desktop + mobile).
+- **Compact Detail Pages** — Full Compact mode for request/approval detail pages with reduced spacing, smaller fonts, and tighter layouts for data-dense viewing.
 - Collapsible sidebar with icon-rail mode for maximum content space.
 - Loading skeleton screens for instant page rendering.
 - Approval timeline visualization with status indicators.
@@ -523,6 +524,15 @@ All reports support:
 ---
 
 ## Changelog
+
+### v1.0.5 (February 2026)
+- **Compact Detail Pages** — Full Compact mode applied to request and approval detail pages.
+  - Reduced page spacing (`gap-6` → `gap-4`, `space-y-6` → `space-y-4`).
+  - Smaller card headers with `text-base` titles and compact padding.
+  - Reduced icon sizes (`h-5` → `h-4`) and containers (`p-2` → `p-1.5`).
+  - Smaller field labels (`text-sm` → `text-xs`).
+  - Tighter amount highlights (`text-2xl` → `text-xl`).
+  - More content visible above the fold.
 
 ### v1.0.4 (February 2026)
 - **Finance Co-Ordinator Role** — New approval level (Level 4) between Finance Controller and Director.
