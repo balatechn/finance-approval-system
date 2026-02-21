@@ -1,20 +1,102 @@
 import nodemailer from 'nodemailer';
 import prisma from '@/lib/prisma';
 
-// Initialize Nodemailer with Gmail SMTP
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: process.env.SMTP_SECURE === 'true', // true for 465, false for 587
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS, // Gmail App Password
-  },
-});
+// ============================================================================
+// SMTP CONFIG - Loaded from DB (SystemConfig) with .env fallback
+// ============================================================================
+
+interface SmtpConfig {
+  provider: 'gmail' | 'microsoft365' | 'custom';
+  host: string;
+  port: number;
+  secure: boolean;
+  user: string;
+  password: string;
+  fromEmail: string;
+  fromName: string;
+}
+
+const PROVIDER_DEFAULTS: Record<string, { host: string; port: number; secure: boolean }> = {
+  gmail: { host: 'smtp.gmail.com', port: 587, secure: false },
+  microsoft365: { host: 'smtp.office365.com', port: 587, secure: false },
+};
+
+// Cache to avoid DB reads on every email
+let cachedConfig: SmtpConfig | null = null;
+let cacheTimestamp = 0;
+const CACHE_TTL = 60_000; // 1 minute
+
+/**
+ * Load SMTP config from SystemConfig DB table, fallback to .env
+ */
+export async function getSmtpConfig(): Promise<SmtpConfig> {
+  const now = Date.now();
+  if (cachedConfig && now - cacheTimestamp < CACHE_TTL) {
+    return cachedConfig;
+  }
+
+  try {
+    const rows = await prisma.systemConfig.findMany({
+      where: { key: { startsWith: 'EMAIL_' } },
+    });
+    const cfg: Record<string, string> = {};
+    for (const r of rows) cfg[r.key] = r.value;
+
+    if (cfg.EMAIL_USER && cfg.EMAIL_PASSWORD) {
+      const provider = (cfg.EMAIL_PROVIDER || 'gmail') as SmtpConfig['provider'];
+      const defaults = PROVIDER_DEFAULTS[provider] || PROVIDER_DEFAULTS.gmail;
+
+      cachedConfig = {
+        provider,
+        host: cfg.EMAIL_HOST || defaults.host,
+        port: parseInt(cfg.EMAIL_PORT || String(defaults.port)),
+        secure: cfg.EMAIL_SECURE === 'true' || defaults.secure,
+        user: cfg.EMAIL_USER,
+        password: cfg.EMAIL_PASSWORD,
+        fromEmail: cfg.EMAIL_FROM_ADDRESS || cfg.EMAIL_USER,
+        fromName: cfg.EMAIL_FROM_NAME || 'Finance Approval System',
+      };
+      cacheTimestamp = now;
+      return cachedConfig;
+    }
+  } catch (e) {
+    console.warn('Could not load email config from DB, using .env fallback');
+  }
+
+  // Fallback to .env
+  const provider = 'gmail';
+  const defaults = PROVIDER_DEFAULTS[provider];
+  cachedConfig = {
+    provider,
+    host: process.env.SMTP_HOST || defaults.host,
+    port: parseInt(process.env.SMTP_PORT || String(defaults.port)),
+    secure: process.env.SMTP_SECURE === 'true',
+    user: process.env.SMTP_USER || '',
+    password: process.env.SMTP_PASSWORD || '',
+    fromEmail: process.env.FROM_EMAIL || process.env.SMTP_USER || '',
+    fromName: process.env.FROM_NAME || 'Finance Approval System',
+  };
+  cacheTimestamp = now;
+  return cachedConfig;
+}
+
+/** Clear cache so next sendEmail picks up fresh config */
+export function clearEmailConfigCache() {
+  cachedConfig = null;
+  cacheTimestamp = 0;
+}
+
+/** Create a Nodemailer transporter from the given config */
+function createTransporter(cfg: SmtpConfig) {
+  return nodemailer.createTransport({
+    host: cfg.host,
+    port: cfg.port,
+    secure: cfg.secure,
+    auth: { user: cfg.user, pass: cfg.password },
+  });
+}
 
 const APP_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-const FROM_EMAIL = process.env.FROM_EMAIL || process.env.SMTP_USER || 'bala@nationalgroupindia.com';
-const FROM_NAME = process.env.FROM_NAME || 'Finance Approval System';
 
 interface EmailData {
   to: string | string[];
@@ -25,16 +107,19 @@ interface EmailData {
 }
 
 export async function sendEmail(data: EmailData): Promise<boolean> {
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+  const cfg = await getSmtpConfig();
+
+  if (!cfg.user || !cfg.password) {
     console.warn('SMTP credentials not configured, skipping email:', data.subject);
     return false;
   }
 
   try {
+    const transporter = createTransporter(cfg);
     const recipients = Array.isArray(data.to) ? data.to.join(', ') : data.to;
 
     await transporter.sendMail({
-      from: `"${FROM_NAME}" <${FROM_EMAIL}>`,
+      from: `"${cfg.fromName}" <${cfg.fromEmail}>`,
       to: recipients,
       ...(data.bcc ? { bcc: Array.isArray(data.bcc) ? data.bcc.join(', ') : data.bcc } : {}),
       subject: data.subject,

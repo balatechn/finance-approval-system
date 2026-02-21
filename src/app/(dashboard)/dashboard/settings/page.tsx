@@ -23,7 +23,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 
-type Tab = 'departments' | 'costCenters' | 'entities' | 'itemMasters' | 'systemConfig' | 'emailTest';
+type Tab = 'departments' | 'costCenters' | 'entities' | 'itemMasters' | 'systemConfig' | 'emailConfig';
 
 interface Department {
   id: string;
@@ -97,6 +97,21 @@ export default function SettingsPage() {
   const [testEmailLoading, setTestEmailLoading] = useState(false);
   const [testEmailResult, setTestEmailResult] = useState<{ success: boolean; message: string } | null>(null);
 
+  // Email config state
+  const [emailConfig, setEmailConfig] = useState({
+    provider: '',
+    user: '',
+    password: '',
+    fromEmail: '',
+    fromName: '',
+    configured: false,
+    hasPassword: false,
+  });
+  const [emailConfigLoading, setEmailConfigLoading] = useState(false);
+  const [emailConfigSaving, setEmailConfigSaving] = useState(false);
+  const [emailConfigResult, setEmailConfigResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+
   useEffect(() => {
     if (status === 'authenticated' && session?.user?.role !== 'ADMIN') {
       router.push('/dashboard');
@@ -118,11 +133,35 @@ export default function SettingsPage() {
     }
   }, []);
 
+  const fetchEmailConfig = useCallback(async () => {
+    try {
+      setEmailConfigLoading(true);
+      const res = await fetch('/api/settings/email-config');
+      if (res.ok) {
+        const data = await res.json();
+        setEmailConfig({
+          provider: data.provider || 'gmail',
+          user: data.user || '',
+          password: data.hasPassword ? data.password : '',
+          fromEmail: data.fromEmail || '',
+          fromName: data.fromName || '',
+          configured: data.configured,
+          hasPassword: data.hasPassword,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch email config:', error);
+    } finally {
+      setEmailConfigLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (status === 'authenticated' && session?.user?.role === 'ADMIN') {
       fetchData();
+      fetchEmailConfig();
     }
-  }, [status, session, fetchData]);
+  }, [status, session, fetchData, fetchEmailConfig]);
 
   const openCreateModal = () => {
     setEditingItem(null);
@@ -182,7 +221,7 @@ export default function SettingsPage() {
         entities: 'entity',
         itemMasters: 'itemMaster',
         systemConfig: 'systemConfig',
-        emailTest: '',
+        emailConfig: '',
       };
 
       const payload = {
@@ -245,7 +284,7 @@ export default function SettingsPage() {
     { id: 'entities' as Tab, label: 'Entities', icon: Landmark, count: data.entities.length },
     { id: 'itemMasters' as Tab, label: 'Item Master', icon: Package, count: data.itemMasters.length },
     { id: 'systemConfig' as Tab, label: 'System Config', icon: Settings2, count: data.systemConfig.length },
-    { id: 'emailTest' as Tab, label: 'Email Test', icon: Mail },
+    { id: 'emailConfig' as Tab, label: 'Email Config', icon: Mail },
   ];
 
   if (status === 'loading' || loading) {
@@ -268,7 +307,7 @@ export default function SettingsPage() {
             Manage departments, cost centers, entities, and system configuration
           </p>
         </div>
-        {activeTab !== 'emailTest' && (
+        {activeTab !== 'emailConfig' && (
           <button
             onClick={openCreateModal}
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white hover:bg-primary/90 transition-colors"
@@ -350,13 +389,48 @@ export default function SettingsPage() {
             onDelete={handleDeleteConfig}
           />
         )}
-        {activeTab === 'emailTest' && (
-          <EmailTestPanel
+        {activeTab === 'emailConfig' && (
+          <EmailConfigPanel
+            config={emailConfig}
+            setConfig={setEmailConfig}
+            configLoading={emailConfigLoading}
+            configSaving={emailConfigSaving}
+            configResult={emailConfigResult}
+            showPassword={showPassword}
+            setShowPassword={setShowPassword}
+            onSaveConfig={async () => {
+              setEmailConfigSaving(true);
+              setEmailConfigResult(null);
+              try {
+                const res = await fetch('/api/settings/email-config', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    provider: emailConfig.provider,
+                    user: emailConfig.user,
+                    password: emailConfig.password,
+                    fromEmail: emailConfig.fromEmail,
+                    fromName: emailConfig.fromName,
+                  }),
+                });
+                const data = await res.json();
+                if (res.ok) {
+                  setEmailConfigResult({ success: true, message: data.message });
+                  fetchEmailConfig();
+                } else {
+                  setEmailConfigResult({ success: false, message: data.error || 'Failed to save' });
+                }
+              } catch {
+                setEmailConfigResult({ success: false, message: 'Network error' });
+              } finally {
+                setEmailConfigSaving(false);
+              }
+            }}
             testEmail={testEmail}
             setTestEmail={setTestEmail}
-            loading={testEmailLoading}
-            result={testEmailResult}
-            onSend={async () => {
+            testLoading={testEmailLoading}
+            testResult={testEmailResult}
+            onSendTest={async () => {
               if (!testEmail || !testEmail.includes('@')) {
                 setTestEmailResult({ success: false, message: 'Please enter a valid email address' });
                 return;
@@ -909,89 +983,284 @@ function ItemMastersTable({
   );
 }
 
-function EmailTestPanel({
+function EmailConfigPanel({
+  config,
+  setConfig,
+  configLoading,
+  configSaving,
+  configResult,
+  showPassword,
+  setShowPassword,
+  onSaveConfig,
   testEmail,
   setTestEmail,
-  loading,
-  result,
-  onSend,
+  testLoading,
+  testResult,
+  onSendTest,
 }: {
+  config: { provider: string; user: string; password: string; fromEmail: string; fromName: string; configured: boolean; hasPassword: boolean };
+  setConfig: (v: any) => void;
+  configLoading: boolean;
+  configSaving: boolean;
+  configResult: { success: boolean; message: string } | null;
+  showPassword: boolean;
+  setShowPassword: (v: boolean) => void;
+  onSaveConfig: () => void;
   testEmail: string;
   setTestEmail: (v: string) => void;
-  loading: boolean;
-  result: { success: boolean; message: string } | null;
-  onSend: () => void;
+  testLoading: boolean;
+  testResult: { success: boolean; message: string } | null;
+  onSendTest: () => void;
 }) {
+  if (configLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const providerInfo: Record<string, { label: string; host: string; helpUrl: string; helpText: string }> = {
+    gmail: {
+      label: 'Gmail',
+      host: 'smtp.gmail.com:587',
+      helpUrl: 'https://myaccount.google.com/apppasswords',
+      helpText: 'Go to Google Account → Security → 2-Step Verification → App Passwords. Generate a new app password and paste it here.',
+    },
+    microsoft365: {
+      label: 'Microsoft 365 / Outlook',
+      host: 'smtp.office365.com:587',
+      helpUrl: 'https://account.live.com/proofs/manage/additional',
+      helpText: 'Go to Microsoft Account → Security → Advanced security options → App passwords. Create a new app password and paste it here.',
+    },
+  };
+
+  const currentProvider = providerInfo[config.provider] || providerInfo.gmail;
+
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-start gap-3">
-        <div className="rounded-lg bg-blue-50 p-2.5">
-          <Mail className="h-5 w-5 text-blue-600" />
-        </div>
-        <div>
-          <h3 className="text-base font-semibold text-gray-900">Test Email Configuration</h3>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Send a test email to verify that SendGrid is configured correctly and emails are being delivered.
-          </p>
-        </div>
-      </div>
-
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-1">
-        <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">From Address</p>
-        <p className="text-sm font-mono text-gray-700">bala@nationalgroupindia.com</p>
-      </div>
-
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">Recipient Email *</label>
-        <div className="flex gap-3">
-          <input
-            type="email"
-            required
-            value={testEmail}
-            onChange={(e) => setTestEmail(e.target.value)}
-            placeholder="Enter email address to send test"
-            className="flex-1 rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
-          />
-          <button
-            onClick={onSend}
-            disabled={loading || !testEmail}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50 transition-colors whitespace-nowrap"
-          >
-            {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
-            {loading ? 'Sending...' : 'Send Test Email'}
-          </button>
-        </div>
-      </div>
-
-      {result && (
-        <div
-          className={`flex items-start gap-3 rounded-lg border p-4 ${
-            result.success
-              ? 'bg-green-50 border-green-200 text-green-800'
-              : 'bg-red-50 border-red-200 text-red-800'
-          }`}
-        >
-          {result.success ? (
-            <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-          ) : (
-            <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
-          )}
+    <div className="p-6 space-y-8">
+      {/* Section 1: SMTP Configuration */}
+      <div>
+        <div className="flex items-start gap-3 mb-6">
+          <div className="rounded-lg bg-blue-50 p-2.5">
+            <Mail className="h-5 w-5 text-blue-600" />
+          </div>
           <div>
-            <p className="text-sm font-medium">{result.success ? 'Success' : 'Error'}</p>
-            <p className="text-sm mt-0.5">{result.message}</p>
+            <h3 className="text-base font-semibold text-gray-900">Email Configuration</h3>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Configure SMTP settings to enable email notifications. Choose your email provider and enter your app password.
+            </p>
+          </div>
+          {config.configured && (
+            <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              Configured
+            </span>
+          )}
+        </div>
+
+        <div className="space-y-5">
+          {/* Provider Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Email Provider *</label>
+            <div className="grid grid-cols-2 gap-3">
+              {(['gmail', 'microsoft365'] as const).map((p) => {
+                const info = providerInfo[p];
+                const isSelected = config.provider === p;
+                return (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setConfig({ ...config, provider: p })}
+                    className={`flex flex-col items-start rounded-lg border-2 p-4 text-left transition-all ${
+                      isSelected
+                        ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className={`text-sm font-semibold ${isSelected ? 'text-primary' : 'text-gray-900'}`}>
+                      {info.label}
+                    </span>
+                    <span className="text-xs text-gray-500 mt-1 font-mono">{info.host}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Email Address */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Email Address *</label>
+            <input
+              type="email"
+              required
+              value={config.user}
+              onChange={(e) => setConfig({ ...config, user: e.target.value })}
+              placeholder={config.provider === 'microsoft365' ? 'your-email@company.com' : 'your-email@gmail.com'}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+            />
+            <p className="text-xs text-gray-400 mt-1">This will also be used as the &quot;From&quot; address unless overridden below.</p>
+          </div>
+
+          {/* App Password */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">App Password *</label>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={config.password}
+                onChange={(e) => setConfig({ ...config, password: e.target.value })}
+                placeholder={config.hasPassword ? 'Enter new password to change' : 'Paste your app password here'}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2.5 pr-20 text-sm focus:border-primary focus:ring-1 focus:ring-primary font-mono"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-2 py-1 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
+            <div className="mt-2 rounded-lg border border-blue-100 bg-blue-50 p-3">
+              <p className="text-xs text-blue-700">
+                <strong>How to get an App Password:</strong> {currentProvider.helpText}
+              </p>
+              <a
+                href={currentProvider.helpUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 mt-1.5 text-xs font-medium text-blue-600 hover:text-blue-800 underline"
+              >
+                Open {currentProvider.label} App Passwords
+                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+              </a>
+            </div>
+          </div>
+
+          {/* Optional From overrides */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">From Name <span className="text-gray-400 font-normal">(optional)</span></label>
+              <input
+                type="text"
+                value={config.fromName}
+                onChange={(e) => setConfig({ ...config, fromName: e.target.value })}
+                placeholder="Finance Approval System"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">From Email <span className="text-gray-400 font-normal">(optional)</span></label>
+              <input
+                type="email"
+                value={config.fromEmail}
+                onChange={(e) => setConfig({ ...config, fromEmail: e.target.value })}
+                placeholder="Same as email address"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+              />
+            </div>
+          </div>
+
+          {/* Save Button */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onSaveConfig}
+              disabled={configSaving || !config.user || (!config.password && !config.hasPassword)}
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50 transition-colors"
+            >
+              {configSaving ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4" />
+              )}
+              {configSaving ? 'Saving...' : 'Save Configuration'}
+            </button>
+            {configResult && (
+              <span className={`inline-flex items-center gap-1.5 text-sm font-medium ${
+                configResult.success ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {configResult.success ? (
+                  <CheckCircle2 className="h-4 w-4" />
+                ) : (
+                  <AlertCircle className="h-4 w-4" />
+                )}
+                {configResult.message}
+              </span>
+            )}
           </div>
         </div>
-      )}
+      </div>
 
-      <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
-        <p className="text-sm text-amber-800">
-          <strong>Note:</strong> Make sure SMTP credentials (SMTP_USER and SMTP_PASS) are configured in your environment variables.
-          For Gmail, use an App Password (Google Account → Security → 2-Step Verification → App Passwords).
-        </p>
+      {/* Divider */}
+      <hr className="border-gray-200" />
+
+      {/* Section 2: Test Email */}
+      <div>
+        <div className="flex items-start gap-3 mb-4">
+          <div className="rounded-lg bg-green-50 p-2.5">
+            <Send className="h-5 w-5 text-green-600" />
+          </div>
+          <div>
+            <h3 className="text-base font-semibold text-gray-900">Send Test Email</h3>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Verify your configuration by sending a test email.
+            </p>
+          </div>
+        </div>
+
+        {!config.configured ? (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+            <p className="text-sm text-amber-800">
+              <strong>Note:</strong> Save your email configuration above first before sending a test email.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="flex gap-3">
+              <input
+                type="email"
+                required
+                value={testEmail}
+                onChange={(e) => setTestEmail(e.target.value)}
+                placeholder="Enter recipient email address"
+                className="flex-1 rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+              />
+              <button
+                onClick={onSendTest}
+                disabled={testLoading || !testEmail}
+                className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50 transition-colors whitespace-nowrap"
+              >
+                {testLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+                {testLoading ? 'Sending...' : 'Send Test Email'}
+              </button>
+            </div>
+
+            {testResult && (
+              <div
+                className={`flex items-start gap-3 rounded-lg border p-4 ${
+                  testResult.success
+                    ? 'bg-green-50 border-green-200 text-green-800'
+                    : 'bg-red-50 border-red-200 text-red-800'
+                }`}
+              >
+                {testResult.success ? (
+                  <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                ) : (
+                  <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                )}
+                <div>
+                  <p className="text-sm font-medium">{testResult.success ? 'Success' : 'Error'}</p>
+                  <p className="text-sm mt-0.5">{testResult.message}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
