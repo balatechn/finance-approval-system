@@ -1,6 +1,6 @@
 # Finance Approval System — National Group India
 
-**Version:** 1.0.5
+**Version:** 1.0.6
 
 ## Overview
 
@@ -42,6 +42,7 @@ The **Finance Approval System** is a web-based enterprise application built for 
 - **SLA Tracking & Enforcement** — Configurable SLA hours per approval level with breach detection, alerts, and cron-based monitoring.
 - **Daily SLA Reminder Emails** — Automated emails sent daily at 8:30 AM IST to approvers for requests pending over 24 hours.
 - **Email Notifications** — Automated email alerts for submissions, approvals, rejections, send-backs, disbursement, SLA breaches, and user management events.
+- **Email Configuration UI** — Admin can configure Gmail or Microsoft 365 SMTP from the Settings page (no .env changes needed).
 - **Real-Time Notifications** — In-app notification bell with unread count, auto-polling, and mark-as-read functionality.
 - **Force Password Change** — New users must change their temporary password on first login.
 - **Cost-Focused Dashboard** — Dashboard displays expense metrics: Total Expenses, Total Disbursed, and Total Pending Disbursement.
@@ -104,7 +105,7 @@ The **Finance Approval System** is a web-based enterprise application built for 
 | **Icons** | Lucide React |
 | **Form Handling** | React Hook Form + Zod validation |
 | **Charts** | Recharts |
-| **Email** | Nodemailer (Gmail SMTP) |
+| **Email** | Nodemailer (Gmail / Microsoft 365 SMTP — configurable from UI) |
 | **Deployment** | Vercel (auto-deploy from GitHub) |
 | **Version Control** | GitHub (`balatechn/finance-approval-system`, `master` branch) |
 
@@ -336,19 +337,14 @@ DATABASE_URL="postgresql://user:password@host:5432/dbname"
 NEXTAUTH_URL="https://finance.nationalgroupindia.com"
 NEXTAUTH_SECRET="your-secret-key"
 
-# Email (Gmail SMTP)
-EMAIL_HOST="smtp.gmail.com"
-EMAIL_PORT=587
-EMAIL_USER="your-email@gmail.com"
-EMAIL_PASS="your-app-password"
-EMAIL_FROM="Finance System <your-email@gmail.com>"
-
 # Application
 NEXT_PUBLIC_APP_URL="https://finance.nationalgroupindia.com"
 
 # Cron Secret (for SLA check endpoint)
 CRON_SECRET="your-cron-secret"
 ```
+
+> **Note:** Email/SMTP credentials are no longer needed in `.env`. Configure them from **Settings → Email Config** in the admin panel. The config is stored in the database (SystemConfig table). If no DB config exists, the system falls back to `.env` values (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `FROM_EMAIL`, `FROM_NAME`).
 
 ---
 
@@ -466,6 +462,7 @@ npx vercel --prod --force
 |---|---|---|
 | GET | `/api/settings` | Read settings data (all authenticated users) |
 | POST/PATCH/DELETE | `/api/settings` | Manage settings (Admin only) |
+| GET/POST/DELETE | `/api/settings/email-config` | Read/Save/Clear SMTP email config (Admin only) |
 | POST | `/api/settings/test-email` | Test email configuration |
 | POST | `/api/attachments` | Upload file attachment |
 | GET | `/api/notifications` | User notifications |
@@ -524,6 +521,20 @@ All reports support:
 ---
 
 ## Changelog
+
+### v1.0.6 (February 2026)
+- **Email Configuration UI** — New "Email Config" tab in Settings for admins.
+  - Provider selector: **Gmail** (`smtp.gmail.com`) or **Microsoft 365** (`smtp.office365.com`).
+  - Enter email address and app password directly from the UI.
+  - Optional From Name and From Email overrides.
+  - App password field with show/hide toggle.
+  - Help links to generate app passwords for each provider.
+  - Config saved to `SystemConfig` DB table (no redeployment needed).
+  - "Configured" badge shown when email is set up.
+  - Send Test Email section to verify config works.
+- **Dynamic SMTP Config** — Email service reads config from DB at runtime with 1-minute cache; falls back to `.env`.
+- **New API** — `GET/POST/DELETE /api/settings/email-config` for managing SMTP settings.
+- **Fix:** `SMTP_PASS` → `SMTP_PASSWORD` env variable name mismatch corrected.
 
 ### v1.0.5 (February 2026)
 - **Compact Detail Pages** — Full Compact mode applied to request and approval detail pages.
