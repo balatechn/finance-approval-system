@@ -43,10 +43,10 @@ export default function ApprovalsPage() {
   useEffect(() => {
     async function fetchApprovals() {
       try {
-        const response = await fetch("/api/dashboard")
+        const response = await fetch("/api/approvals")
         if (response.ok) {
           const data = await response.json()
-          setPendingApprovals(data.pendingApprovals || [])
+          setPendingApprovals(data.approvals || [])
         }
       } catch (error) {
         console.error("Failed to fetch approvals:", error)

@@ -4,22 +4,6 @@ import { useEffect, useState, useMemo } from "react"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-  Line,
-  Area,
-  AreaChart,
-} from "recharts"
-import {
   FileText,
   Clock,
   CheckCircle,
@@ -48,6 +32,11 @@ import {
 } from "@/components/ui/select"
 import { StatusBadge } from "@/components/status-badge"
 import { formatCurrency, formatRelativeTime } from "@/lib/utils"
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, PieChart, Pie, Cell, Legend,
+  Line, Area, AreaChart,
+} from "recharts"
 
 interface DashboardData {
   stats: {
