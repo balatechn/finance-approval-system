@@ -151,10 +151,10 @@ export const authOptions: NextAuthOptions = {
     },
     async jwt({ token, user, trigger, session, account }) {
       if (user) {
-        // For OAuth logins, look up the full user from DB
         if (account?.provider === 'azure-ad') {
+          // For OAuth logins, look up the full user from DB
           const dbUser = await prisma.user.findUnique({
-            where: { email: user.email!.toLowerCase() },
+            where: { email: (user.email || token.email as string).toLowerCase() },
           });
           if (dbUser) {
             token.id = dbUser.id;
@@ -169,6 +169,20 @@ export const authOptions: NextAuthOptions = {
           token.department = user.department;
           token.employeeId = user.employeeId;
           token.mustChangePassword = (user as any).mustChangePassword ?? false;
+        }
+      }
+
+      // Fallback: if token is missing role (e.g. after OAuth), look up from DB
+      if (!token.role && token.email) {
+        const dbUser = await prisma.user.findUnique({
+          where: { email: (token.email as string).toLowerCase() },
+        });
+        if (dbUser) {
+          token.id = dbUser.id;
+          token.role = dbUser.role;
+          token.department = dbUser.department;
+          token.employeeId = dbUser.employeeId;
+          token.mustChangePassword = dbUser.mustChangePassword;
         }
       }
 

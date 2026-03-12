@@ -209,7 +209,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
   const filteredNavigation = navigation.filter((item) => {
     if (!item.roles) return true
-    return item.roles.includes(userRole!)
+    return userRole ? item.roles.includes(userRole) : false
   })
 
   const userInitials = user?.name
@@ -364,8 +364,8 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                     </div>
                   </TooltipTrigger>
                   <TooltipContent side="right">
-                    <p className="font-medium">{user!.name}</p>
-                    <p className="text-xs text-muted-foreground">{getRoleLabel(userRole!)}</p>
+                    <p className="font-medium">{user?.name}</p>
+                    <p className="text-xs text-muted-foreground">{getRoleLabel(userRole as any)}</p>
                   </TooltipContent>
                 </Tooltip>
               ) : (
@@ -376,9 +376,9 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 overflow-hidden">
-                    <p className="truncate text-sm font-medium">{user!.name}</p>
+                    <p className="truncate text-sm font-medium">{user?.name}</p>
                     <p className="truncate text-xs text-muted-foreground">
-                      {getRoleLabel(userRole!)}
+                      {getRoleLabel(userRole as any)}
                     </p>
                   </div>
                 </div>
@@ -558,20 +558,20 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel>
                     <div className="flex flex-col">
-                      <span>{user!.name}</span>
+                      <span>{user?.name}</span>
                       <span className="text-xs font-normal text-muted-foreground">
-                        {user!.email}
+                        {user?.email}
                       </span>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>
                     <Badge variant="secondary" className="mr-2">
-                      {getRoleLabel(userRole!)}
+                      {getRoleLabel(userRole as any)}
                     </Badge>
-                    {user!.department && (
+                    {user?.department && (
                       <span className="text-xs text-muted-foreground">
-                        {user!.department}
+                        {user?.department}
                       </span>
                     )}
                   </DropdownMenuItem>
