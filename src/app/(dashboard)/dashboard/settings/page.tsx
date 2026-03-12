@@ -100,6 +100,8 @@ export default function SettingsPage() {
   // Email config state
   const [emailConfig, setEmailConfig] = useState({
     provider: '',
+    host: '',
+    port: '',
     user: '',
     password: '',
     fromEmail: '',
@@ -141,6 +143,8 @@ export default function SettingsPage() {
         const data = await res.json();
         setEmailConfig({
           provider: data.provider || 'gmail',
+          host: data.host || '',
+          port: data.port || '',
           user: data.user || '',
           password: data.hasPassword ? data.password : '',
           fromEmail: data.fromEmail || '',
@@ -407,6 +411,8 @@ export default function SettingsPage() {
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
                     provider: emailConfig.provider,
+                    host: emailConfig.host,
+                    port: emailConfig.port,
                     user: emailConfig.user,
                     password: emailConfig.password,
                     fromEmail: emailConfig.fromEmail,
@@ -998,7 +1004,7 @@ function EmailConfigPanel({
   testResult,
   onSendTest,
 }: {
-  config: { provider: string; user: string; password: string; fromEmail: string; fromName: string; configured: boolean; hasPassword: boolean };
+  config: { provider: string; host: string; port: string; user: string; password: string; fromEmail: string; fromName: string; configured: boolean; hasPassword: boolean };
   setConfig: (v: any) => void;
   configLoading: boolean;
   configSaving: boolean;
@@ -1033,6 +1039,12 @@ function EmailConfigPanel({
       helpUrl: 'https://account.live.com/proofs/manage/additional',
       helpText: 'Go to Microsoft Account → Security → Advanced security options → App passwords. Create a new app password and paste it here.',
     },
+    custom: {
+      label: 'Custom SMTP',
+      host: 'Custom host:port',
+      helpUrl: '',
+      helpText: 'Enter your SMTP server host, port, username and password below.',
+    },
   };
 
   const currentProvider = providerInfo[config.provider] || providerInfo.gmail;
@@ -1063,8 +1075,8 @@ function EmailConfigPanel({
           {/* Provider Selection */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Email Provider *</label>
-            <div className="grid grid-cols-2 gap-3">
-              {(['gmail', 'microsoft365'] as const).map((p) => {
+            <div className="grid grid-cols-3 gap-3">
+              {(['gmail', 'microsoft365', 'custom'] as const).map((p) => {
                 const info = providerInfo[p];
                 const isSelected = config.provider === p;
                 return (
@@ -1088,30 +1100,58 @@ function EmailConfigPanel({
             </div>
           </div>
 
+          {/* Custom SMTP Host/Port (only shown for custom provider) */}
+          {config.provider === 'custom' && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">SMTP Host *</label>
+                <input
+                  type="text"
+                  required
+                  value={config.host}
+                  onChange={(e) => setConfig({ ...config, host: e.target.value })}
+                  placeholder="smtp.mailgun.org"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">SMTP Port *</label>
+                <input
+                  type="text"
+                  required
+                  value={config.port}
+                  onChange={(e) => setConfig({ ...config, port: e.target.value })}
+                  placeholder="587"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary font-mono"
+                />
+              </div>
+            </div>
+          )}
+
           {/* Email Address */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Email Address *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">{config.provider === 'custom' ? 'SMTP Username *' : 'Email Address *'}</label>
             <input
-              type="email"
+              type={config.provider === 'custom' ? 'text' : 'email'}
               required
               value={config.user}
               onChange={(e) => setConfig({ ...config, user: e.target.value })}
-              placeholder={config.provider === 'microsoft365' ? 'your-email@company.com' : 'your-email@gmail.com'}
+              placeholder={config.provider === 'custom' ? 'admin@mailer.example.com' : config.provider === 'microsoft365' ? 'your-email@company.com' : 'your-email@gmail.com'}
               className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
             />
-            <p className="text-xs text-gray-400 mt-1">This will also be used as the &quot;From&quot; address unless overridden below.</p>
+            <p className="text-xs text-gray-400 mt-1">{config.provider === 'custom' ? 'SMTP login username provided by your email service.' : 'This will also be used as the "From" address unless overridden below.'}</p>
           </div>
 
           {/* App Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">App Password *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">{config.provider === 'custom' ? 'SMTP Password *' : 'App Password *'}</label>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
                 value={config.password}
                 onChange={(e) => setConfig({ ...config, password: e.target.value })}
-                placeholder={config.hasPassword ? 'Enter new password to change' : 'Paste your app password here'}
+                placeholder={config.hasPassword ? 'Enter new password to change' : config.provider === 'custom' ? 'Enter your SMTP password' : 'Paste your app password here'}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2.5 pr-20 text-sm focus:border-primary focus:ring-1 focus:ring-primary font-mono"
               />
               <button
@@ -1122,20 +1162,22 @@ function EmailConfigPanel({
                 {showPassword ? 'Hide' : 'Show'}
               </button>
             </div>
-            <div className="mt-2 rounded-lg border border-blue-100 bg-blue-50 p-3">
-              <p className="text-xs text-blue-700">
-                <strong>How to get an App Password:</strong> {currentProvider.helpText}
-              </p>
-              <a
-                href={currentProvider.helpUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 mt-1.5 text-xs font-medium text-blue-600 hover:text-blue-800 underline"
-              >
-                Open {currentProvider.label} App Passwords
-                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-              </a>
-            </div>
+            {config.provider !== 'custom' && (
+              <div className="mt-2 rounded-lg border border-blue-100 bg-blue-50 p-3">
+                <p className="text-xs text-blue-700">
+                  <strong>How to get an App Password:</strong> {currentProvider.helpText}
+                </p>
+                <a
+                  href={currentProvider.helpUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 mt-1.5 text-xs font-medium text-blue-600 hover:text-blue-800 underline"
+                >
+                  Open {currentProvider.label} App Passwords
+                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                </a>
+              </div>
+            )}
           </div>
 
           {/* Optional From overrides */}

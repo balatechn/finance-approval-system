@@ -61,22 +61,24 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { provider, user: emailUser, password, fromEmail, fromName } = body;
+    const { provider, host: customHost, port: customPort, user: emailUser, password, fromEmail, fromName } = body;
 
     if (!provider || !emailUser) {
       return NextResponse.json({ error: 'Provider and email address are required' }, { status: 400 });
     }
 
-    // Determine host/port from provider
+    // Determine host/port from provider (or use custom values)
     const providerDefaults: Record<string, { host: string; port: string }> = {
       gmail: { host: 'smtp.gmail.com', port: '587' },
       microsoft365: { host: 'smtp.office365.com', port: '587' },
     };
-    const defaults = providerDefaults[provider] || providerDefaults.gmail;
+    const defaults = provider === 'custom'
+      ? { host: customHost || 'smtp.mailgun.org', port: customPort || '587' }
+      : providerDefaults[provider] || providerDefaults.gmail;
 
     // Build key–value pairs to upsert
     const pairs: { key: string; value: string; description: string }[] = [
-      { key: 'EMAIL_PROVIDER', value: provider, description: 'Email provider (gmail / microsoft365)' },
+      { key: 'EMAIL_PROVIDER', value: provider, description: 'Email provider (gmail / microsoft365 / custom)' },
       { key: 'EMAIL_HOST', value: defaults.host, description: 'SMTP host' },
       { key: 'EMAIL_PORT', value: defaults.port, description: 'SMTP port' },
       { key: 'EMAIL_SECURE', value: 'false', description: 'Use TLS (true for port 465)' },

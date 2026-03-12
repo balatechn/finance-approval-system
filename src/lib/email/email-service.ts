@@ -19,6 +19,7 @@ interface SmtpConfig {
 const PROVIDER_DEFAULTS: Record<string, { host: string; port: number; secure: boolean }> = {
   gmail: { host: 'smtp.gmail.com', port: 587, secure: false },
   microsoft365: { host: 'smtp.office365.com', port: 587, secure: false },
+  custom: { host: 'smtp.mailgun.org', port: 587, secure: false },
 };
 
 // Cache to avoid DB reads on every email
