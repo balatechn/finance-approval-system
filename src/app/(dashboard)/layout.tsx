@@ -25,6 +25,8 @@ import {
   MessageSquare,
   Target,
   Headphones,
+  PlusCircle,
+  MoreHorizontal,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -595,10 +597,70 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           </header>
 
           {/* Page content */}
-          <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+          <main className="flex-1 overflow-y-auto p-4 lg:p-6 pb-20 lg:pb-6">
             {children}
           </main>
         </div>
+
+        {/* Mobile Bottom Navigation */}
+        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 lg:hidden">
+          <div className="flex items-center justify-around h-16">
+            {[
+              { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+              { name: "Requests", href: "/dashboard/requests", icon: FileText },
+              { name: "New", href: "/dashboard/requests/new", icon: PlusCircle, accent: true },
+              { name: "Approvals", href: "/dashboard/approvals", icon: CheckSquare },
+              { name: "More", href: "#more", icon: MoreHorizontal, isMore: true },
+            ].map((item) => {
+              const isActive = item.isMore
+                ? !["/dashboard", "/dashboard/requests", "/dashboard/requests/new", "/dashboard/approvals"].includes(pathname)
+                : pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href))
+              
+              if (item.isMore) {
+                return (
+                  <button
+                    key={item.name}
+                    onClick={() => setSidebarOpen(true)}
+                    className={cn(
+                      "flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-[10px] font-medium transition-colors",
+                      isActive ? "text-primary" : "text-gray-400"
+                    )}
+                  >
+                    <item.icon className="h-5 w-5" />
+                    <span>{item.name}</span>
+                  </button>
+                )
+              }
+
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={cn(
+                    "flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-[10px] font-medium transition-colors",
+                    item.accent && !isActive
+                      ? "text-primary"
+                      : isActive
+                      ? "text-primary"
+                      : "text-gray-400"
+                  )}
+                >
+                  {item.accent ? (
+                    <div className={cn(
+                      "flex items-center justify-center h-8 w-8 rounded-full -mt-4 shadow-lg",
+                      "bg-primary text-white"
+                    )}>
+                      <item.icon className="h-5 w-5" />
+                    </div>
+                  ) : (
+                    <item.icon className="h-5 w-5" />
+                  )}
+                  <span>{item.name}</span>
+                </Link>
+              )
+            })}
+          </div>
+        </nav>
       </div>
     </TooltipProvider>
   )
