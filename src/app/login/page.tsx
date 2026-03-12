@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, Suspense } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useForm } from "react-hook-form"
@@ -74,7 +74,7 @@ function LoginForm() {
   }
 
   // Show error from SSO redirect
-  useState(() => {
+  useEffect(() => {
     if (error === 'NoAccount') {
       toast({
         title: "Account Not Found",
@@ -88,7 +88,7 @@ function LoginForm() {
         variant: "destructive",
       })
     }
-  })
+  }, [error, toast])
 
   const handleMicrosoftSSO = () => {
     setIsSSOLoading(true)
