@@ -943,8 +943,10 @@ export default function NewRequestPage() {
             <div className="text-sm text-blue-800">
               <p className="font-medium">Approval Workflow</p>
               <p className="mt-1">
-                Once submitted, your request will go through the following approval stages:
-                Finance Vetting → Finance Planner → Finance Controller → Director → MD → Disbursement
+                Once submitted, your request will go through the following approval stages:{' '}
+                {watch('requestType') === 'EXPENSE_APPROVAL'
+                  ? 'Finance Vetting → Finance Planner → Finance Controller → Director → MD → Expense Approved'
+                  : 'Finance Vetting → Finance Planner → Finance Controller → Director → MD → Disbursement'}
               </p>
             </div>
           </div>
