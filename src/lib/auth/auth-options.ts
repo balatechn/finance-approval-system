@@ -99,6 +99,7 @@ export const authOptions: NextAuthOptions = {
           clientId: process.env.AZURE_AD_CLIENT_ID,
           clientSecret: process.env.AZURE_AD_CLIENT_SECRET,
           tenantId: process.env.AZURE_AD_TENANT_ID,
+          allowDangerousEmailAccountLinking: true,
           authorization: {
             params: {
               scope: 'openid profile email',
@@ -109,7 +110,7 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ user, account }) {
-      // For OAuth providers, match email to existing user
+      // For OAuth providers, validate that user exists in our system
       if (account?.provider === 'azure-ad' && user.email) {
         const existingUser = await prisma.user.findUnique({
           where: { email: user.email.toLowerCase() },
@@ -119,32 +120,6 @@ export const authOptions: NextAuthOptions = {
         }
         if (!existingUser.isActive) {
           return '/login?error=AccountDeactivated';
-        }
-        // Link the OAuth account to the existing user if not already linked
-        const existingAccount = await prisma.account.findUnique({
-          where: {
-            provider_providerAccountId: {
-              provider: account.provider,
-              providerAccountId: account.providerAccountId,
-            },
-          },
-        });
-        if (!existingAccount) {
-          await prisma.account.create({
-            data: {
-              userId: existingUser.id,
-              type: account.type,
-              provider: account.provider,
-              providerAccountId: account.providerAccountId,
-              access_token: account.access_token,
-              refresh_token: account.refresh_token,
-              expires_at: account.expires_at,
-              token_type: account.token_type,
-              scope: account.scope,
-              id_token: account.id_token,
-              session_state: account.session_state as string | undefined,
-            },
-          });
         }
       }
       return true;
