@@ -18,8 +18,10 @@ function LoginForm() {
   const searchParams = useSearchParams()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
+  const [isSSOLoading, setIsSSOLoading] = useState(false)
   
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
+  const error = searchParams.get("error")
 
   const {
     register,
@@ -69,6 +71,28 @@ function LoginForm() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Show error from SSO redirect
+  useState(() => {
+    if (error === 'NoAccount') {
+      toast({
+        title: "Account Not Found",
+        description: "No account exists for this Microsoft email. Contact your administrator.",
+        variant: "destructive",
+      })
+    } else if (error === 'AccountDeactivated') {
+      toast({
+        title: "Account Deactivated",
+        description: "Your account has been deactivated. Contact your administrator.",
+        variant: "destructive",
+      })
+    }
+  })
+
+  const handleMicrosoftSSO = () => {
+    setIsSSOLoading(true)
+    signIn("azure-ad", { callbackUrl })
   }
 
   return (
@@ -168,6 +192,29 @@ function LoginForm() {
                 Sign In
               </Button>
             </form>
+
+            {/* Divider */}
+            <div className="flex items-center gap-3 my-5">
+              <div className="flex-1 h-px bg-white/[0.1]" />
+              <span className="text-white/30 text-xs uppercase tracking-wider">or</span>
+              <div className="flex-1 h-px bg-white/[0.1]" />
+            </div>
+
+            {/* Microsoft 365 SSO */}
+            <Button
+              type="button"
+              onClick={handleMicrosoftSSO}
+              disabled={isSSOLoading}
+              className="w-full h-12 rounded-xl bg-[#2F2F2F] hover:bg-[#3F3F3F] text-white font-medium text-sm border border-white/[0.1] transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-3"
+            >
+              <svg className="h-5 w-5" viewBox="0 0 21 21" fill="none">
+                <rect x="1" y="1" width="9" height="9" fill="#F25022"/>
+                <rect x="11" y="1" width="9" height="9" fill="#7FBA00"/>
+                <rect x="1" y="11" width="9" height="9" fill="#00A4EF"/>
+                <rect x="11" y="11" width="9" height="9" fill="#FFB900"/>
+              </svg>
+              {isSSOLoading ? "Redirecting..." : "Sign in with Microsoft 365"}
+            </Button>
           </div>
         </div>
 
