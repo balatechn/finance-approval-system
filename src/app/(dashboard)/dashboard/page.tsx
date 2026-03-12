@@ -2,11 +2,22 @@
 
 import { useEffect, useState, useMemo } from "react"
 import Link from "next/link"
-import dynamic from "next/dynamic"
 import { useSession } from "next-auth/react"
 import {
-  Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip,
-  Pie, Cell, Legend, Line, Area,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+  Line,
+  Area,
+  AreaChart,
 } from "recharts"
 import {
   FileText,
@@ -37,12 +48,6 @@ import {
 } from "@/components/ui/select"
 import { StatusBadge } from "@/components/status-badge"
 import { formatCurrency, formatRelativeTime } from "@/lib/utils"
-
-// Lazy-load recharts components to reduce initial bundle
-const LazyAreaChart = dynamic(() => import("recharts").then((m) => m.AreaChart), { ssr: false })
-const LazyBarChart = dynamic(() => import("recharts").then((m) => m.BarChart), { ssr: false })
-const LazyPieChart = dynamic(() => import("recharts").then((m) => m.PieChart), { ssr: false })
-const LazyResponsiveContainer = dynamic(() => import("recharts").then((m) => m.ResponsiveContainer), { ssr: false })
 
 interface DashboardData {
   stats: {
@@ -388,8 +393,8 @@ export default function DashboardPage() {
           <CardContent className="p-4 pt-0">
             <div className="h-[200px]">
               {data?.monthlyTrend && data.monthlyTrend.length > 0 ? (
-                <LazyResponsiveContainer width="100%" height="100%">
-                  <LazyAreaChart
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart
                     data={data.monthlyTrend}
                     margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
                   >
@@ -411,7 +416,7 @@ export default function DashboardPage() {
                           : value.toString()
                       }
                     />
-                    <RTooltip
+                    <Tooltip
                       formatter={(value) => [formatCurrency(value as number), ""]}
                       contentStyle={{ borderRadius: "8px", fontSize: "13px" }}
                     />
@@ -432,8 +437,8 @@ export default function DashboardPage() {
                       strokeWidth={2}
                       dot={{ fill: "#22c55e", strokeWidth: 2, r: 3 }}
                     />
-                  </LazyAreaChart>
-                </LazyResponsiveContainer>
+                  </AreaChart>
+                </ResponsiveContainer>
               ) : (
                 <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                   No trend data available
@@ -454,8 +459,8 @@ export default function DashboardPage() {
           <CardContent className="p-4 pt-0">
             <div className="h-[200px]">
               {data?.departmentStats && data.departmentStats.length > 0 ? (
-                <LazyResponsiveContainer width="100%" height="100%">
-                  <LazyBarChart
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
                     data={data.departmentStats}
                     layout="vertical"
                     margin={{ top: 5, right: 10, left: 60, bottom: 5 }}
@@ -479,7 +484,7 @@ export default function DashboardPage() {
                       tick={{ fontSize: 10 }}
                       width={55}
                     />
-                    <RTooltip
+                    <Tooltip
                       formatter={(value, name, props) => [
                         `${formatCurrency(value as number)} (${props.payload.percentage}%)`,
                         "Amount",
@@ -487,8 +492,8 @@ export default function DashboardPage() {
                       contentStyle={{ borderRadius: "8px", fontSize: "13px" }}
                     />
                     <Bar dataKey="amount" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
-                  </LazyBarChart>
-                </LazyResponsiveContainer>
+                  </BarChart>
+                </ResponsiveContainer>
               ) : (
                 <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                   No department data
@@ -551,8 +556,8 @@ export default function DashboardPage() {
           <CardContent className="p-4 pt-0">
             <div className="h-[180px]">
               {stats.totalAmount > 0 ? (
-                <LazyResponsiveContainer width="100%" height="100%">
-                  <LazyPieChart>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
                     <Pie
                       data={[
                         { name: "Pending", value: stats.pendingAmount },
@@ -578,7 +583,7 @@ export default function DashboardPage() {
                         <Cell key={index} fill={entry.fill} />
                       ))}
                     </Pie>
-                    <RTooltip
+                    <Tooltip
                       formatter={(value) => [formatCurrency(value as number), ""]}
                       contentStyle={{ borderRadius: "8px", fontSize: "13px" }}
                     />
@@ -587,8 +592,8 @@ export default function DashboardPage() {
                       wrapperStyle={{ fontSize: "11px", paddingTop: 0 }}
                       iconSize={8}
                     />
-                  </LazyPieChart>
-                </LazyResponsiveContainer>
+                  </PieChart>
+                </ResponsiveContainer>
               ) : (
                 <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                   No data for selected period
@@ -609,8 +614,8 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <div className="h-[180px]">
-              <LazyResponsiveContainer width="100%" height="100%">
-                <LazyBarChart
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
                   data={data.entityStats.map((es) => ({
                     name: es.entity.length > 12 ? es.entity.substring(0, 10) + ".." : es.entity,
                     fullName: es.entity,
@@ -637,7 +642,7 @@ export default function DashboardPage() {
                         : value.toString()
                     }
                   />
-                  <RTooltip
+                  <Tooltip
                     formatter={(value) => [formatCurrency(value as number), "Amount"]}
                     labelFormatter={(_label, payload) =>
                       payload?.[0]?.payload?.fullName || _label
@@ -645,8 +650,8 @@ export default function DashboardPage() {
                     contentStyle={{ borderRadius: "8px", fontSize: "13px" }}
                   />
                   <Bar dataKey="amount" fill="#6366f1" radius={[4, 4, 0, 0]} />
-                </LazyBarChart>
-              </LazyResponsiveContainer>
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
