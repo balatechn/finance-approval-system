@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { ArrowLeft, Upload, X, Info, FileText, Eye, Trash2, Image as ImageIcon } from "lucide-react"
+import { ArrowLeft, Upload, X, Info, FileText, Eye, Trash2, Image as ImageIcon, Receipt, CreditCard } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -291,15 +291,37 @@ export default function NewRequestPage() {
                 control={control}
                 defaultValue="PAYMENT_APPROVAL"
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value || "PAYMENT_APPROVAL"}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select request type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="EXPENSE_APPROVAL">Expense Approval</SelectItem>
-                      <SelectItem value="PAYMENT_APPROVAL">Payment Approval</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="grid grid-cols-2 gap-3">
+                    {([
+                      { value: 'EXPENSE_APPROVAL', label: 'Expense Approval', icon: Receipt, desc: 'Ends at MD approval' },
+                      { value: 'PAYMENT_APPROVAL', label: 'Payment Approval', icon: CreditCard, desc: 'Continues to disbursement' },
+                    ] as const).map((opt) => {
+                      const isSelected = field.value === opt.value;
+                      const Icon = opt.icon;
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => field.onChange(opt.value)}
+                          className={`flex items-center gap-3 rounded-lg border-2 p-4 text-left transition-all ${
+                            isSelected
+                              ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+                              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className={`rounded-lg p-2 ${isSelected ? 'bg-primary/10' : 'bg-gray-100'}`}>
+                            <Icon className={`h-5 w-5 ${isSelected ? 'text-primary' : 'text-gray-500'}`} />
+                          </div>
+                          <div>
+                            <span className={`text-sm font-semibold ${isSelected ? 'text-primary' : 'text-gray-900'}`}>
+                              {opt.label}
+                            </span>
+                            <span className="block text-xs text-gray-500 mt-0.5">{opt.desc}</span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 )}
               />
             </div>
