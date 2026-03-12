@@ -531,15 +531,15 @@ export default function EditRequestPage() {
                           onClick={() => field.onChange(opt.value)}
                           className={`flex items-center gap-3 rounded-lg border-2 p-4 text-left transition-all ${
                             isSelected
-                              ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+                              ? 'border-amber-400 bg-amber-50 ring-1 ring-amber-200'
                               : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                           }`}
                         >
-                          <div className={`rounded-lg p-2 ${isSelected ? 'bg-primary/10' : 'bg-gray-100'}`}>
-                            <Icon className={`h-5 w-5 ${isSelected ? 'text-primary' : 'text-gray-500'}`} />
+                          <div className={`rounded-lg p-2 ${isSelected ? 'bg-amber-100' : 'bg-gray-100'}`}>
+                            <Icon className={`h-5 w-5 ${isSelected ? 'text-amber-600' : 'text-gray-500'}`} />
                           </div>
                           <div>
-                            <span className={`text-sm font-semibold ${isSelected ? 'text-primary' : 'text-gray-900'}`}>
+                            <span className={`text-sm font-semibold ${isSelected ? 'text-amber-700' : 'text-gray-900'}`}>
                               {opt.label}
                             </span>
                             <span className="block text-xs text-gray-500 mt-0.5">{opt.desc}</span>
