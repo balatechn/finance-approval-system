@@ -5,6 +5,10 @@ import Link from "next/link"
 import dynamic from "next/dynamic"
 import { useSession } from "next-auth/react"
 import {
+  Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip,
+  Pie, Cell, Legend, Line, Area,
+} from "recharts"
+import {
   FileText,
   Clock,
   CheckCircle,
@@ -39,16 +43,6 @@ const LazyAreaChart = dynamic(() => import("recharts").then((m) => m.AreaChart),
 const LazyBarChart = dynamic(() => import("recharts").then((m) => m.BarChart), { ssr: false })
 const LazyPieChart = dynamic(() => import("recharts").then((m) => m.PieChart), { ssr: false })
 const LazyResponsiveContainer = dynamic(() => import("recharts").then((m) => m.ResponsiveContainer), { ssr: false })
-const LazyBar = dynamic(() => import("recharts").then((m) => m.Bar), { ssr: false })
-const LazyXAxis = dynamic(() => import("recharts").then((m) => m.XAxis), { ssr: false })
-const LazyYAxis = dynamic(() => import("recharts").then((m) => m.YAxis), { ssr: false })
-const LazyCartesianGrid = dynamic(() => import("recharts").then((m) => m.CartesianGrid), { ssr: false })
-const LazyTooltip = dynamic(() => import("recharts").then((m) => m.Tooltip), { ssr: false })
-const LazyPie = dynamic(() => import("recharts").then((m) => m.Pie), { ssr: false })
-const LazyCell = dynamic(() => import("recharts").then((m) => m.Cell), { ssr: false })
-const LazyLegend = dynamic(() => import("recharts").then((m) => m.Legend), { ssr: false })
-const LazyLine = dynamic(() => import("recharts").then((m) => m.Line), { ssr: false })
-const LazyArea = dynamic(() => import("recharts").then((m) => m.Area), { ssr: false })
 
 interface DashboardData {
   stats: {
@@ -405,9 +399,9 @@ export default function DashboardPage() {
                         <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <LazyCartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <LazyXAxis dataKey="month" tick={{ fontSize: 11 }} />
-                    <LazyYAxis
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                    <YAxis
                       tick={{ fontSize: 10 }}
                       tickFormatter={(value) =>
                         value >= 100000
@@ -417,11 +411,11 @@ export default function DashboardPage() {
                           : value.toString()
                       }
                     />
-                    <LazyTooltip
+                    <RTooltip
                       formatter={(value) => [formatCurrency(value as number), ""]}
                       contentStyle={{ borderRadius: "8px", fontSize: "13px" }}
                     />
-                    <LazyArea
+                    <Area
                       type="monotone"
                       dataKey="total"
                       name="Total Expenses"
@@ -430,7 +424,7 @@ export default function DashboardPage() {
                       fill="url(#colorTotal)"
                       strokeWidth={2}
                     />
-                    <LazyLine
+                    <Line
                       type="monotone"
                       dataKey="disbursed"
                       name="Disbursed"
@@ -467,8 +461,8 @@ export default function DashboardPage() {
                     margin={{ top: 5, right: 10, left: 60, bottom: 5 }}
                     barSize={16}
                   >
-                    <LazyCartesianGrid strokeDasharray="3 3" horizontal={false} />
-                    <LazyXAxis
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                    <XAxis
                       type="number"
                       tick={{ fontSize: 10 }}
                       tickFormatter={(value) =>
@@ -479,20 +473,20 @@ export default function DashboardPage() {
                           : value.toString()
                       }
                     />
-                    <LazyYAxis
+                    <YAxis
                       type="category"
                       dataKey="department"
                       tick={{ fontSize: 10 }}
                       width={55}
                     />
-                    <LazyTooltip
+                    <RTooltip
                       formatter={(value, name, props) => [
                         `${formatCurrency(value as number)} (${props.payload.percentage}%)`,
                         "Amount",
                       ]}
                       contentStyle={{ borderRadius: "8px", fontSize: "13px" }}
                     />
-                    <LazyBar dataKey="amount" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
+                    <Bar dataKey="amount" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
                   </LazyBarChart>
                 </LazyResponsiveContainer>
               ) : (
@@ -559,7 +553,7 @@ export default function DashboardPage() {
               {stats.totalAmount > 0 ? (
                 <LazyResponsiveContainer width="100%" height="100%">
                   <LazyPieChart>
-                    <LazyPie
+                    <Pie
                       data={[
                         { name: "Pending", value: stats.pendingAmount },
                         { name: "Approved", value: stats.approvedAmount },
@@ -581,14 +575,14 @@ export default function DashboardPage() {
                         { fill: "#22c55e" },
                         { fill: "#6366f1" },
                       ].map((entry, index) => (
-                        <LazyCell key={index} fill={entry.fill} />
+                        <Cell key={index} fill={entry.fill} />
                       ))}
-                    </LazyPie>
-                    <LazyTooltip
+                    </Pie>
+                    <RTooltip
                       formatter={(value) => [formatCurrency(value as number), ""]}
                       contentStyle={{ borderRadius: "8px", fontSize: "13px" }}
                     />
-                    <LazyLegend
+                    <Legend
                       iconType="circle"
                       wrapperStyle={{ fontSize: "11px", paddingTop: 0 }}
                       iconSize={8}
@@ -625,15 +619,15 @@ export default function DashboardPage() {
                   margin={{ top: 5, right: 5, left: 10, bottom: 30 }}
                   barSize={32}
                 >
-                  <LazyCartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <LazyXAxis
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis
                     dataKey="name"
                     tick={{ fontSize: 9 }}
                     angle={-30}
                     textAnchor="end"
                     interval={0}
                   />
-                  <LazyYAxis
+                  <YAxis
                     tick={{ fontSize: 10 }}
                     tickFormatter={(value) =>
                       value >= 100000
@@ -643,14 +637,14 @@ export default function DashboardPage() {
                         : value.toString()
                     }
                   />
-                  <LazyTooltip
+                  <RTooltip
                     formatter={(value) => [formatCurrency(value as number), "Amount"]}
                     labelFormatter={(_label, payload) =>
                       payload?.[0]?.payload?.fullName || _label
                     }
                     contentStyle={{ borderRadius: "8px", fontSize: "13px" }}
                   />
-                  <LazyBar dataKey="amount" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="amount" fill="#6366f1" radius={[4, 4, 0, 0]} />
                 </LazyBarChart>
               </LazyResponsiveContainer>
             </div>
