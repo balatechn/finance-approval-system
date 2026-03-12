@@ -23,6 +23,13 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { StatusBadge } from "@/components/status-badge"
 import { formatCurrency, formatRelativeTime } from "@/lib/utils"
 import {
@@ -138,6 +145,7 @@ export default function DashboardPage() {
   const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
   const [fromDate, setFromDate] = useState(firstOfMonth.toISOString().split("T")[0])
   const [toDate, setToDate] = useState(now.toISOString().split("T")[0])
+  const [requestTypeFilter, setRequestTypeFilter] = useState("all")
 
   useEffect(() => {
     async function fetchDashboard() {
@@ -146,6 +154,7 @@ export default function DashboardPage() {
         const params = new URLSearchParams()
         if (fromDate) params.set("from", fromDate)
         if (toDate) params.set("to", toDate)
+        if (requestTypeFilter !== "all") params.set("requestType", requestTypeFilter)
         const response = await fetch(`/api/dashboard?${params.toString()}`)
         if (response.ok) {
           const result = await response.json()
@@ -159,7 +168,7 @@ export default function DashboardPage() {
     }
 
     fetchDashboard()
-  }, [fromDate, toDate])
+  }, [fromDate, toDate, requestTypeFilter])
 
   if (loading) {
     return (
@@ -245,8 +254,18 @@ export default function DashboardPage() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
             <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
               <CalendarDays className="h-4 w-4" />
-              Date Range
+              Filters
             </div>
+            <Select value={requestTypeFilter} onValueChange={setRequestTypeFilter}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Request Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="EXPENSE_APPROVAL">Expense Approval</SelectItem>
+                <SelectItem value="PAYMENT_APPROVAL">Payment Approval</SelectItem>
+              </SelectContent>
+            </Select>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 flex-1">
               <Input
                 type="date"

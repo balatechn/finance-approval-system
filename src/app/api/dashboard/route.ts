@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const fromParam = searchParams.get('from');
     const toParam = searchParams.get('to');
+    const requestTypeParam = searchParams.get('requestType');
 
     // Build date range filter
     let dateRange: { gte?: Date; lte?: Date } | undefined;
@@ -48,7 +49,7 @@ export async function GET(request: NextRequest) {
     }
 
     const [stats, recentRequests, pendingApprovals, slaAlerts, entityStats, monthlyTrend, departmentStats, topVendors, forecast] = await Promise.all([
-      getDashboardStats(user, userEntityIdentifiers, dateRange),
+      getDashboardStats(user, userEntityIdentifiers, dateRange, requestTypeParam),
       getRecentRequests(user),
       getPendingApprovals(user, userEntityIdentifiers),
       getSLAAlerts(user),
@@ -81,7 +82,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-async function getDashboardStats(user: any, userEntityIdentifiers: string[] = [], dateRange?: { gte?: Date; lte?: Date }) {
+async function getDashboardStats(user: any, userEntityIdentifiers: string[] = [], dateRange?: { gte?: Date; lte?: Date }, requestType?: string | null) {
   const baseWhere: any = { isDeleted: false };
 
   // Apply role-based filtering
@@ -92,6 +93,11 @@ async function getDashboardStats(user: any, userEntityIdentifiers: string[] = []
   // Apply date range filter
   if (dateRange) {
     baseWhere.createdAt = dateRange;
+  }
+
+  // Apply request type filter
+  if (requestType) {
+    baseWhere.requestType = requestType;
   }
 
   const [
@@ -120,7 +126,7 @@ async function getDashboardStats(user: any, userEntityIdentifiers: string[] = []
       },
     }),
     prisma.financeRequest.count({
-      where: { ...baseWhere, status: 'APPROVED' },
+      where: { ...baseWhere, status: { in: ['APPROVED', 'EXPENSE_APPROVED'] } },
     }),
     prisma.financeRequest.count({
       where: { ...baseWhere, status: 'REJECTED' },
@@ -182,9 +188,9 @@ async function getDashboardStats(user: any, userEntityIdentifiers: string[] = []
       },
       _sum: { totalAmount: true },
     }),
-    // Approved amount (awaiting disbursement)
+    // Approved amount (awaiting disbursement) - includes expense approved
     prisma.financeRequest.aggregate({
-      where: { ...baseWhere, status: 'APPROVED' },
+      where: { ...baseWhere, status: { in: ['APPROVED', 'EXPENSE_APPROVED'] } },
       _sum: { totalAmount: true },
     }),
     // Disbursed amount

@@ -140,6 +140,7 @@ export async function GET(
 const mapFormToPrisma = (formData: any) => {
   const mapped: any = {};
   if (formData.purpose !== undefined) mapped.purpose = formData.purpose;
+  if (formData.requestType !== undefined) mapped.requestType = formData.requestType;
   if (formData.department !== undefined) mapped.department = formData.department;
   if (formData.costCenter !== undefined) mapped.costCenter = formData.costCenter;
   if (formData.entity !== undefined) mapped.entity = formData.entity || null;

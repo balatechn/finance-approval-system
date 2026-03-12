@@ -339,7 +339,8 @@ export async function sendApprovalDecisionEmails(
   actorName: string,
   comments: string,
   nextLevel: string | null,
-  isFinalApproval: boolean
+  isFinalApproval: boolean,
+  requestType?: string
 ): Promise<void> {
   const decisionConfig: Record<string, { color: string; label: string; prefix: string }> = {
     APPROVED: { color: '#10b981', label: 'Approved', prefix: 'Approved' },
@@ -354,7 +355,11 @@ export async function sendApprovalDecisionEmails(
   if (decision === 'APPROVED' && !isFinalApproval && nextLevel) {
     extraMessage = `<p>Your request is now moving to the next stage: <strong>${LEVEL_LABELS[nextLevel]}</strong></p>`;
   } else if (decision === 'APPROVED' && isFinalApproval) {
-    extraMessage = `<p style="color: #10b981; font-weight: 600;">Your request has been fully approved! Awaiting disbursement.</p>`;
+    if (requestType === 'EXPENSE_APPROVAL') {
+      extraMessage = `<p style="color: #10b981; font-weight: 600;">Your expense request has been approved. No further action is required.</p>`;
+    } else {
+      extraMessage = `<p style="color: #10b981; font-weight: 600;">Your request has been fully approved! Awaiting disbursement.</p>`;
+    }
   } else if (decision === 'SENT_BACK') {
     extraMessage = `<p>Please review the feedback, make necessary changes, and resubmit your request.</p>
     ${actionButton(`${APP_URL}/dashboard/requests/${referenceNumber}/edit`, 'Edit & Resubmit', '#f59e0b')}`;
@@ -371,9 +376,13 @@ export async function sendApprovalDecisionEmails(
     ${decision !== 'SENT_BACK' ? actionButton(`${APP_URL}/dashboard/requests/${referenceNumber}`, 'View Request') : ''}
   `);
 
+  const emailSubjectPrefix = (decision === 'APPROVED' && isFinalApproval && requestType === 'EXPENSE_APPROVAL')
+    ? 'Expense Request Approved'
+    : `${config.prefix} at ${LEVEL_LABELS[level]}`;
+
   await sendEmail({
     to: requestorEmail,
-    subject: `${referenceNumber} - ${config.prefix} at ${LEVEL_LABELS[level]}`,
+    subject: `${referenceNumber} - ${emailSubjectPrefix}`,
     html: requestorHtml,
   });
 
@@ -384,7 +393,7 @@ export async function sendApprovalDecisionEmails(
     await sendEmail({
       to: adminBcc[0],
       bcc: adminBcc.slice(1),
-      subject: `[Admin Copy] ${referenceNumber} - ${config.prefix} at ${LEVEL_LABELS[level]}`,
+      subject: `[Admin Copy] ${referenceNumber} - ${emailSubjectPrefix}`,
       html: requestorHtml,
     });
   }

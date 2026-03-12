@@ -73,6 +73,7 @@ export default function NewRequestPage() {
   } = useForm<CreateFinanceRequestInput>({
     resolver: zodResolver(createFinanceRequestSchema),
     defaultValues: {
+      requestType: "PAYMENT_APPROVAL",
       currency: "INR",
       exchangeRate: 1,
       isGSTApplicable: false,
@@ -282,6 +283,27 @@ export default function NewRequestPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Request Type */}
+            <div className="space-y-2">
+              <Label htmlFor="requestType" required>Request Type</Label>
+              <Controller
+                name="requestType"
+                control={control}
+                defaultValue="PAYMENT_APPROVAL"
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value || "PAYMENT_APPROVAL"}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select request type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="EXPENSE_APPROVAL">Expense Approval</SelectItem>
+                      <SelectItem value="PAYMENT_APPROVAL">Payment Approval</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+
             {/* Item Name */}
             <div className="space-y-2">
               <Label htmlFor="itemName" required>Item Name</Label>

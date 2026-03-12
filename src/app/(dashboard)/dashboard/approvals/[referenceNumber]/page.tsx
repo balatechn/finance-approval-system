@@ -42,6 +42,7 @@ interface FinanceRequest {
   referenceNumber: string
   itemName: string | null
   purpose: string
+  requestType: string
   paymentType: string
   paymentMode: string
   totalAmount: number
@@ -343,6 +344,9 @@ export default function ApprovalDetailPage() {
                 {request.referenceNumber}
               </h1>
               <StatusBadge status={request.status as any} />
+              <Badge variant={request.requestType === "EXPENSE_APPROVAL" ? "warning" : "info"}>
+                {request.requestType === "EXPENSE_APPROVAL" ? "Expense Approval" : "Payment Approval"}
+              </Badge>
               {isOverdue && (
                 <Badge variant="destructive">Overdue</Badge>
               )}
@@ -730,6 +734,7 @@ export default function ApprovalDetailPage() {
               <ApprovalTimeline
                 steps={request.approvalSteps}
                 currentLevel={request.currentApprovalLevel as any}
+                requestType={request.requestType}
               />
             </CardContent>
           </Card>

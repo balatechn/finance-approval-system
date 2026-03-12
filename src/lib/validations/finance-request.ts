@@ -15,6 +15,7 @@ export const PaymentModeEnum = z.enum(['NEFT', 'RTGS', 'UPI', 'CHEQUE', 'BANK_TR
 export const CurrencyEnum = z.enum(['INR', 'USD', 'EUR', 'GBP']);
 export const VendorTypeEnum = z.enum(['VENDOR', 'EMPLOYEE', 'CONSULTANT', 'OTHER']);
 export const ApprovalActionEnum = z.enum(['APPROVED', 'REJECTED', 'SENT_BACK']);
+export const RequestTypeEnum = z.enum(['EXPENSE_APPROVAL', 'PAYMENT_APPROVAL']);
 
 export const RequestStatusEnum = z.enum([
   'DRAFT',
@@ -29,6 +30,7 @@ export const RequestStatusEnum = z.enum([
   'REJECTED',
   'SENT_BACK',
   'DISBURSED',
+  'EXPENSE_APPROVED',
 ]);
 
 // ============================================================================
@@ -50,6 +52,9 @@ export const vendorBankSchema = z.object({
 
 // Create Finance Request Schema
 export const createFinanceRequestSchema = z.object({
+  // Request Type
+  requestType: RequestTypeEnum.default('PAYMENT_APPROVAL'),
+  
   // Business Details
   department: z.string().min(1, 'Department is required'),
   costCenter: z.string().min(1, 'Cost center is required'),

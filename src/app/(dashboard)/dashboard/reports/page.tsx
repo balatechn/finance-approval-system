@@ -85,6 +85,7 @@ export default function ReportsPage() {
   const [startDate, setStartDate] = useState("")
   const [endDate, setEndDate] = useState("")
   const [department, setDepartment] = useState("all")
+  const [requestTypeFilter, setRequestTypeFilter] = useState("all")
   const [format, setFormat] = useState("json")
   const [loading, setLoading] = useState(false)
   const [reportData, setReportData] = useState<any>(null)
@@ -124,6 +125,7 @@ export default function ReportsPage() {
       if (startDate) params.set("startDate", startDate)
       if (endDate) params.set("endDate", endDate)
       if (department !== "all") params.set("department", department)
+      if (requestTypeFilter !== "all") params.set("requestType", requestTypeFilter)
 
       const response = await fetch(`/api/reports?${params}`)
 
@@ -254,6 +256,19 @@ export default function ReportsPage() {
                   {departments.map((dept) => (
                     <SelectItem key={dept} value={dept}>{dept}</SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="requestType">Request Type</Label>
+              <Select value={requestTypeFilter} onValueChange={setRequestTypeFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All Types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="EXPENSE_APPROVAL">Expense Approval</SelectItem>
+                  <SelectItem value="PAYMENT_APPROVAL">Payment Approval</SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -38,6 +38,7 @@ export async function POST(
         },
         requestor: true,
       },
+      // Include requestType in selection
     });
 
     if (!financeRequest) {
@@ -121,7 +122,7 @@ export async function POST(
     let nextLevel: ApprovalLevel | null = null;
 
     if (action === 'APPROVED') {
-      const result = await processApproval(financeRequest.id, currentStep.level, financeRequest.paymentType);
+      const result = await processApproval(financeRequest.id, currentStep.level, financeRequest.paymentType, financeRequest.requestType);
       newStatus = result.newStatus;
       nextLevel = result.nextLevel;
     } else if (action === 'REJECTED') {
@@ -143,7 +144,7 @@ export async function POST(
       data: {
         status: newStatus,
         currentApprovalLevel: nextLevel,
-        completedAt: ['APPROVED', 'REJECTED', 'DISBURSED'].includes(newStatus) ? now : null,
+        completedAt: ['APPROVED', 'REJECTED', 'DISBURSED', 'EXPENSE_APPROVED'].includes(newStatus) ? now : null,
       },
     });
 
@@ -157,7 +158,7 @@ export async function POST(
 
     // Send email notifications via SendGrid
     const amount = financeRequest.requestor ? `INR ${Number(financeRequest.totalAmount).toLocaleString('en-IN')}` : '';
-    const isFinalApproval = action === 'APPROVED' && newStatus === 'APPROVED';
+    const isFinalApproval = action === 'APPROVED' && (newStatus === 'APPROVED' || newStatus === 'EXPENSE_APPROVED');
 
     try {
       await sendApprovalDecisionEmails(
@@ -171,7 +172,8 @@ export async function POST(
         user.name,
         comments || '',
         nextLevel,
-        isFinalApproval
+        isFinalApproval,
+        financeRequest.requestType
       );
     } catch (emailError) {
       console.error('Failed to send email notification:', emailError);
@@ -194,7 +196,8 @@ export async function POST(
 async function processApproval(
   requestId: string,
   currentLevel: ApprovalLevel,
-  paymentType: string
+  paymentType: string,
+  requestType?: string
 ): Promise<{ newStatus: RequestStatus; nextLevel: ApprovalLevel | null }> {
   const levelSequence: ApprovalLevel[] = [
     'FINANCE_VETTING',
@@ -225,7 +228,12 @@ async function processApproval(
   }
 
   if (currentLevel === 'MD') {
-    // MD approved → activate DISBURSEMENT step for Finance Team
+    // For expense approval requests, workflow ends here
+    if (requestType === 'EXPENSE_APPROVAL') {
+      return { newStatus: 'EXPENSE_APPROVED' as RequestStatus, nextLevel: null };
+    }
+
+    // MD approved → activate DISBURSEMENT step for Finance Team (payment approval)
     const nextLevel: ApprovalLevel = 'DISBURSEMENT';
     const now = new Date();
     const disbursementSlaHours = 24;

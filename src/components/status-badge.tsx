@@ -18,6 +18,7 @@ const statusConfig: Record<string, { label: string; variant: "default" | "second
   PENDING_ADMIN_REVIEW: { label: "Admin Review Required", variant: "destructive" },
   APPROVED: { label: "Approved", variant: "success" },
   DISBURSED: { label: "Disbursed", variant: "success" },
+  EXPENSE_APPROVED: { label: "Expense Approved", variant: "success" },
   REJECTED: { label: "Rejected", variant: "destructive" },
   SENT_BACK: { label: "Sent Back", variant: "warning" },
 }

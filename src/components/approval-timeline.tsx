@@ -18,6 +18,7 @@ interface ApprovalStep {
 interface ApprovalTimelineProps {
   steps: ApprovalStep[]
   currentLevel?: string | null
+  requestType?: string | null
   className?: string
 }
 
@@ -41,13 +42,18 @@ const levelLabels: Record<string, string> = {
   DISBURSEMENT: "Disbursement",
 }
 
-export function ApprovalTimeline({ steps, currentLevel, className }: ApprovalTimelineProps) {
+export function ApprovalTimeline({ steps, currentLevel, requestType, className }: ApprovalTimelineProps) {
   const stepsMap = new Map(steps.map(s => [s.level, s]))
+
+  // Hide DISBURSEMENT step for expense approval requests
+  const displayLevels = requestType === "EXPENSE_APPROVAL"
+    ? levelOrder.filter(l => l !== "DISBURSEMENT")
+    : levelOrder
 
   return (
     <div className={cn("relative", className)}>
       <div className="space-y-6">
-        {levelOrder.map((level, index) => {
+        {displayLevels.map((level, index) => {
           const step = stepsMap.get(level)
           const isCompleted = step?.status === "APPROVED"
           const isRejected = step?.status === "REJECTED"
@@ -59,7 +65,7 @@ export function ApprovalTimeline({ steps, currentLevel, className }: ApprovalTim
           return (
             <div key={level} className="relative flex gap-4">
               {/* Connector line */}
-              {index < levelOrder.length - 1 && (
+              {index < displayLevels.length - 1 && (
                 <div
                   className={cn(
                     "absolute left-4 top-8 h-full w-0.5 -translate-x-1/2",

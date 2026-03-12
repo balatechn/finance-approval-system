@@ -38,6 +38,7 @@ interface FinanceRequest {
   id: string
   referenceNumber: string
   purpose: string
+  requestType: string
   paymentType: string
   totalAmount: number
   currency: string

@@ -39,12 +39,18 @@ enum RequestStatus {
   REJECTED
   SENT_BACK
   DISBURSED
+  EXPENSE_APPROVED
 }
 
 enum ApprovalAction {
   APPROVED
   REJECTED
   SENT_BACK
+}
+
+enum RequestType {
+  EXPENSE_APPROVAL
+  PAYMENT_APPROVAL
 }
 
 enum PaymentType {
@@ -184,6 +190,7 @@ model FinanceRequest {
   itemName              String?
   
   // Payment Details
+  requestType           RequestType   @default(PAYMENT_APPROVAL)
   paymentType           PaymentType   @default(NON_CRITICAL)
   amount                Decimal       @db.Decimal(15, 2)
   currency              Currency      @default(INR)
@@ -251,6 +258,7 @@ model FinanceRequest {
   @@index([department])
   @@index([createdAt])
   @@index([paymentType])
+  @@index([requestType])
 }
 
 // ============================================================================
