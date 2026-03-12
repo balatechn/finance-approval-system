@@ -62,8 +62,14 @@ export default function ApprovalsPage() {
 
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      <div className="space-y-6 animate-pulse">
+        <div><div className="h-7 w-48 rounded bg-gray-200 mb-2" /><div className="h-4 w-72 rounded bg-gray-200" /></div>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i}><CardContent className="p-6"><div className="flex items-center justify-between"><div><div className="h-4 w-20 rounded bg-gray-200 mb-2" /><div className="h-7 w-16 rounded bg-gray-200" /></div><div className="h-11 w-11 rounded-full bg-gray-200" /></div></CardContent></Card>
+          ))}
+        </div>
+        <Card><CardContent className="p-6"><div className="space-y-3">{[...Array(5)].map((_, i) => (<div key={i} className="flex gap-4 items-center"><div className="h-4 w-28 rounded bg-gray-200" /><div className="h-4 flex-1 rounded bg-gray-200" /><div className="h-4 w-20 rounded bg-gray-200" /><div className="h-6 w-16 rounded bg-gray-200" /></div>))}</div></CardContent></Card>
       </div>
     )
   }
@@ -162,7 +168,38 @@ export default function ApprovalsPage() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+              {/* Mobile card view */}
+              <div className="space-y-3 md:hidden">
+                {pendingApprovals.map((approval) => (
+                  <Link
+                    key={approval.id}
+                    href={`/dashboard/approvals/${approval.referenceNumber}`}
+                    className={`block rounded-lg border p-4 hover:bg-muted/50 transition-colors ${approval.isOverdue ? 'border-red-200 bg-red-50' : ''}`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-primary">{approval.referenceNumber}</span>
+                        {approval.isOverdue && <Badge variant="destructive" className="text-xs">Overdue</Badge>}
+                      </div>
+                      <ApprovalLevelBadge level={approval.currentApprovalLevel as any} />
+                    </div>
+                    <p className="text-sm text-gray-900 truncate">{approval.purpose}</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <div>
+                        <p className="text-xs text-muted-foreground">{approval.requester.name} • {approval.requester.department}</p>
+                      </div>
+                      <span className="text-sm font-semibold">{formatCurrency(approval.totalAmountINR)}</span>
+                    </div>
+                    <div className="mt-2">
+                      <Button size="sm" className="w-full min-h-[44px]">Review</Button>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Desktop table view */}
+              <div className="hidden md:block overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -230,6 +267,7 @@ export default function ApprovalsPage() {
                 </TableBody>
               </Table>
             </div>
+            </>
           )}
         </CardContent>
       </Card>

@@ -214,8 +214,15 @@ export default function RequestsPage() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="flex h-64 items-center justify-center">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            <div className="space-y-3 animate-pulse">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex gap-4 items-center">
+                  <div className="h-4 w-28 rounded bg-gray-200" />
+                  <div className="h-4 flex-1 rounded bg-gray-200" />
+                  <div className="h-4 w-20 rounded bg-gray-200" />
+                  <div className="h-6 w-16 rounded bg-gray-200" />
+                </div>
+              ))}
             </div>
           ) : requests.length === 0 ? (
             <div className="flex h-64 flex-col items-center justify-center text-center">
@@ -226,7 +233,32 @@ export default function RequestsPage() {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              {/* Mobile card view */}
+              <div className="space-y-3 md:hidden">
+                {requests.map((request) => (
+                  <Link
+                    key={request.id}
+                    href={`/dashboard/requests/${request.referenceNumber}`}
+                    className="block rounded-lg border p-4 hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium text-primary">{request.referenceNumber}</span>
+                      <StatusBadge status={request.status} />
+                    </div>
+                    <p className="text-sm text-gray-900 truncate">{request.purpose}</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-sm font-semibold">{formatCurrency(request.totalAmountINR)}</span>
+                      <span className="text-xs text-muted-foreground">{formatDate(request.createdAt)}</span>
+                    </div>
+                    <div className="mt-1">
+                      <span className="rounded bg-muted px-2 py-0.5 text-xs">{request.paymentType.replace("_", " ")}</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Desktop table view */}
+              <div className="hidden md:block overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -288,7 +320,7 @@ export default function RequestsPage() {
                                 variant="ghost"
                                 size="sm"
                                 className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                onClick={() => setDeleteTarget(request)}
+                                onClick={(e) => { e.preventDefault(); setDeleteTarget(request) }}
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
@@ -302,7 +334,7 @@ export default function RequestsPage() {
               </div>
 
               {/* Pagination */}
-              <div className="mt-4 flex items-center justify-between">
+              <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
                 <p className="text-sm text-muted-foreground">
                   Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
                   {Math.min(pagination.page * pagination.limit, pagination.total)} of{" "}
@@ -312,6 +344,7 @@ export default function RequestsPage() {
                   <Button
                     variant="outline"
                     size="sm"
+                    className="min-h-[44px] sm:min-h-0"
                     onClick={() =>
                       setPagination((prev) => ({ ...prev, page: prev.page - 1 }))
                     }
@@ -323,6 +356,7 @@ export default function RequestsPage() {
                   <Button
                     variant="outline"
                     size="sm"
+                    className="min-h-[44px] sm:min-h-0"
                     onClick={() =>
                       setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
                     }

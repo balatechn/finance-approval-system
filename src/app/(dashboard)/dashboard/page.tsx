@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import Link from "next/link"
+import dynamic from "next/dynamic"
 import { useSession } from "next-auth/react"
 import {
   FileText,
@@ -32,23 +33,22 @@ import {
 } from "@/components/ui/select"
 import { StatusBadge } from "@/components/status-badge"
 import { formatCurrency, formatRelativeTime } from "@/lib/utils"
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-  LineChart,
-  Line,
-  Area,
-  AreaChart,
-} from "recharts"
+
+// Lazy-load recharts components to reduce initial bundle
+const LazyAreaChart = dynamic(() => import("recharts").then((m) => m.AreaChart), { ssr: false })
+const LazyBarChart = dynamic(() => import("recharts").then((m) => m.BarChart), { ssr: false })
+const LazyPieChart = dynamic(() => import("recharts").then((m) => m.PieChart), { ssr: false })
+const LazyResponsiveContainer = dynamic(() => import("recharts").then((m) => m.ResponsiveContainer), { ssr: false })
+const LazyBar = dynamic(() => import("recharts").then((m) => m.Bar), { ssr: false })
+const LazyXAxis = dynamic(() => import("recharts").then((m) => m.XAxis), { ssr: false })
+const LazyYAxis = dynamic(() => import("recharts").then((m) => m.YAxis), { ssr: false })
+const LazyCartesianGrid = dynamic(() => import("recharts").then((m) => m.CartesianGrid), { ssr: false })
+const LazyTooltip = dynamic(() => import("recharts").then((m) => m.Tooltip), { ssr: false })
+const LazyPie = dynamic(() => import("recharts").then((m) => m.Pie), { ssr: false })
+const LazyCell = dynamic(() => import("recharts").then((m) => m.Cell), { ssr: false })
+const LazyLegend = dynamic(() => import("recharts").then((m) => m.Legend), { ssr: false })
+const LazyLine = dynamic(() => import("recharts").then((m) => m.Line), { ssr: false })
+const LazyArea = dynamic(() => import("recharts").then((m) => m.Area), { ssr: false })
 
 interface DashboardData {
   stats: {
@@ -172,8 +172,25 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      <div className="space-y-6 animate-pulse">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="h-7 w-48 rounded bg-gray-200 mb-2" />
+            <div className="h-4 w-64 rounded bg-gray-200" />
+          </div>
+          <div className="h-10 w-32 rounded bg-gray-200" />
+        </div>
+        <div className="h-16 rounded-lg bg-gray-200" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}><CardContent className="p-6"><div className="flex items-center justify-between"><div><div className="h-4 w-24 rounded bg-gray-200 mb-2" /><div className="h-6 w-20 rounded bg-gray-200" /></div><div className="h-11 w-11 rounded-full bg-gray-200" /></div></CardContent></Card>
+          ))}
+        </div>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card className="lg:col-span-2"><CardContent className="p-6"><div className="h-[200px] bg-gray-100 rounded" /></CardContent></Card>
+          <Card><CardContent className="p-6"><div className="h-[200px] bg-gray-100 rounded" /></CardContent></Card>
+          <Card><CardContent className="p-6"><div className="h-[200px] bg-gray-100 rounded" /></CardContent></Card>
+        </div>
       </div>
     )
   }
@@ -192,8 +209,8 @@ export default function DashboardPage() {
     thisMonthAmount: 0,
   }
 
-  // Cost-focused stat cards
-  const statCards = [
+  // Cost-focused stat cards (memoized to avoid re-creating on each render)
+  const statCards = useMemo(() => [
     {
       title: "Total Expenses",
       value: formatCurrency(stats.totalAmount),
@@ -226,7 +243,7 @@ export default function DashboardPage() {
       color: "text-indigo-600",
       bgColor: "bg-indigo-100",
     },
-  ]
+  ], [stats])
 
   return (
     <div className="space-y-6">
@@ -281,10 +298,11 @@ export default function DashboardPage() {
                 className="w-full sm:w-auto"
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button
                 variant="outline"
                 size="sm"
+                className="min-h-[44px] sm:min-h-0"
                 onClick={() => {
                   const t = new Date()
                   const f = new Date(t.getFullYear(), t.getMonth(), 1)
@@ -297,6 +315,7 @@ export default function DashboardPage() {
               <Button
                 variant="outline"
                 size="sm"
+                className="min-h-[44px] sm:min-h-0"
                 onClick={() => {
                   const t = new Date()
                   const f = new Date(t.getFullYear(), t.getMonth() - 1, 1)
@@ -310,6 +329,7 @@ export default function DashboardPage() {
               <Button
                 variant="outline"
                 size="sm"
+                className="min-h-[44px] sm:min-h-0"
                 onClick={() => {
                   const t = new Date()
                   const f = new Date(t.getFullYear(), 0, 1)
@@ -322,7 +342,7 @@ export default function DashboardPage() {
               <Button
                 variant="outline"
                 size="sm"
-                className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 text-blue-700 hover:from-blue-100 hover:to-indigo-100"
+                className="min-h-[44px] sm:min-h-0 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 text-blue-700 hover:from-blue-100 hover:to-indigo-100"
                 onClick={() => {
                   const t = new Date()
                   const f = new Date(t.getFullYear(), t.getMonth() + 1, 1)
@@ -374,8 +394,8 @@ export default function DashboardPage() {
           <CardContent className="p-4 pt-0">
             <div className="h-[200px]">
               {data?.monthlyTrend && data.monthlyTrend.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart
+                <LazyResponsiveContainer width="100%" height="100%">
+                  <LazyAreaChart
                     data={data.monthlyTrend}
                     margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
                   >
@@ -385,9 +405,9 @@ export default function DashboardPage() {
                         <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                    <YAxis
+                    <LazyCartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <LazyXAxis dataKey="month" tick={{ fontSize: 11 }} />
+                    <LazyYAxis
                       tick={{ fontSize: 10 }}
                       tickFormatter={(value) =>
                         value >= 100000
@@ -397,11 +417,11 @@ export default function DashboardPage() {
                           : value.toString()
                       }
                     />
-                    <Tooltip
+                    <LazyTooltip
                       formatter={(value) => [formatCurrency(value as number), ""]}
                       contentStyle={{ borderRadius: "8px", fontSize: "13px" }}
                     />
-                    <Area
+                    <LazyArea
                       type="monotone"
                       dataKey="total"
                       name="Total Expenses"
@@ -410,7 +430,7 @@ export default function DashboardPage() {
                       fill="url(#colorTotal)"
                       strokeWidth={2}
                     />
-                    <Line
+                    <LazyLine
                       type="monotone"
                       dataKey="disbursed"
                       name="Disbursed"
@@ -418,8 +438,8 @@ export default function DashboardPage() {
                       strokeWidth={2}
                       dot={{ fill: "#22c55e", strokeWidth: 2, r: 3 }}
                     />
-                  </AreaChart>
-                </ResponsiveContainer>
+                  </LazyAreaChart>
+                </LazyResponsiveContainer>
               ) : (
                 <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                   No trend data available
@@ -440,15 +460,15 @@ export default function DashboardPage() {
           <CardContent className="p-4 pt-0">
             <div className="h-[200px]">
               {data?.departmentStats && data.departmentStats.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
+                <LazyResponsiveContainer width="100%" height="100%">
+                  <LazyBarChart
                     data={data.departmentStats}
                     layout="vertical"
                     margin={{ top: 5, right: 10, left: 60, bottom: 5 }}
                     barSize={16}
                   >
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                    <XAxis
+                    <LazyCartesianGrid strokeDasharray="3 3" horizontal={false} />
+                    <LazyXAxis
                       type="number"
                       tick={{ fontSize: 10 }}
                       tickFormatter={(value) =>
@@ -459,22 +479,22 @@ export default function DashboardPage() {
                           : value.toString()
                       }
                     />
-                    <YAxis
+                    <LazyYAxis
                       type="category"
                       dataKey="department"
                       tick={{ fontSize: 10 }}
                       width={55}
                     />
-                    <Tooltip
+                    <LazyTooltip
                       formatter={(value, name, props) => [
                         `${formatCurrency(value as number)} (${props.payload.percentage}%)`,
                         "Amount",
                       ]}
                       contentStyle={{ borderRadius: "8px", fontSize: "13px" }}
                     />
-                    <Bar dataKey="amount" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+                    <LazyBar dataKey="amount" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
+                  </LazyBarChart>
+                </LazyResponsiveContainer>
               ) : (
                 <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                   No department data
@@ -537,9 +557,9 @@ export default function DashboardPage() {
           <CardContent className="p-4 pt-0">
             <div className="h-[180px]">
               {stats.totalAmount > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
+                <LazyResponsiveContainer width="100%" height="100%">
+                  <LazyPieChart>
+                    <LazyPie
                       data={[
                         { name: "Pending", value: stats.pendingAmount },
                         { name: "Approved", value: stats.approvedAmount },
@@ -561,20 +581,20 @@ export default function DashboardPage() {
                         { fill: "#22c55e" },
                         { fill: "#6366f1" },
                       ].map((entry, index) => (
-                        <Cell key={index} fill={entry.fill} />
+                        <LazyCell key={index} fill={entry.fill} />
                       ))}
-                    </Pie>
-                    <Tooltip
+                    </LazyPie>
+                    <LazyTooltip
                       formatter={(value) => [formatCurrency(value as number), ""]}
                       contentStyle={{ borderRadius: "8px", fontSize: "13px" }}
                     />
-                    <Legend
+                    <LazyLegend
                       iconType="circle"
                       wrapperStyle={{ fontSize: "11px", paddingTop: 0 }}
                       iconSize={8}
                     />
-                  </PieChart>
-                </ResponsiveContainer>
+                  </LazyPieChart>
+                </LazyResponsiveContainer>
               ) : (
                 <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                   No data for selected period
@@ -595,8 +615,8 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <div className="h-[180px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
+              <LazyResponsiveContainer width="100%" height="100%">
+                <LazyBarChart
                   data={data.entityStats.map((es) => ({
                     name: es.entity.length > 12 ? es.entity.substring(0, 10) + ".." : es.entity,
                     fullName: es.entity,
@@ -605,15 +625,15 @@ export default function DashboardPage() {
                   margin={{ top: 5, right: 5, left: 10, bottom: 30 }}
                   barSize={32}
                 >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis
+                  <LazyCartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <LazyXAxis
                     dataKey="name"
                     tick={{ fontSize: 9 }}
                     angle={-30}
                     textAnchor="end"
                     interval={0}
                   />
-                  <YAxis
+                  <LazyYAxis
                     tick={{ fontSize: 10 }}
                     tickFormatter={(value) =>
                       value >= 100000
@@ -623,16 +643,16 @@ export default function DashboardPage() {
                         : value.toString()
                     }
                   />
-                  <Tooltip
+                  <LazyTooltip
                     formatter={(value) => [formatCurrency(value as number), "Amount"]}
                     labelFormatter={(_label, payload) =>
                       payload?.[0]?.payload?.fullName || _label
                     }
                     contentStyle={{ borderRadius: "8px", fontSize: "13px" }}
                   />
-                  <Bar dataKey="amount" fill="#6366f1" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+                  <LazyBar dataKey="amount" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                </LazyBarChart>
+              </LazyResponsiveContainer>
             </div>
           </CardContent>
         </Card>

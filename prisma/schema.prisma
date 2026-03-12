@@ -259,6 +259,7 @@ model FinanceRequest {
   @@index([createdAt])
   @@index([paymentType])
   @@index([requestType])
+  @@index([entity])
 }
 
 // ============================================================================
