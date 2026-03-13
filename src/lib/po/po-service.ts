@@ -24,6 +24,31 @@ async function generatePONumber(): Promise<string> {
   return `${prefix}${String(seq).padStart(4, '0')}`;
 }
 
+const LEVEL_LABELS: Record<string, string> = {
+  FINANCE_VETTING: 'Finance Vetting',
+  FINANCE_PLANNER: 'Finance Planner',
+  FINANCE_CONTROLLER: 'Finance Controller',
+  FINANCE_COORDINATOR: 'Finance Coordinator',
+  DIRECTOR: 'Director',
+  MD: 'Managing Director',
+};
+
+async function getApprovers(financeRequestId: string) {
+  const actions = await prisma.approvalAction_Record.findMany({
+    where: { financeRequestId, action: 'APPROVED' },
+    orderBy: { createdAt: 'asc' },
+    include: {
+      actor: { select: { name: true } },
+      approvalStep: { select: { level: true } },
+    },
+  });
+  return actions.map((a) => ({
+    level: LEVEL_LABELS[a.approvalStep.level] || a.approvalStep.level,
+    name: a.actor.name,
+    date: a.createdAt.toLocaleDateString('en-IN'),
+  }));
+}
+
 /**
  * Create a Purchase Order for an expense-approved finance request.
  * Returns the PO record and PDF bytes.
@@ -71,6 +96,7 @@ export async function createPurchaseOrder(
         ? existing.specialInstructions.split('\n')
         : undefined,
       approvedBy: existing.approvedBy,
+      approvers: await getApprovers(financeRequestId),
     });
 
     return { poNumber: existing.poNumber, pdfBytes };
@@ -154,6 +180,7 @@ export async function createPurchaseOrder(
     discountAmount,
     totalAmount: Number(request.totalAmount),
     approvedBy: approvedByName,
+    approvers: await getApprovers(financeRequestId),
   });
 
   return { poNumber: po.poNumber, pdfBytes };

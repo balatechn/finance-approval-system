@@ -51,6 +51,11 @@ interface POData {
   totalAmount: number;
   specialInstructions?: string[];
   approvedBy: string;
+  approvers?: Array<{
+    level: string;
+    name: string;
+    date: string;
+  }>;
 }
 
 function drawGoldBar(page: PDFPage, y: number, width: number, height: number = 18) {
@@ -327,20 +332,70 @@ export async function generatePurchaseOrderPDF(data: POData): Promise<Uint8Array
     totalY -= 16;
   }
 
-  y = Math.min(instrLineY, totalY) - 20;
+  y = Math.min(instrLineY, totalY) - 15;
 
   // ============================================================
-  // SIGNATURE SECTION
+  // APPROVAL STAMPS SECTION — each level with name and "APPROVED"
   // ============================================================
   drawLine(page, margin, y, rightEdge, y);
-  y -= 25;
+  y -= 12;
+  drawText(page, 'APPROVAL DETAILS', margin + 5, y, fontBold, 8, GOLD);
+  y -= 5;
+
+  const approvers = data.approvers || [];
+  if (approvers.length > 0) {
+    // Layout: 3 columns across the page
+    const colWidth = (width - 2 * margin) / 3;
+    let col = 0;
+    let rowY = y;
+
+    for (const approver of approvers) {
+      const cx = margin + col * colWidth + 10;
+      rowY = col === 0 ? rowY - 18 : rowY;
+
+      // Approver box
+      page.drawRectangle({
+        x: cx,
+        y: rowY - 28,
+        width: colWidth - 15,
+        height: 30,
+        borderColor: GOLD_BG,
+        borderWidth: 0.5,
+        opacity: 0,
+      });
+
+      // Level label
+      drawText(page, approver.level, cx + 3, rowY - 5, fontBold, 6, GRAY);
+      // Approver name
+      drawText(page, approver.name, cx + 3, rowY - 15, fontBold, 7, DARK);
+      // Date
+      drawText(page, approver.date, cx + 3, rowY - 24, fontRegular, 6, GRAY);
+
+      // "APPROVED" stamp
+      const stampX = cx + colWidth - 60;
+      page.drawRectangle({
+        x: stampX,
+        y: rowY - 20,
+        width: 45,
+        height: 14,
+        color: rgb(0.15, 0.55, 0.15),
+        borderColor: rgb(0.1, 0.4, 0.1),
+        borderWidth: 0.5,
+      });
+      drawText(page, 'APPROVED', stampX + 3, rowY - 16, fontBold, 6, WHITE);
+
+      col++;
+      if (col >= 3) {
+        col = 0;
+      }
+    }
+    // Adjust y position after approval stamps
+    const totalRows = Math.ceil(approvers.length / 3);
+    y = rowY - 28 - (totalRows > 1 ? (totalRows - 1) * 35 : 0);
+  }
+
+  y -= 10;
   drawText(page, `For ${COMPANY.name}`, rightEdge - 230, y, fontBold, 8, DARK);
-  y -= 40;
-  drawLine(page, rightEdge - 230, y, rightEdge - 30, y);
-  y -= 14;
-  drawText(page, 'Authorised Signatory', rightEdge - 200, y, fontBold, 8, DARK);
-  y -= 14;
-  drawText(page, `Authorized by: ${data.approvedBy}`, rightEdge - 200, y, fontRegular, 7, DARK);
 
   return pdfDoc.save();
 }
