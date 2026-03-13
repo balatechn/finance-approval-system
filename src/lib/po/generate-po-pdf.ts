@@ -77,7 +77,7 @@ function drawLine(page: PDFPage, x1: number, y1: number, x2: number, y2: number)
 }
 
 function formatINR(amount: number): string {
-  return `₹ ${amount.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+  return `Rs ${amount.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 }
 
 export async function generatePurchaseOrderPDF(data: POData): Promise<Uint8Array> {
@@ -103,7 +103,7 @@ export async function generatePurchaseOrderPDF(data: POData): Promise<Uint8Array
     height: height - 45,
     borderColor: GOLD_BG,
     borderWidth: 1.5,
-    color: undefined,
+    opacity: 0,
   });
 
   // ============================================================
@@ -157,7 +157,7 @@ export async function generatePurchaseOrderPDF(data: POData): Promise<Uint8Array
     height: 70,
     borderColor: GOLD_BG,
     borderWidth: 0.5,
-    color: undefined,
+    opacity: 0,
   });
 
   const poDetailsY = poBoxY - 2;
