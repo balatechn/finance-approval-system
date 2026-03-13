@@ -105,6 +105,11 @@ interface EmailData {
   html: string;
   text?: string;
   bcc?: string | string[];
+  attachments?: Array<{
+    filename: string;
+    content: Buffer | Uint8Array;
+    contentType?: string;
+  }>;
 }
 
 export async function sendEmail(data: EmailData): Promise<boolean> {
@@ -126,6 +131,11 @@ export async function sendEmail(data: EmailData): Promise<boolean> {
       subject: data.subject,
       html: data.html,
       text: data.text || data.subject,
+      ...(data.attachments ? { attachments: data.attachments.map(a => ({
+        filename: a.filename,
+        content: Buffer.from(a.content),
+        contentType: a.contentType || 'application/pdf',
+      })) } : {}),
     });
 
     console.log(`Email sent: "${data.subject}" to ${recipients}`);
@@ -161,11 +171,13 @@ function actionButton(url: string, label: string, color: string = '#1e40af'): st
   return `<a href="${url}" style="display: inline-block; background: ${color}; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; margin-top: 16px;">${label}</a>`;
 }
 
-function requestInfoBox(data: { referenceNumber: string; amount?: string; purpose?: string; requester?: string; level?: string; comments?: string; paymentRef?: string }): string {
+function requestInfoBox(data: { referenceNumber: string; amount?: string; purpose?: string; requester?: string; level?: string; comments?: string; paymentRef?: string; poNumber?: string; vendor?: string }): string {
   let rows = `<p style="margin: 4px 0;"><strong>Reference:</strong> ${data.referenceNumber}</p>`;
   if (data.requester) rows += `<p style="margin: 4px 0;"><strong>Requested By:</strong> ${data.requester}</p>`;
   if (data.amount) rows += `<p style="margin: 4px 0;"><strong>Amount:</strong> ${data.amount}</p>`;
   if (data.purpose) rows += `<p style="margin: 4px 0;"><strong>Purpose:</strong> ${data.purpose}</p>`;
+  if (data.vendor) rows += `<p style="margin: 4px 0;"><strong>Vendor:</strong> ${data.vendor}</p>`;
+  if (data.poNumber) rows += `<p style="margin: 4px 0;"><strong>PO Number:</strong> ${data.poNumber}</p>`;
   if (data.level) rows += `<p style="margin: 4px 0;"><strong>Stage:</strong> ${data.level}</p>`;
   if (data.comments) rows += `<p style="margin: 4px 0;"><strong>Comments:</strong> ${data.comments}</p>`;
   if (data.paymentRef) rows += `<p style="margin: 4px 0;"><strong>Payment Reference:</strong> ${data.paymentRef}</p>`;
@@ -919,5 +931,65 @@ export async function createNotification(
     });
   } catch (error) {
     console.error('Error creating notification:', error);
+  }
+}
+
+/**
+ * Send Purchase Order email with PDF attachment to the requester
+ */
+export async function sendPurchaseOrderEmail(
+  requestorEmail: string,
+  requestorName: string,
+  referenceNumber: string,
+  poNumber: string,
+  amount: string,
+  vendorName: string,
+  approvedBy: string,
+  pdfBytes: Uint8Array
+): Promise<void> {
+  const html = emailWrapper(`
+    <h2 style="color: #997A3D; margin-top: 0;">Purchase Order Generated</h2>
+    <p>Dear ${requestorName},</p>
+    <p>Your expense request <strong>${referenceNumber}</strong> has been approved by <strong>${approvedBy}</strong>.</p>
+    <p>A Purchase Order has been generated and is attached to this email.</p>
+    ${requestInfoBox({
+      referenceNumber,
+      amount,
+      poNumber,
+      vendor: vendorName,
+    })}
+    <div style="background: #fef3c7; border-left: 4px solid #997A3D; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0;">
+      <p style="color: #92400e; margin: 0; font-weight: 600;">Purchase Order: ${poNumber}</p>
+      <p style="color: #92400e; margin: 4px 0 0 0; font-size: 13px;">Please find the PO document attached as PDF. No further approval action is required.</p>
+    </div>
+    ${actionButton(`${APP_URL}/dashboard/requests/${referenceNumber}`, 'View Request', '#997A3D')}
+  `);
+
+  await sendEmail({
+    to: requestorEmail,
+    subject: `${referenceNumber} - Purchase Order ${poNumber} Generated`,
+    html,
+    attachments: [{
+      filename: `${poNumber}.pdf`,
+      content: pdfBytes,
+      contentType: 'application/pdf',
+    }],
+  });
+
+  // BCC admins
+  const adminEmails = await getAdminEmails();
+  const adminBcc = adminEmails.filter((e) => e !== requestorEmail);
+  if (adminBcc.length > 0) {
+    await sendEmail({
+      to: adminBcc[0],
+      bcc: adminBcc.slice(1),
+      subject: `[Admin Copy] ${referenceNumber} - Purchase Order ${poNumber}`,
+      html,
+      attachments: [{
+        filename: `${poNumber}.pdf`,
+        content: pdfBytes,
+        contentType: 'application/pdf',
+      }],
+    });
   }
 }

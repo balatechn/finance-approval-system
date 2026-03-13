@@ -251,6 +251,7 @@ model FinanceRequest {
   slaLogs               SLALog[]
   notifications         Notification[]
   discussions           Discussion[]
+  purchaseOrder         PurchaseOrder?
 
   @@index([referenceNumber])
   @@index([requestorId])
@@ -260,6 +261,58 @@ model FinanceRequest {
   @@index([paymentType])
   @@index([requestType])
   @@index([entity])
+}
+
+// ============================================================================
+// PURCHASE ORDER
+// ============================================================================
+
+model PurchaseOrder {
+  id                String         @id @default(cuid())
+  poNumber          String         @unique
+  financeRequestId  String         @unique
+  financeRequest    FinanceRequest @relation(fields: [financeRequestId], references: [id])
+  
+  // PO Details
+  vendorName        String
+  vendorEmail       String?
+  vendorPhone       String?
+  vendorGstin       String?
+  vendorPan         String?
+  
+  // Line items stored as JSON
+  description       String         @db.Text
+  unit              String?
+  quantity          Int            @default(1)
+  unitPrice         Decimal        @db.Decimal(15, 2)
+  
+  // Amounts
+  subtotal          Decimal        @db.Decimal(15, 2)
+  taxRate           Decimal        @default(18)  @db.Decimal(5, 2)
+  taxAmount         Decimal        @db.Decimal(15, 2)
+  shippingAmount    Decimal        @default(0) @db.Decimal(15, 2)
+  discountAmount    Decimal        @default(0) @db.Decimal(15, 2)
+  totalAmount       Decimal        @db.Decimal(15, 2)
+  
+  // Shipping
+  requisitioner     String?
+  shipVia           String?
+  fob               String?
+  shippingTerms     String?
+  
+  // Special instructions
+  specialInstructions String?      @db.Text
+  
+  // Approval
+  approvedBy        String
+  approvalDate      DateTime
+  
+  // Metadata
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([poNumber])
+  @@index([financeRequestId])
 }
 
 // ============================================================================

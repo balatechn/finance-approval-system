@@ -4,7 +4,8 @@ import { getCurrentUser } from '@/lib/auth/session';
 import { approvalActionSchema } from '@/lib/validations/finance-request';
 import { canApproveLevel } from '@/lib/auth/permissions';
 import { ApprovalLevel, RequestStatus } from '@prisma/client';
-import { sendApprovalDecisionEmails } from '@/lib/email/email-service';
+import { sendApprovalDecisionEmails, sendPurchaseOrderEmail } from '@/lib/email/email-service';
+import { createPurchaseOrder } from '@/lib/po/po-service';
 
 export const dynamic = 'force-dynamic';
 
@@ -177,6 +178,38 @@ export async function POST(
       );
     } catch (emailError) {
       console.error('Failed to send email notification:', emailError);
+    }
+
+    // Generate Purchase Order for expense approvals after MD approval
+    if (action === 'APPROVED' && newStatus === 'EXPENSE_APPROVED') {
+      try {
+        const { poNumber, pdfBytes } = await createPurchaseOrder(
+          financeRequest.id,
+          user.name
+        );
+
+        // Email PO PDF to requester
+        const amount = `INR ${Number(financeRequest.totalAmount).toLocaleString('en-IN')}`;
+        await sendPurchaseOrderEmail(
+          financeRequest.requestor.email,
+          financeRequest.requestor.name,
+          financeRequest.referenceNumber,
+          poNumber,
+          amount,
+          financeRequest.vendorName,
+          user.name,
+          pdfBytes
+        );
+
+        return NextResponse.json({
+          message: `Request approved successfully. Purchase Order ${poNumber} generated and emailed.`,
+          status: newStatus,
+          poNumber,
+        });
+      } catch (poError) {
+        console.error('Failed to generate PO:', poError);
+        // Don't fail the approval if PO generation fails
+      }
     }
 
     return NextResponse.json({

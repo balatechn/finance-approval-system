@@ -261,11 +261,56 @@ export default function RequestDetailPage() {
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={() => window.print()}>
             <Printer className="mr-2 h-4 w-4" />
             Print
           </Button>
+          {request.requestType === "EXPENSE_APPROVAL" && request.status === "EXPENSE_APPROVED" && (
+            <>
+              <Button
+                size="sm"
+                className="bg-amber-700 hover:bg-amber-800 text-white"
+                onClick={async () => {
+                  try {
+                    const res = await fetch(`/api/finance-requests/${request.id}/generate-po`)
+                    if (res.ok) {
+                      const blob = await res.blob()
+                      const url = URL.createObjectURL(blob)
+                      window.open(url, '_blank')
+                    } else {
+                      const err = await res.json()
+                      toast({ title: "Error", description: err.error, variant: "destructive" })
+                    }
+                  } catch { toast({ title: "Error", description: "Failed to generate PO", variant: "destructive" }) }
+                }}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                View PO
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  try {
+                    const res = await fetch(`/api/finance-requests/${request.id}/generate-po`)
+                    if (res.ok) {
+                      const blob = await res.blob()
+                      const url = URL.createObjectURL(blob)
+                      const a = document.createElement('a')
+                      a.href = url
+                      a.download = `PO-${request.referenceNumber}.pdf`
+                      a.click()
+                      URL.revokeObjectURL(url)
+                    }
+                  } catch { toast({ title: "Error", description: "Failed to download PO", variant: "destructive" }) }
+                }}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download PO
+              </Button>
+            </>
+          )}
           {isSentBack && (
             <Link href={`/dashboard/requests/${referenceNumber}/edit`}>
               <Button size="sm" className="bg-amber-600 hover:bg-amber-700">
