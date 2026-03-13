@@ -1,4 +1,6 @@
 import { PDFDocument, rgb, StandardFonts, PDFPage, PDFFont } from 'pdf-lib';
+import fs from 'fs';
+import path from 'path';
 
 // Company info (matches the PO template exactly)
 const COMPANY = {
@@ -112,18 +114,26 @@ export async function generatePurchaseOrderPDF(data: POData): Promise<Uint8Array
   });
 
   // ============================================================
-  // HEADER: Logo area + Company Name + "PURCHASE ORDER"
+  // HEADER: Logo + Company Name + "PURCHASE ORDER"
   // ============================================================
 
-  // "N" logo (simplified as styled text)
-  page.drawRectangle({
-    x: margin + 5,
-    y: y - 35,
-    width: 40,
-    height: 40,
-    color: GOLD,
-  });
-  drawText(page, 'N', margin + 14, y - 30, fontBold, 28, WHITE);
+  // Embed company logo from public folder
+  try {
+    const logoPath = path.join(process.cwd(), 'public', 'national-logo.png');
+    const logoBytes = fs.readFileSync(logoPath);
+    const logoImage = await pdfDoc.embedPng(logoBytes);
+    const logoDims = logoImage.scale(40 / logoImage.height);
+    page.drawImage(logoImage, {
+      x: margin + 5,
+      y: y - 35,
+      width: logoDims.width,
+      height: logoDims.height,
+    });
+  } catch {
+    // Fallback: gold "N" box if logo not found
+    page.drawRectangle({ x: margin + 5, y: y - 35, width: 40, height: 40, color: GOLD });
+    drawText(page, 'N', margin + 14, y - 30, fontBold, 28, WHITE);
+  }
 
   // Company name next to logo
   drawText(page, COMPANY.name, margin + 55, y - 15, fontBold, 10, DARK);
@@ -185,17 +195,18 @@ export async function generatePurchaseOrderPDF(data: POData): Promise<Uint8Array
   drawText(page, 'SHIPPING ADDRESS', width / 2 + 10, y - 12, fontBold, 8, WHITE);
   y -= 20;
 
-  // Vendor details (left)
-  drawText(page, data.vendorName, margin + 5, y, fontBold, 8, DARK);
-  y -= 38;
-
-  // Shipping address (right - company address)
+  // Vendor name (left) and shipping company name (right) on same line
+  const vendorShipStartY = y;
   const shipX = width / 2 + 10;
-  drawText(page, COMPANY.name, shipX, y + 38, fontBold, 7, DARK);
-  drawText(page, COMPANY.address, shipX, y + 27, fontRegular, 7, DARK);
-  drawText(page, COMPANY.city, shipX, y + 16, fontRegular, 7, DARK);
 
-  // Contact details rows
+  drawText(page, data.vendorName, margin + 5, vendorShipStartY, fontBold, 8, DARK);
+  drawText(page, COMPANY.name, shipX, vendorShipStartY, fontBold, 7, DARK);
+  drawText(page, COMPANY.address, shipX, vendorShipStartY - 11, fontRegular, 7, DARK);
+  drawText(page, COMPANY.city, shipX, vendorShipStartY - 22, fontRegular, 7, DARK);
+
+  y = vendorShipStartY - 38;
+
+  // Contact details rows — both sides aligned
   drawText(page, 'Contact Person:', margin + 5, y, fontBold, 7, DARK);
   drawText(page, data.vendorContactPerson || '', margin + 85, y, fontRegular, 7, DARK);
   drawText(page, 'Contact Person:', shipX, y, fontBold, 7, DARK);
@@ -256,7 +267,7 @@ export async function generatePurchaseOrderPDF(data: POData): Promise<Uint8Array
   drawText(page, 'SL No', colX.slNo, y - 12, fontBold, 7, WHITE);
   drawText(page, 'DESCRIPTION', colX.description, y - 12, fontBold, 7, WHITE);
   drawText(page, 'Unit', colX.unit, y - 12, fontBold, 7, WHITE);
-  drawText(page, 'Unit', colX.qty, y - 12, fontBold, 7, WHITE);
+  drawText(page, 'Qty', colX.qty, y - 12, fontBold, 7, WHITE);
   drawText(page, 'Unit Price', colX.unitPrice, y - 12, fontBold, 7, WHITE);
   drawText(page, 'TOTAL', colX.total, y - 12, fontBold, 7, WHITE);
   y -= 20;
