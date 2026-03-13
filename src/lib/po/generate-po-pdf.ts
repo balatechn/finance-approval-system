@@ -344,54 +344,53 @@ export async function generatePurchaseOrderPDF(data: POData): Promise<Uint8Array
 
   const approvers = data.approvers || [];
   if (approvers.length > 0) {
-    // Layout: 3 columns across the page
-    const colWidth = (width - 2 * margin) / 3;
-    let col = 0;
-    let rowY = y;
+    // Layout: 3 columns, proper row spacing
+    const cols = 3;
+    const colWidth = (width - 2 * margin) / cols;
+    const boxHeight = 32;
+    const rowGap = 40; // vertical spacing between row tops
 
-    for (const approver of approvers) {
-      const cx = margin + col * colWidth + 10;
-      rowY = col === 0 ? rowY - 18 : rowY;
+    for (let i = 0; i < approvers.length; i++) {
+      const approver = approvers[i];
+      const row = Math.floor(i / cols);
+      const col = i % cols;
+      const cx = margin + col * colWidth + 5;
+      const boxTop = y - 10 - row * rowGap;
 
-      // Approver box
+      // Approver box border
       page.drawRectangle({
         x: cx,
-        y: rowY - 28,
-        width: colWidth - 15,
-        height: 30,
+        y: boxTop - boxHeight,
+        width: colWidth - 10,
+        height: boxHeight,
         borderColor: GOLD_BG,
         borderWidth: 0.5,
         opacity: 0,
       });
 
       // Level label
-      drawText(page, approver.level, cx + 3, rowY - 5, fontBold, 6, GRAY);
+      drawText(page, approver.level, cx + 4, boxTop - 9, fontBold, 6, GRAY);
       // Approver name
-      drawText(page, approver.name, cx + 3, rowY - 15, fontBold, 7, DARK);
+      drawText(page, approver.name, cx + 4, boxTop - 19, fontBold, 7, DARK);
       // Date
-      drawText(page, approver.date, cx + 3, rowY - 24, fontRegular, 6, GRAY);
+      drawText(page, approver.date, cx + 4, boxTop - 28, fontRegular, 6, GRAY);
 
       // "APPROVED" stamp
-      const stampX = cx + colWidth - 60;
+      const stampX = cx + colWidth - 65;
       page.drawRectangle({
         x: stampX,
-        y: rowY - 20,
-        width: 45,
+        y: boxTop - 24,
+        width: 48,
         height: 14,
         color: rgb(0.15, 0.55, 0.15),
         borderColor: rgb(0.1, 0.4, 0.1),
         borderWidth: 0.5,
       });
-      drawText(page, 'APPROVED', stampX + 3, rowY - 16, fontBold, 6, WHITE);
-
-      col++;
-      if (col >= 3) {
-        col = 0;
-      }
+      drawText(page, 'APPROVED', stampX + 4, boxTop - 20, fontBold, 6, WHITE);
     }
-    // Adjust y position after approval stamps
-    const totalRows = Math.ceil(approvers.length / 3);
-    y = rowY - 28 - (totalRows > 1 ? (totalRows - 1) * 35 : 0);
+
+    const totalRows = Math.ceil(approvers.length / cols);
+    y = y - 10 - totalRows * rowGap - 5;
   }
 
   y -= 10;
