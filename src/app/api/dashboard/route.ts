@@ -100,53 +100,7 @@ async function getDashboardStats(user: any, userEntityIdentifiers: string[] = []
     baseWhere.requestType = requestType;
   }
 
-  const [
-    totalRequests,
-    pendingRequests,
-    approvedRequests,
-    rejectedRequests,
-    disbursedRequests,
-    totalAmount,
-    slaBreaches,
-  ] = await Promise.all([
-    prisma.financeRequest.count({ where: baseWhere }),
-    prisma.financeRequest.count({
-      where: {
-        ...baseWhere,
-        status: {
-          in: [
-            'SUBMITTED',
-            'PENDING_FINANCE_VETTING',
-            'PENDING_FINANCE_PLANNER',
-            'PENDING_FINANCE_CONTROLLER',
-            'PENDING_DIRECTOR',
-            'PENDING_MD',
-          ],
-        },
-      },
-    }),
-    prisma.financeRequest.count({
-      where: { ...baseWhere, status: { in: ['APPROVED', 'EXPENSE_APPROVED'] } },
-    }),
-    prisma.financeRequest.count({
-      where: { ...baseWhere, status: 'REJECTED' },
-    }),
-    prisma.financeRequest.count({
-      where: { ...baseWhere, status: 'DISBURSED' },
-    }),
-    prisma.financeRequest.aggregate({
-      where: { ...baseWhere, status: { not: 'DRAFT' } },
-      _sum: { totalAmount: true },
-    }),
-    prisma.sLALog.count({
-      where: {
-        isBreached: true,
-        financeRequest: baseWhere,
-      },
-    }),
-  ]);
-
-  // Build role-based pending where clause
+  // Prepare role-based pending where clause (needed for single batch)
   let myPendingWhere: any = null;
   if (user.role === 'FINANCE_TEAM') {
     myPendingWhere = {
@@ -166,19 +120,64 @@ async function getDashboardStats(user: any, userEntityIdentifiers: string[] = []
     myPendingWhere = { status: 'PENDING_MD', isDeleted: false };
   }
 
-  // Get this month stats + role-based count in one parallel batch
   const startOfMonth = new Date();
   startOfMonth.setDate(1);
   startOfMonth.setHours(0, 0, 0, 0);
 
-  const secondBatchPromises: Promise<any>[] = [
+  // Single batch: all queries in parallel (eliminates sequential round-trip)
+  const allPromises: Promise<any>[] = [
+    // 0: totalRequests
+    prisma.financeRequest.count({ where: baseWhere }),
+    // 1: pendingRequests
+    prisma.financeRequest.count({
+      where: {
+        ...baseWhere,
+        status: {
+          in: [
+            'SUBMITTED',
+            'PENDING_FINANCE_VETTING',
+            'PENDING_FINANCE_PLANNER',
+            'PENDING_FINANCE_CONTROLLER',
+            'PENDING_DIRECTOR',
+            'PENDING_MD',
+          ],
+        },
+      },
+    }),
+    // 2: approvedRequests
+    prisma.financeRequest.count({
+      where: { ...baseWhere, status: { in: ['APPROVED', 'EXPENSE_APPROVED'] } },
+    }),
+    // 3: rejectedRequests
+    prisma.financeRequest.count({
+      where: { ...baseWhere, status: 'REJECTED' },
+    }),
+    // 4: disbursedRequests
+    prisma.financeRequest.count({
+      where: { ...baseWhere, status: 'DISBURSED' },
+    }),
+    // 5: totalAmount
+    prisma.financeRequest.aggregate({
+      where: { ...baseWhere, status: { not: 'DRAFT' } },
+      _sum: { totalAmount: true },
+    }),
+    // 6: slaBreaches
+    prisma.sLALog.count({
+      where: {
+        isBreached: true,
+        financeRequest: baseWhere,
+      },
+    }),
+    // 7: thisMonthCount
     prisma.financeRequest.count({
       where: { ...baseWhere, createdAt: { gte: startOfMonth }, status: { not: 'DRAFT' } },
     }),
+    // 8: thisMonthAmount
     prisma.financeRequest.aggregate({
       where: { ...baseWhere, createdAt: { gte: startOfMonth }, status: { not: 'DRAFT' } },
       _sum: { totalAmount: true },
     }),
+    // 9: pendingAmount
     prisma.financeRequest.aggregate({
       where: {
         ...baseWhere,
@@ -188,43 +187,38 @@ async function getDashboardStats(user: any, userEntityIdentifiers: string[] = []
       },
       _sum: { totalAmount: true },
     }),
-    // Approved amount (awaiting disbursement) - includes expense approved
+    // 10: approvedAmount
     prisma.financeRequest.aggregate({
       where: { ...baseWhere, status: { in: ['APPROVED', 'EXPENSE_APPROVED'] } },
       _sum: { totalAmount: true },
     }),
-    // Disbursed amount
+    // 11: disbursedAmount
     prisma.financeRequest.aggregate({
       where: { ...baseWhere, status: 'DISBURSED' },
       _sum: { totalAmount: true },
     }),
   ];
   if (myPendingWhere) {
-    secondBatchPromises.push(prisma.financeRequest.count({ where: myPendingWhere }));
+    // 12: myPendingApprovals (conditional)
+    allPromises.push(prisma.financeRequest.count({ where: myPendingWhere }));
   }
 
-  const secondBatch = await Promise.all(secondBatchPromises);
-  const thisMonthCount = secondBatch[0];
-  const thisMonthAmount = secondBatch[1];
-  const pendingAmount = secondBatch[2];
-  const approvedAmount = secondBatch[3];
-  const disbursedAmount = secondBatch[4];
-  const myPendingApprovals = secondBatch[5] || 0;
+  const results = await Promise.all(allPromises);
 
   return {
-    total: totalRequests,
-    pending: pendingRequests,
-    approved: approvedRequests,
-    rejected: rejectedRequests,
-    disbursed: disbursedRequests,
-    totalAmount: Number(totalAmount._sum.totalAmount || 0),
-    pendingAmount: Number(pendingAmount._sum.totalAmount || 0),
-    approvedAmount: Number(approvedAmount._sum.totalAmount || 0),
-    disbursedAmount: Number(disbursedAmount._sum.totalAmount || 0),
-    thisMonthCount,
-    thisMonthAmount: Number(thisMonthAmount._sum.totalAmount || 0),
-    slaBreaches,
-    myPendingApprovals,
+    total: results[0],
+    pending: results[1],
+    approved: results[2],
+    rejected: results[3],
+    disbursed: results[4],
+    totalAmount: Number(results[5]._sum.totalAmount || 0),
+    pendingAmount: Number(results[9]._sum.totalAmount || 0),
+    approvedAmount: Number(results[10]._sum.totalAmount || 0),
+    disbursedAmount: Number(results[11]._sum.totalAmount || 0),
+    thisMonthCount: results[7],
+    thisMonthAmount: Number(results[8]._sum.totalAmount || 0),
+    slaBreaches: results[6],
+    myPendingApprovals: results[12] || 0,
   };
 }
 
