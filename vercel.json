@@ -1,6 +1,6 @@
 {
   "installCommand": "npm install --legacy-peer-deps",
-  "buildCommand": "prisma generate && prisma db push && next build",
+  "buildCommand": "prisma generate && prisma db push --accept-data-loss && next build",
   "crons": [
     {
       "path": "/api/cron/check-sla",
