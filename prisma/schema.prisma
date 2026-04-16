@@ -261,6 +261,10 @@ model FinanceRequest {
   @@index([paymentType])
   @@index([requestType])
   @@index([entity])
+  @@index([isDeleted, status])
+  @@index([status, createdAt])
+  @@index([requestorId, createdAt])
+  @@index([entity, status])
 }
 
 // ============================================================================

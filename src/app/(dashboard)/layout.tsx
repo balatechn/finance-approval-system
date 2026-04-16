@@ -137,10 +137,10 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (status !== 'authenticated') return
     fetchNotifications()
-    // Poll every 60s, but only when tab is visible
+    // Poll every 120s, but only when tab is visible
     const interval = setInterval(() => {
       if (isTabVisible) fetchNotifications()
-    }, 60 * 1000)
+    }, 120 * 1000)
     return () => clearInterval(interval)
   }, [fetchNotifications, status, isTabVisible])
 
@@ -183,10 +183,10 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     if (status !== 'authenticated') return
     fetchOnlineUsers()
     if (userRole === 'ADMIN') {
-      // Poll every 60s, but only when tab is visible
+      // Poll every 120s, but only when tab is visible
       const interval = setInterval(() => {
         if (isTabVisible) fetchOnlineUsers()
-      }, 60 * 1000)
+      }, 120 * 1000)
       return () => clearInterval(interval)
     }
   }, [fetchOnlineUsers, userRole, status, isTabVisible])

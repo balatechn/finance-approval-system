@@ -141,26 +141,28 @@ export default function DashboardPage() {
   const [requestTypeFilter, setRequestTypeFilter] = useState("all")
 
   useEffect(() => {
-    async function fetchDashboard() {
-      try {
-        setLoading(true)
-        const params = new URLSearchParams()
-        if (fromDate) params.set("from", fromDate)
-        if (toDate) params.set("to", toDate)
-        if (requestTypeFilter !== "all") params.set("requestType", requestTypeFilter)
-        const response = await fetch(`/api/dashboard?${params.toString()}`)
-        if (response.ok) {
-          const result = await response.json()
-          setData(result)
+    const timer = setTimeout(() => {
+      async function fetchDashboard() {
+        try {
+          setLoading(true)
+          const params = new URLSearchParams()
+          if (fromDate) params.set("from", fromDate)
+          if (toDate) params.set("to", toDate)
+          if (requestTypeFilter !== "all") params.set("requestType", requestTypeFilter)
+          const response = await fetch(`/api/dashboard?${params.toString()}`)
+          if (response.ok) {
+            const result = await response.json()
+            setData(result)
+          }
+        } catch (error) {
+          console.error("Failed to fetch dashboard data:", error)
+        } finally {
+          setLoading(false)
         }
-      } catch (error) {
-        console.error("Failed to fetch dashboard data:", error)
-      } finally {
-        setLoading(false)
       }
-    }
-
-    fetchDashboard()
+      fetchDashboard()
+    }, 300)
+    return () => clearTimeout(timer)
   }, [fromDate, toDate, requestTypeFilter])
 
   const stats = data?.stats || {

@@ -456,61 +456,59 @@ async function getSLAAlerts(user: any) {
   });
 }
 
-// Get monthly expense trend (last 6 months)
+// Get monthly expense trend (last 6 months) using SQL aggregation
 async function getMonthlyTrend(user: any, dateRange?: { gte?: Date; lte?: Date }) {
-  const baseWhere: any = { isDeleted: false, status: { not: 'DRAFT' } };
-  if (user.role === 'EMPLOYEE') {
-    baseWhere.requestorId = user.id;
-  }
-
-  // Get last 6 months of data
   const sixMonthsAgo = new Date();
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
   sixMonthsAgo.setDate(1);
   sixMonthsAgo.setHours(0, 0, 0, 0);
 
-  const requests = await prisma.financeRequest.findMany({
-    where: {
-      ...baseWhere,
-      createdAt: { gte: sixMonthsAgo },
-    },
-    select: {
-      createdAt: true,
-      totalAmount: true,
-      status: true,
-    },
-  });
+  const isEmployee = user.role === 'EMPLOYEE';
+  const userId = user.id;
 
-  // Group by month
-  const monthlyData: Record<string, { month: string; total: number; approved: number; pending: number; disbursed: number }> = {};
+  const result: Array<{
+    month_key: string;
+    month_label: string;
+    total: number;
+    approved: number;
+    pending: number;
+    disbursed: number;
+  }> = isEmployee
+    ? await prisma.$queryRaw`
+        SELECT 
+          to_char("createdAt", 'YYYY-MM') as month_key,
+          to_char("createdAt", 'Mon ''YY') as month_label,
+          COALESCE(SUM("totalAmount"), 0)::float as total,
+          COALESCE(SUM(CASE WHEN "status" IN ('APPROVED', 'EXPENSE_APPROVED') THEN "totalAmount" ELSE 0 END), 0)::float as approved,
+          COALESCE(SUM(CASE WHEN "status" IN ('SUBMITTED', 'PENDING_FINANCE_VETTING', 'PENDING_FINANCE_PLANNER', 'PENDING_DIRECTOR', 'PENDING_MD') THEN "totalAmount" ELSE 0 END), 0)::float as pending,
+          COALESCE(SUM(CASE WHEN "status" = 'DISBURSED' THEN "totalAmount" ELSE 0 END), 0)::float as disbursed
+        FROM "FinanceRequest"
+        WHERE "isDeleted" = false AND "status" != 'DRAFT'
+          AND "createdAt" >= ${sixMonthsAgo}
+          AND "requestorId" = ${userId}
+        GROUP BY month_key, month_label
+        ORDER BY month_key ASC`
+    : await prisma.$queryRaw`
+        SELECT 
+          to_char("createdAt", 'YYYY-MM') as month_key,
+          to_char("createdAt", 'Mon ''YY') as month_label,
+          COALESCE(SUM("totalAmount"), 0)::float as total,
+          COALESCE(SUM(CASE WHEN "status" IN ('APPROVED', 'EXPENSE_APPROVED') THEN "totalAmount" ELSE 0 END), 0)::float as approved,
+          COALESCE(SUM(CASE WHEN "status" IN ('SUBMITTED', 'PENDING_FINANCE_VETTING', 'PENDING_FINANCE_PLANNER', 'PENDING_DIRECTOR', 'PENDING_MD') THEN "totalAmount" ELSE 0 END), 0)::float as pending,
+          COALESCE(SUM(CASE WHEN "status" = 'DISBURSED' THEN "totalAmount" ELSE 0 END), 0)::float as disbursed
+        FROM "FinanceRequest"
+        WHERE "isDeleted" = false AND "status" != 'DRAFT'
+          AND "createdAt" >= ${sixMonthsAgo}
+        GROUP BY month_key, month_label
+        ORDER BY month_key ASC`;
 
-  const pendingStatuses = ['SUBMITTED', 'PENDING_FINANCE_VETTING', 'PENDING_FINANCE_PLANNER', 'PENDING_DIRECTOR', 'PENDING_MD'];
-
-  for (const req of requests) {
-    const date = new Date(req.createdAt);
-    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-    const monthName = date.toLocaleString('en-IN', { month: 'short', year: '2-digit' });
-
-    if (!monthlyData[monthKey]) {
-      monthlyData[monthKey] = { month: monthName, total: 0, approved: 0, pending: 0, disbursed: 0 };
-    }
-
-    const amount = Number(req.totalAmount || 0);
-    monthlyData[monthKey].total += amount;
-
-    if (req.status === 'APPROVED') {
-      monthlyData[monthKey].approved += amount;
-    } else if (req.status === 'DISBURSED') {
-      monthlyData[monthKey].disbursed += amount;
-    } else if (pendingStatuses.includes(req.status)) {
-      monthlyData[monthKey].pending += amount;
-    }
-  }
-
-  // Sort by month key and return as array
-  return Object.entries(monthlyData)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([, data]) => data);
+  return result.map(r => ({
+    month: r.month_label,
+    total: Number(r.total),
+    approved: Number(r.approved),
+    pending: Number(r.pending),
+    disbursed: Number(r.disbursed),
+  }));
 }
 
 // Get department-wise expense breakdown
