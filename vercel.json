@@ -1,6 +1,6 @@
 {
   "installCommand": "npm install --legacy-peer-deps",
-  "buildCommand": "prisma generate && prisma db push --accept-data-loss && next build",
+  "buildCommand": "prisma generate && prisma db execute --file prisma/cleanup-enums.sql && prisma db push --accept-data-loss && next build",
   "crons": [
     {
       "path": "/api/cron/check-sla",
