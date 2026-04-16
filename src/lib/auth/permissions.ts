@@ -7,6 +7,8 @@ export const ROLE_HIERARCHY: Record<Role, number> = {
   MD: 90,
   DIRECTOR: 80,
   FINANCE_PLANNER: 65,
+  FINANCE_CONTROLLER: 70,    // @deprecated
+  FINANCE_COORDINATOR: 68,   // @deprecated
   FINANCE_TEAM: 60,
   EMPLOYEE: 10,
 };
@@ -33,6 +35,8 @@ export const ROLE_PERMISSIONS: Record<Role, string[]> = {
     'dashboard:all',
     'reports:all',
   ],
+  FINANCE_CONTROLLER: [],   // @deprecated
+  FINANCE_COORDINATOR: [],  // @deprecated
   DIRECTOR: [
     'request:view:all',
     'approval:director',
@@ -92,6 +96,8 @@ export function getRoleLabel(role: Role): string {
     EMPLOYEE: 'Employee',
     FINANCE_TEAM: 'Finance Team',
     FINANCE_PLANNER: 'Finance Planner',
+    FINANCE_CONTROLLER: 'Finance Controller',   // @deprecated
+    FINANCE_COORDINATOR: 'Finance Coordinator', // @deprecated
     DIRECTOR: 'Director',
     MD: 'Managing Director',
     ADMIN: 'Administrator',

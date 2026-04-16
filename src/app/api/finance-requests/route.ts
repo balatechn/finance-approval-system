@@ -308,6 +308,8 @@ async function createApprovalSteps(
   const roleMapping: Record<ApprovalLevel, Role> = {
     FINANCE_VETTING: 'FINANCE_TEAM',
     FINANCE_PLANNER: 'FINANCE_PLANNER',
+    FINANCE_CONTROLLER: 'DIRECTOR',    // @deprecated
+    FINANCE_COORDINATOR: 'DIRECTOR',   // @deprecated
     DIRECTOR: 'DIRECTOR',
     MD: 'MD',
     DISBURSEMENT: 'FINANCE_TEAM',

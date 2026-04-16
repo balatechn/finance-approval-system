@@ -243,6 +243,8 @@ async function processApproval(
   const statusMapping: Record<ApprovalLevel, RequestStatus> = {
     FINANCE_VETTING: 'PENDING_FINANCE_PLANNER',
     FINANCE_PLANNER: 'PENDING_DIRECTOR',
+    FINANCE_CONTROLLER: 'PENDING_DIRECTOR',    // @deprecated - unused
+    FINANCE_COORDINATOR: 'PENDING_DIRECTOR',   // @deprecated - unused
     DIRECTOR: 'PENDING_MD',
     MD: 'APPROVED',
     DISBURSEMENT: 'DISBURSED',
