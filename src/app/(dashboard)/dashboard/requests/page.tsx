@@ -155,7 +155,7 @@ export default function RequestsPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Finance Requests</h1>
+          <h1 className="text-2xl font-bold text-white">Finance Requests</h1>
           <p className="text-muted-foreground">
             Manage and track all your finance requests
           </p>
@@ -217,10 +217,10 @@ export default function RequestsPage() {
             <div className="space-y-3 animate-pulse">
               {[...Array(5)].map((_, i) => (
                 <div key={i} className="flex gap-4 items-center">
-                  <div className="h-4 w-28 rounded bg-gray-200" />
-                  <div className="h-4 flex-1 rounded bg-gray-200" />
-                  <div className="h-4 w-20 rounded bg-gray-200" />
-                  <div className="h-6 w-16 rounded bg-gray-200" />
+                  <div className="h-4 w-28 rounded bg-white/[0.1]" />
+                  <div className="h-4 flex-1 rounded bg-white/[0.1]" />
+                  <div className="h-4 w-20 rounded bg-white/[0.1]" />
+                  <div className="h-6 w-16 rounded bg-white/[0.1]" />
                 </div>
               ))}
             </div>
@@ -245,7 +245,7 @@ export default function RequestsPage() {
                       <span className="font-medium text-primary">{request.referenceNumber}</span>
                       <StatusBadge status={request.status} />
                     </div>
-                    <p className="text-sm text-gray-900 truncate">{request.purpose}</p>
+                    <p className="text-sm text-white truncate">{request.purpose}</p>
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-sm font-semibold">{formatCurrency(request.totalAmountINR)}</span>
                       <span className="text-xs text-muted-foreground">{formatDate(request.createdAt)}</span>
@@ -319,7 +319,7 @@ export default function RequestsPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                className="text-red-400 hover:text-red-300 hover:bg-red-500/20"
                                 onClick={(e) => { e.preventDefault(); setDeleteTarget(request) }}
                               >
                                 <Trash2 className="h-4 w-4" />

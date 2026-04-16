@@ -222,11 +222,11 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className="flex h-screen bg-gray-50">
+      <div className="flex h-screen overflow-hidden">
         {/* Mobile sidebar backdrop */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
             onClick={() => setSidebarOpen(false)}
           />
         )}
@@ -234,7 +234,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         {/* Sidebar */}
         <aside
           className={cn(
-            "fixed inset-y-0 left-0 z-50 transform bg-white shadow-lg transition-all duration-200 lg:static lg:translate-x-0",
+            "fixed inset-y-0 left-0 z-50 transform glass-sidebar transition-all duration-200 lg:static lg:translate-x-0",
             sidebarOpen ? "translate-x-0 w-64" : "-translate-x-full",
             sidebarCollapsed ? "lg:w-[68px]" : "lg:w-64"
           )}
@@ -242,7 +242,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           <div className="flex h-full flex-col">
             {/* Logo */}
             <div className={cn(
-              "flex h-16 items-center border-b",
+              "flex h-16 items-center border-b border-white/[0.1]",
               sidebarCollapsed ? "justify-center px-2" : "justify-between px-4"
             )}>
               <Link href="/dashboard" className={cn(
@@ -259,14 +259,14 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                 />
                 {!sidebarCollapsed && (
                   <div className="flex flex-col">
-                    <span className="font-semibold text-gray-900">Finance</span>
-                    <span className="text-[10px] text-muted-foreground leading-tight">National Group India</span>
+                    <span className="font-semibold text-white">Finance</span>
+                    <span className="text-[10px] text-white/50 leading-tight">National Group India</span>
                   </div>
                 )}
               </Link>
               <button
                 onClick={() => setSidebarOpen(false)}
-                className="rounded-md p-1 hover:bg-gray-100 lg:hidden"
+                className="rounded-md p-1 hover:bg-white/[0.1] text-white/60 lg:hidden"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -286,15 +286,15 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                     href={item.href}
                     onClick={() => setSidebarOpen(false)}
                     className={cn(
-                      "flex items-center rounded-lg text-sm font-medium transition-colors",
+                      "flex items-center rounded-lg text-sm font-medium transition-all duration-200",
                       sidebarCollapsed ? "justify-center p-3" : "gap-3 px-3 py-2",
                       isActive
                         ? isHighlight
-                          ? "bg-orange-500 text-white"
-                          : "bg-primary text-white"
+                          ? "bg-orange-500/80 text-white shadow-lg shadow-orange-500/20"
+                          : "bg-white/[0.15] text-white shadow-lg shadow-white/5"
                         : isHighlight
-                          ? "bg-orange-100 text-orange-700 hover:bg-orange-200"
-                          : "text-gray-700 hover:bg-gray-100"
+                          ? "text-orange-300 hover:bg-orange-500/20"
+                          : "text-white/60 hover:bg-white/[0.08] hover:text-white"
                     )}
                   >
                     <item.icon className="h-5 w-5 flex-shrink-0" />
@@ -321,7 +321,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
             {/* Collapse toggle (desktop only) */}
             <div className={cn(
-              "hidden lg:flex border-t",
+              "hidden lg:flex border-t border-white/[0.1]",
               sidebarCollapsed ? "justify-center p-2" : "px-4 py-2"
             )}>
               <Tooltip>
@@ -329,7 +329,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                   <button
                     onClick={toggleSidebar}
                     className={cn(
-                      "flex items-center rounded-lg text-sm text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors",
+                      "flex items-center rounded-lg text-sm text-white/40 hover:bg-white/[0.08] hover:text-white/70 transition-colors",
                       sidebarCollapsed ? "p-3 justify-center" : "gap-3 px-3 py-2 w-full"
                     )}
                   >
@@ -351,7 +351,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
             {/* User info at bottom */}
             <div className={cn(
-              "border-t",
+              "border-t border-white/[0.1]",
               sidebarCollapsed ? "p-2" : "p-4"
             )}>
               {sidebarCollapsed ? (
@@ -359,7 +359,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                   <TooltipTrigger asChild>
                     <div className="flex justify-center">
                       <Avatar className="h-9 w-9">
-                        <AvatarFallback className="bg-primary text-white">
+                        <AvatarFallback className="bg-white/[0.15] text-white">
                           {userInitials}
                         </AvatarFallback>
                       </Avatar>
@@ -367,19 +367,19 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                   </TooltipTrigger>
                   <TooltipContent side="right">
                     <p className="font-medium">{user?.name}</p>
-                    <p className="text-xs text-muted-foreground">{getRoleLabel(userRole as any)}</p>
+                    <p className="text-xs text-white/50">{getRoleLabel(userRole as any)}</p>
                   </TooltipContent>
                 </Tooltip>
               ) : (
                 <div className="flex items-center gap-3">
                   <Avatar className="h-9 w-9">
-                    <AvatarFallback className="bg-primary text-white">
+                    <AvatarFallback className="bg-white/[0.15] text-white">
                       {userInitials}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 overflow-hidden">
-                    <p className="truncate text-sm font-medium">{user?.name}</p>
-                    <p className="truncate text-xs text-muted-foreground">
+                    <p className="truncate text-sm font-medium text-white">{user?.name}</p>
+                    <p className="truncate text-xs text-white/50">
                       {getRoleLabel(userRole as any)}
                     </p>
                   </div>
@@ -392,10 +392,10 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         {/* Main content */}
         <div className="flex flex-1 flex-col overflow-hidden">
           {/* Top header */}
-          <header className="flex h-16 items-center justify-between border-b bg-white px-4 lg:px-6">
+          <header className="flex h-16 items-center justify-between glass-header px-4 lg:px-6">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="rounded-md p-2 hover:bg-gray-100 lg:hidden"
+              className="rounded-md p-2 hover:bg-white/[0.1] text-white/70 lg:hidden"
             >
               <Menu className="h-5 w-5" />
             </button>
@@ -406,39 +406,39 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                 <div className="relative">
                   <button
                     onClick={() => setShowOnlineDropdown(!showOnlineDropdown)}
-                    className="flex items-center gap-2 rounded-full px-3 py-1.5 hover:bg-gray-100 transition-colors"
+                    className="flex items-center gap-2 rounded-full px-3 py-1.5 hover:bg-white/[0.1] transition-colors"
                     title="Online users"
                   >
-                    <Circle className="h-2.5 w-2.5 fill-green-500 text-green-500" />
-                    <span className="text-sm font-medium text-gray-700">
+                    <Circle className="h-2.5 w-2.5 fill-green-400 text-green-400" />
+                    <span className="text-sm font-medium text-white/70">
                       {onlineUsers.count} Online
                     </span>
                   </button>
                   {showOnlineDropdown && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setShowOnlineDropdown(false)} />
-                      <div className="absolute right-0 top-full mt-2 z-50 w-72 rounded-lg border bg-white shadow-lg">
-                        <div className="border-b px-4 py-3">
-                          <p className="text-sm font-semibold text-gray-900">Online Users</p>
-                          <p className="text-xs text-muted-foreground">{onlineUsers.count} user{onlineUsers.count !== 1 ? 's' : ''} active now</p>
+                      <div className="absolute right-0 top-full mt-2 z-50 w-72 rounded-xl backdrop-blur-xl bg-[#0a0f4a]/95 border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+                        <div className="border-b border-white/[0.1] px-4 py-3">
+                          <p className="text-sm font-semibold text-white">Online Users</p>
+                          <p className="text-xs text-white/50">{onlineUsers.count} user{onlineUsers.count !== 1 ? 's' : ''} active now</p>
                         </div>
                         <div className="max-h-64 overflow-y-auto py-1">
                           {onlineUsers.users.length === 0 ? (
-                            <p className="px-4 py-3 text-sm text-muted-foreground">No users online</p>
+                            <p className="px-4 py-3 text-sm text-white/40">No users online</p>
                           ) : (
                             onlineUsers.users.map((u) => (
-                              <div key={u.id} className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50">
+                              <div key={u.id} className="flex items-center gap-3 px-4 py-2 hover:bg-white/[0.08]">
                                 <div className="relative">
                                   <Avatar className="h-8 w-8">
-                                    <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                                    <AvatarFallback className="bg-white/[0.1] text-white/80 text-xs">
                                       {u.name?.split(' ').map(n => n[0]).join('').toUpperCase()}
                                     </AvatarFallback>
                                   </Avatar>
-                                  <Circle className="absolute -bottom-0.5 -right-0.5 h-3 w-3 fill-green-500 text-green-500 border-2 border-white rounded-full" />
+                                  <Circle className="absolute -bottom-0.5 -right-0.5 h-3 w-3 fill-green-400 text-green-400 border-2 border-[#0a0f4a] rounded-full" />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium text-gray-900 truncate">{u.name}</p>
-                                  <p className="text-xs text-muted-foreground truncate">{u.department || u.role}</p>
+                                  <p className="text-sm font-medium text-white truncate">{u.name}</p>
+                                  <p className="text-xs text-white/50 truncate">{u.department || u.role}</p>
                                 </div>
                               </div>
                             ))
@@ -454,11 +454,11 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
               {unreadDiscussionCount > 0 && (
                 <div className="relative">
                   <button
-                    className="relative rounded-full p-2 hover:bg-gray-100"
+                    className="relative rounded-full p-2 hover:bg-white/[0.1]"
                     onClick={() => { setShowNotifications(true); setShowOnlineDropdown(false) }}
                     title="New discussion messages"
                   >
-                    <MessageSquare className="h-5 w-5 text-red-500 animate-pulse" />
+                    <MessageSquare className="h-5 w-5 text-red-400 animate-pulse" />
                     <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white animate-pulse">
                       {unreadDiscussionCount > 9 ? '9+' : unreadDiscussionCount}
                     </span>
@@ -469,10 +469,10 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
               {/* Notifications */}
               <div className="relative" data-notifications>
                 <button
-                  className="relative rounded-full p-2 hover:bg-gray-100"
+                  className="relative rounded-full p-2 hover:bg-white/[0.1]"
                   onClick={() => { setShowNotifications(!showNotifications); setShowOnlineDropdown(false) }}
                 >
-                  <Bell className="h-5 w-5 text-gray-600" />
+                  <Bell className="h-5 w-5 text-white/60" />
                   {unreadCount > 0 && (
                     <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
                       {unreadCount > 9 ? '9+' : unreadCount}
@@ -481,13 +481,13 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                 </button>
 
                 {showNotifications && (
-                  <div className="absolute right-0 top-12 z-50 w-80 rounded-lg border bg-white shadow-lg">
-                    <div className="flex items-center justify-between border-b px-4 py-3">
-                      <h3 className="font-semibold text-sm">Notifications</h3>
+                  <div className="absolute right-0 top-12 z-50 w-80 rounded-xl backdrop-blur-xl bg-[#0a0f4a]/95 border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+                    <div className="flex items-center justify-between border-b border-white/[0.1] px-4 py-3">
+                      <h3 className="font-semibold text-sm text-white">Notifications</h3>
                       {unreadCount > 0 && (
                         <button
                           onClick={markAllRead}
-                          className="text-xs text-primary hover:underline flex items-center gap-1"
+                          className="text-xs text-blue-300 hover:text-blue-200 flex items-center gap-1"
                         >
                           <Check className="h-3 w-3" />
                           Mark all read
@@ -496,7 +496,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                     </div>
                     <div className="max-h-80 overflow-y-auto">
                       {notifications.length === 0 ? (
-                        <div className="py-8 text-center text-sm text-muted-foreground">
+                        <div className="py-8 text-center text-sm text-white/40">
                           No notifications
                         </div>
                       ) : (
@@ -504,8 +504,8 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                           <div
                             key={n.id}
                             className={cn(
-                              "border-b px-4 py-3 text-sm hover:bg-gray-50 cursor-pointer",
-                              !n.isRead && "bg-blue-50/50"
+                              "border-b border-white/[0.06] px-4 py-3 text-sm hover:bg-white/[0.06] cursor-pointer",
+                              !n.isRead && "bg-blue-500/10"
                             )}
                             onClick={async () => {
                               if (!n.isRead) {
@@ -530,9 +530,9 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                                 <span className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-blue-500" />
                               )}
                               <div className={cn(!n.isRead ? "" : "ml-4")}>
-                                <p className="font-medium">{n.title}</p>
-                                <p className="text-muted-foreground line-clamp-2">{n.message}</p>
-                                <p className="mt-1 text-xs text-muted-foreground">
+                                <p className="font-medium text-white">{n.title}</p>
+                                <p className="text-white/50 line-clamp-2">{n.message}</p>
+                                <p className="mt-1 text-xs text-white/30">
                                   {new Date(n.createdAt).toLocaleString()}
                                 </p>
                               </div>
@@ -548,20 +548,20 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
               {/* User menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 rounded-full p-1 hover:bg-gray-100">
+                  <button className="flex items-center gap-2 rounded-full p-1 hover:bg-white/[0.1]">
                     <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-primary text-white text-sm">
+                      <AvatarFallback className="bg-white/[0.15] text-white text-sm">
                         {userInitials}
                       </AvatarFallback>
                     </Avatar>
-                    <ChevronDown className="h-4 w-4 text-gray-600" />
+                    <ChevronDown className="h-4 w-4 text-white/60" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuContent align="end" className="w-56 backdrop-blur-xl bg-[#0a0f4a]/95 border-white/[0.12]">
                   <DropdownMenuLabel>
                     <div className="flex flex-col">
-                      <span>{user?.name}</span>
-                      <span className="text-xs font-normal text-muted-foreground">
+                      <span className="text-white">{user?.name}</span>
+                      <span className="text-xs font-normal text-white/50">
                         {user?.email}
                       </span>
                     </div>
@@ -572,7 +572,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                       {getRoleLabel(userRole as any)}
                     </Badge>
                     {user?.department && (
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-white/50">
                         {user?.department}
                       </span>
                     )}
@@ -585,7 +585,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                     Change Password
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    className="text-red-600 focus:text-red-600"
+                    className="text-red-400 focus:text-red-300 focus:bg-red-500/10"
                     onClick={() => signOut({ callbackUrl: "/login" })}
                   >
                     <LogOut className="mr-2 h-4 w-4" />
@@ -603,7 +603,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Mobile Bottom Navigation */}
-        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 lg:hidden">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 backdrop-blur-xl bg-[#070B47]/85 border-t border-white/[0.1] lg:hidden">
           <div className="flex items-center justify-around h-16">
             {[
               { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -623,7 +623,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                     onClick={() => setSidebarOpen(true)}
                     className={cn(
                       "flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-[10px] font-medium transition-colors",
-                      isActive ? "text-primary" : "text-gray-400"
+                      isActive ? "text-white" : "text-white/40"
                     )}
                   >
                     <item.icon className="h-5 w-5" />
@@ -639,16 +639,16 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                   className={cn(
                     "flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-[10px] font-medium transition-colors",
                     item.accent && !isActive
-                      ? "text-primary"
+                      ? "text-blue-300"
                       : isActive
-                      ? "text-primary"
-                      : "text-gray-400"
+                      ? "text-white"
+                      : "text-white/40"
                   )}
                 >
                   {item.accent ? (
                     <div className={cn(
                       "flex items-center justify-center h-8 w-8 rounded-full -mt-4 shadow-lg",
-                      "bg-primary text-white"
+                      "bg-white/[0.2] text-white backdrop-blur-sm border border-white/[0.2]"
                     )}>
                       <item.icon className="h-5 w-5" />
                     </div>

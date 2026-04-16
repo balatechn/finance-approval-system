@@ -3,25 +3,25 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-white/20",
   {
     variants: {
       variant: {
         default:
-          "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+          "border-white/20 bg-white/[0.15] text-white backdrop-blur-sm",
         secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "border-white/10 bg-white/[0.08] text-white/80 backdrop-blur-sm",
         destructive:
-          "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
-        outline: "text-foreground",
+          "border-red-400/30 bg-red-500/20 text-red-300 backdrop-blur-sm",
+        outline: "text-white/80 border-white/20",
         success:
-          "border-transparent bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
+          "border-emerald-400/30 bg-emerald-500/20 text-emerald-300 backdrop-blur-sm",
         warning:
-          "border-transparent bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100",
+          "border-amber-400/30 bg-amber-500/20 text-amber-300 backdrop-blur-sm",
         info:
-          "border-transparent bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100",
+          "border-blue-400/30 bg-blue-500/20 text-blue-300 backdrop-blur-sm",
         pending:
-          "border-transparent bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100",
+          "border-yellow-400/30 bg-yellow-500/20 text-yellow-300 backdrop-blur-sm",
       },
     },
     defaultVariants: {

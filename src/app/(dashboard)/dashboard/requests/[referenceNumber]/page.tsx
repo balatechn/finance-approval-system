@@ -204,7 +204,7 @@ export default function RequestDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center h-64 space-y-4">
         <AlertTriangle className="h-12 w-12 text-amber-500" />
-        <p className="text-lg font-medium text-gray-700">
+        <p className="text-lg font-medium text-white/80">
           {error || "Unable to load request"}
         </p>
         <Link href="/dashboard/requests">
@@ -248,7 +248,7 @@ export default function RequestDetailPage() {
           </Link>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-xl font-bold text-gray-900">
+              <h1 className="text-xl font-bold text-white">
                 {request.referenceNumber}
               </h1>
               <StatusBadge status={request.status as any} />
@@ -331,7 +331,7 @@ export default function RequestDetailPage() {
             <Button
               variant="outline"
               size="sm"
-              className="text-red-600 hover:text-red-700"
+              className="text-red-400 hover:text-red-300"
               onClick={() => setDeleteDialogOpen(true)}
             >
               <Trash2 className="mr-2 h-4 w-4" />
@@ -343,13 +343,13 @@ export default function RequestDetailPage() {
 
       {/* Sent Back Banner */}
       {isSentBack && (
-        <Card className="border-amber-300 bg-amber-50">
+        <Card className="border-amber-300 bg-amber-500/10">
           <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-amber-800">
+            <CardTitle className="flex items-center gap-2 text-amber-300">
               <AlertTriangle className="h-5 w-5" />
               Request Sent Back for More Information
             </CardTitle>
-            <CardDescription className="text-amber-700">
+            <CardDescription className="text-amber-300">
               An approver has sent this request back requesting additional details or corrections.
             </CardDescription>
           </CardHeader>
@@ -357,16 +357,16 @@ export default function RequestDetailPage() {
             {sentBackComments.length > 0 ? (
               <div className="space-y-3">
                 {sentBackComments.map((comment, index) => (
-                  <div key={index} className="rounded-lg border border-amber-200 bg-white p-3">
+                  <div key={index} className="rounded-lg border border-amber-500/30 bg-white/[0.06] backdrop-blur-xl p-3">
                     <div className="flex items-start gap-2">
-                      <MessageSquare className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                      <MessageSquare className="h-4 w-4 text-amber-400 mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="text-sm font-medium text-amber-900">
+                        <p className="text-sm font-medium text-amber-200">
                           {comment.approverName} ({comment.level.replace(/_/g, " ")})
                         </p>
-                        <p className="mt-1 text-sm text-amber-800">{comment.comments}</p>
+                        <p className="mt-1 text-sm text-amber-300">{comment.comments}</p>
                         {comment.completedAt && (
-                          <p className="mt-1 text-xs text-amber-600">
+                          <p className="mt-1 text-xs text-amber-400">
                             {new Date(comment.completedAt).toLocaleString()}
                           </p>
                         )}
@@ -376,7 +376,7 @@ export default function RequestDetailPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-amber-700">
+              <p className="text-sm text-amber-300">
                 Please review your request and click "Edit & Resubmit" to make changes.
               </p>
             )}
@@ -526,10 +526,10 @@ export default function RequestDetailPage() {
               )}
 
               {request.netPayableAmount && (
-                <div className="rounded-lg bg-green-50 p-3">
+                <div className="rounded-lg bg-emerald-500/10 p-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-green-800">Net Payable</span>
-                    <span className="text-lg font-bold text-green-800">
+                    <span className="text-sm font-medium text-emerald-300">Net Payable</span>
+                    <span className="text-lg font-bold text-emerald-300">
                       {formatCurrency(request.netPayableAmount)}
                     </span>
                   </div>
@@ -638,10 +638,10 @@ export default function RequestDetailPage() {
                     return (
                       <div
                         key={attachment.id}
-                        className="group relative flex items-start gap-3 rounded-lg border bg-white p-3 hover:shadow-sm transition-shadow"
+                        className="group relative flex items-start gap-3 rounded-lg border bg-white/[0.06] backdrop-blur-xl p-3 hover:shadow-[0_4px_16px_rgba(0,0,0,0.2)] transition-shadow"
                       >
                         {/* Thumbnail */}
-                        <div className="flex-shrink-0 h-16 w-16 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                        <div className="flex-shrink-0 h-16 w-16 rounded-md overflow-hidden bg-white/[0.06] flex items-center justify-center">
                           {isImage ? (
                             <img
                               src={attachment.fileUrl}
@@ -650,7 +650,7 @@ export default function RequestDetailPage() {
                               onClick={() => setPreviewFile({ url: attachment.fileUrl, type: 'image', name: attachment.fileName })}
                             />
                           ) : isPdf ? (
-                            <FileText className="h-8 w-8 text-red-500" />
+                            <FileText className="h-8 w-8 text-red-400" />
                           ) : (
                             <FileText className="h-8 w-8 text-blue-500" />
                           )}
@@ -678,7 +678,7 @@ export default function RequestDetailPage() {
                             <a
                               href={attachment.fileUrl}
                               download={attachment.fileName}
-                              className="text-xs text-gray-500 hover:underline flex items-center gap-1"
+                              className="text-xs text-white/50 hover:underline flex items-center gap-1"
                             >
                               <Download className="h-3 w-3" /> Download
                             </a>
@@ -699,13 +699,13 @@ export default function RequestDetailPage() {
               onClick={() => setPreviewFile(null)}
             >
               <div
-                className="relative max-h-[90vh] max-w-[90vw] bg-white rounded-xl overflow-hidden shadow-2xl"
+                className="relative max-h-[90vh] max-w-[90vw] bg-white/[0.06] backdrop-blur-xl rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between border-b px-4 py-3">
                   <p className="text-sm font-medium truncate max-w-md">{previewFile.name}</p>
                   <button
-                    className="rounded-full p-1 hover:bg-gray-100"
+                    className="rounded-full p-1 hover:bg-white/[0.08]"
                     onClick={() => setPreviewFile(null)}
                   >
                     <X className="h-5 w-5" />
@@ -726,7 +726,7 @@ export default function RequestDetailPage() {
                     />
                   ) : (
                     <div className="text-center py-12">
-                      <FileText className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+                      <FileText className="h-16 w-16 mx-auto text-white/40 mb-4" />
                       <p className="text-muted-foreground">Preview not available for this file type</p>
                     </div>
                   )}
@@ -769,40 +769,40 @@ export default function RequestDetailPage() {
 
           {/* Disbursement Info */}
           {request.status === "DISBURSED" && (
-            <Card className="border-green-200 bg-green-50">
+            <Card className="border-emerald-500/30 bg-emerald-500/10">
               <CardHeader className="py-3 px-4">
-                <CardTitle className="text-base text-green-800">Payment Disbursed</CardTitle>
+                <CardTitle className="text-base text-emerald-300">Payment Disbursed</CardTitle>
               </CardHeader>
               <CardContent className="px-4 pb-4">
                 <div className="grid gap-3 sm:grid-cols-2">
                   {(request.actualPaymentDate || request.disbursedAt) && (
                     <div>
-                      <p className="text-xs text-green-700">Payment Date</p>
-                      <p className="text-sm font-medium text-green-800">
+                      <p className="text-xs text-emerald-300">Payment Date</p>
+                      <p className="text-sm font-medium text-emerald-300">
                         {formatDateTime(request.actualPaymentDate || request.disbursedAt || "")}
                       </p>
                     </div>
                   )}
                   {request.disbursementPaymentMode && (
                     <div>
-                      <p className="text-xs text-green-700">Payment Mode</p>
-                      <p className="text-sm font-medium text-green-800">
+                      <p className="text-xs text-emerald-300">Payment Mode</p>
+                      <p className="text-sm font-medium text-emerald-300">
                         {request.disbursementPaymentMode.replace(/_/g, " ")}
                       </p>
                     </div>
                   )}
                   {(request.paymentReferenceNumber || request.disbursementReference) && (
                     <div>
-                      <p className="text-xs text-green-700">UTR / Reference Number</p>
-                      <p className="text-sm font-medium text-green-800">
+                      <p className="text-xs text-emerald-300">UTR / Reference Number</p>
+                      <p className="text-sm font-medium text-emerald-300">
                         {request.paymentReferenceNumber || request.disbursementReference}
                       </p>
                     </div>
                   )}
                   {request.disbursementRemarks && (
                     <div>
-                      <p className="text-xs text-green-700">Remarks</p>
-                      <p className="text-sm font-medium text-green-800">
+                      <p className="text-xs text-emerald-300">Remarks</p>
+                      <p className="text-sm font-medium text-emerald-300">
                         {request.disbursementRemarks}
                       </p>
                     </div>

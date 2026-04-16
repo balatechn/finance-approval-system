@@ -258,7 +258,7 @@ export default function NewRequestPage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">New Finance Request</h1>
+          <h1 className="text-2xl font-bold text-white">New Finance Request</h1>
           <p className="text-muted-foreground">
             Fill in the details to create a new finance request
           </p>
@@ -305,18 +305,18 @@ export default function NewRequestPage() {
                           onClick={() => field.onChange(opt.value)}
                           className={`flex items-center gap-3 rounded-lg border-2 p-4 text-left transition-all ${
                             isSelected
-                              ? 'border-amber-400 bg-amber-50 ring-1 ring-amber-200'
-                              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                              ? 'border-amber-400/60 bg-amber-500/10 ring-1 ring-amber-200'
+                              : 'border-white/[0.1] hover:border-white/[0.12] hover:bg-white/[0.06]'
                           }`}
                         >
-                          <div className={`rounded-lg p-2 ${isSelected ? 'bg-amber-100' : 'bg-gray-100'}`}>
-                            <Icon className={`h-5 w-5 ${isSelected ? 'text-amber-600' : 'text-gray-500'}`} />
+                          <div className={`rounded-lg p-2 ${isSelected ? 'bg-amber-500/20' : 'bg-white/[0.06]'}`}>
+                            <Icon className={`h-5 w-5 ${isSelected ? 'text-amber-400' : 'text-white/50'}`} />
                           </div>
                           <div>
-                            <span className={`text-sm font-semibold ${isSelected ? 'text-amber-700' : 'text-gray-900'}`}>
+                            <span className={`text-sm font-semibold ${isSelected ? 'text-amber-300' : 'text-white'}`}>
                               {opt.label}
                             </span>
-                            <span className="block text-xs text-gray-500 mt-0.5">{opt.desc}</span>
+                            <span className="block text-xs text-white/50 mt-0.5">{opt.desc}</span>
                           </div>
                         </button>
                       );
@@ -639,7 +639,7 @@ export default function NewRequestPage() {
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-2">
                 <Label className="text-muted-foreground text-xs">Amount</Label>
-                <div className="rounded-lg border bg-gray-50 px-4 py-3">
+                <div className="rounded-lg border bg-white/[0.04] px-4 py-3">
                   <p className="text-lg font-semibold">
                     ₹{baseAmountINR.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
@@ -651,17 +651,17 @@ export default function NewRequestPage() {
                   {isGSTApplicable && gstPercentage ? ` (GST ${gstPercentage}%)` : ""}
                   {isTDSApplicable && tdsPercentage ? ` (TDS ${tdsPercentage}%)` : ""}
                 </Label>
-                <div className="rounded-lg border bg-gray-50 px-4 py-3">
+                <div className="rounded-lg border bg-white/[0.04] px-4 py-3">
                   <p className="text-lg font-semibold">
                     {gstAmount - tdsAmount >= 0 ? "+" : "-"} ₹{Math.abs(gstAmount - tdsAmount).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                   {(gstAmount > 0 || tdsAmount > 0) && (
                     <div className="mt-1 space-y-0.5">
                       {gstAmount > 0 && (
-                        <p className="text-xs text-amber-600">GST: + ₹{gstAmount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                        <p className="text-xs text-amber-400">GST: + ₹{gstAmount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                       )}
                       {tdsAmount > 0 && (
-                        <p className="text-xs text-red-600">TDS: - ₹{tdsAmount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                        <p className="text-xs text-red-400">TDS: - ₹{tdsAmount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                       )}
                     </div>
                   )}
@@ -820,13 +820,13 @@ export default function NewRequestPage() {
           <CardContent className="space-y-4">
             {/* Drop zone */}
             <div
-              className="relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-8 transition-colors hover:border-primary/50 hover:bg-gray-100 cursor-pointer"
+              className="relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-white/[0.12] bg-white/[0.04] p-8 transition-colors hover:border-primary/50 hover:bg-white/[0.08] cursor-pointer"
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
             >
-              <Upload className="h-10 w-10 text-gray-400 mb-3" />
-              <p className="text-sm font-medium text-gray-700">
+              <Upload className="h-10 w-10 text-white/40 mb-3" />
+              <p className="text-sm font-medium text-white/80">
                 Drag & drop files here, or click to browse
               </p>
               <p className="text-xs text-muted-foreground mt-1">
@@ -845,17 +845,17 @@ export default function NewRequestPage() {
             {/* File list with previews */}
             {filePreviews.length > 0 && (
               <div className="space-y-3">
-                <p className="text-sm font-medium text-gray-700">
+                <p className="text-sm font-medium text-white/80">
                   {filePreviews.length} file{filePreviews.length > 1 ? 's' : ''} selected
                 </p>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {filePreviews.map((item, index) => (
                     <div
                       key={index}
-                      className="group relative flex items-start gap-3 rounded-lg border bg-white p-3 hover:shadow-sm transition-shadow"
+                      className="group relative flex items-start gap-3 rounded-lg border bg-white/[0.06] backdrop-blur-xl p-3 hover:shadow-[0_4px_16px_rgba(0,0,0,0.2)] transition-shadow"
                     >
                       {/* Thumbnail */}
-                      <div className="flex-shrink-0 h-16 w-16 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                      <div className="flex-shrink-0 h-16 w-16 rounded-md overflow-hidden bg-white/[0.06] flex items-center justify-center">
                         {item.type.startsWith('image/') && item.preview ? (
                           <img
                             src={item.preview}
@@ -867,7 +867,7 @@ export default function NewRequestPage() {
                             }}
                           />
                         ) : item.type === 'application/pdf' ? (
-                          <FileText className="h-8 w-8 text-red-500" />
+                          <FileText className="h-8 w-8 text-red-400" />
                         ) : (
                           <FileText className="h-8 w-8 text-blue-500" />
                         )}
@@ -898,7 +898,7 @@ export default function NewRequestPage() {
                       {/* Remove button */}
                       <button
                         type="button"
-                        className="absolute top-2 right-2 rounded-full p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                        className="absolute top-2 right-2 rounded-full p-1 text-white/40 hover:text-red-400 hover:bg-red-500/20 transition-colors"
                         onClick={(e) => {
                           e.stopPropagation()
                           removeFile(index)
@@ -921,14 +921,14 @@ export default function NewRequestPage() {
             onClick={() => setPreviewFile(null)}
           >
             <div
-              className="relative max-h-[90vh] max-w-[90vw] bg-white rounded-xl overflow-hidden shadow-2xl"
+              className="relative max-h-[90vh] max-w-[90vw] bg-white/[0.06] backdrop-blur-xl rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between border-b px-4 py-3">
                 <p className="text-sm font-medium truncate max-w-md">{previewFile.name}</p>
                 <button
                   type="button"
-                  className="rounded-full p-1 hover:bg-gray-100"
+                  className="rounded-full p-1 hover:bg-white/[0.08]"
                   onClick={() => setPreviewFile(null)}
                 >
                   <X className="h-5 w-5" />
@@ -949,7 +949,7 @@ export default function NewRequestPage() {
                   />
                 ) : (
                   <div className="text-center py-12">
-                    <FileText className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+                    <FileText className="h-16 w-16 mx-auto text-white/40 mb-4" />
                     <p className="text-muted-foreground">Preview not available</p>
                   </div>
                 )}
@@ -959,10 +959,10 @@ export default function NewRequestPage() {
         )}
 
         {/* Info Box */}
-        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+        <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-4">
           <div className="flex gap-3">
-            <Info className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-blue-800">
+            <Info className="h-5 w-5 text-blue-400 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-blue-300">
               <p className="font-medium">Approval Workflow</p>
               <p className="mt-1">
                 Once submitted, your request will go through the following approval stages:{' '}

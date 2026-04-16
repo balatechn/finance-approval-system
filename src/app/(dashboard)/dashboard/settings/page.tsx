@@ -306,8 +306,8 @@ export default function SettingsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold text-white">Settings</h1>
+          <p className="text-sm text-white/50 mt-1">
             Manage departments, cost centers, entities, and system configuration
           </p>
         </div>
@@ -323,7 +323,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-white/[0.1]">
         <nav className="-mb-px flex gap-6 overflow-x-auto" aria-label="Tabs">
           {tabs.map((tab) => {
             const Icon = tab.icon;
@@ -335,7 +335,7 @@ export default function SettingsPage() {
                 className={`flex items-center gap-2 whitespace-nowrap border-b-2 px-1 py-3 text-sm font-medium transition-colors ${
                   isActive
                     ? 'border-primary text-primary'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    : 'border-transparent text-white/50 hover:border-white/[0.12] hover:text-white/80'
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -343,7 +343,7 @@ export default function SettingsPage() {
                 {'count' in tab && tab.count !== undefined && (
                   <span
                     className={`ml-1 rounded-full px-2 py-0.5 text-xs ${
-                      isActive ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-600'
+                      isActive ? 'bg-primary/10 text-primary' : 'bg-white/[0.06] text-white/60'
                     }`}
                   >
                     {tab.count}
@@ -356,7 +356,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Content */}
-      <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+      <div className="rounded-lg border border-white/[0.1] bg-white/[0.06] backdrop-blur-xl shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
         {activeTab === 'departments' && (
           <DepartmentsTable
             items={data.departments}
@@ -468,9 +468,9 @@ export default function SettingsPage() {
       {/* Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-xl bg-white shadow-2xl">
+          <div className="w-full max-w-md rounded-xl bg-white/[0.06] backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
             <div className="flex items-center justify-between border-b px-6 py-4">
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="text-lg font-semibold text-white">
                 {editingItem ? 'Edit' : 'Add New'}{' '}
                 {activeTab === 'departments'
                   ? 'Department'
@@ -482,14 +482,14 @@ export default function SettingsPage() {
                   ? 'Item'
                   : 'System Config'}
               </h2>
-              <button onClick={() => setModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setModalOpen(false)} className="text-white/40 hover:text-white/60">
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               {formError && (
-                <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+                <div className="rounded-lg bg-red-500/10 border border-red-500/30 p-3 text-sm text-red-300">
                   {formError}
                 </div>
               )}
@@ -497,34 +497,34 @@ export default function SettingsPage() {
               {activeTab === 'departments' && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                    <label className="block text-sm font-medium text-white/80 mb-1">Name *</label>
                     <input
                       type="text"
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                      className="w-full rounded-lg border border-white/[0.12] px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
                       placeholder="e.g. Finance"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Code *</label>
+                    <label className="block text-sm font-medium text-white/80 mb-1">Code *</label>
                     <input
                       type="text"
                       required
                       value={formData.code}
                       onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                      className="w-full rounded-lg border border-white/[0.12] px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
                       placeholder="e.g. FIN"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Head ID</label>
+                    <label className="block text-sm font-medium text-white/80 mb-1">Head ID</label>
                     <input
                       type="text"
                       value={formData.headId}
                       onChange={(e) => setFormData({ ...formData, headId: e.target.value })}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                      className="w-full rounded-lg border border-white/[0.12] px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
                       placeholder="Optional"
                     />
                   </div>
@@ -534,34 +534,34 @@ export default function SettingsPage() {
               {activeTab === 'costCenters' && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                    <label className="block text-sm font-medium text-white/80 mb-1">Name *</label>
                     <input
                       type="text"
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                      className="w-full rounded-lg border border-white/[0.12] px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
                       placeholder="e.g. IT Operations"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Code *</label>
+                    <label className="block text-sm font-medium text-white/80 mb-1">Code *</label>
                     <input
                       type="text"
                       required
                       value={formData.code}
                       onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                      className="w-full rounded-lg border border-white/[0.12] px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
                       placeholder="e.g. CC-IT-001"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Department Code</label>
+                    <label className="block text-sm font-medium text-white/80 mb-1">Department Code</label>
                     <input
                       type="text"
                       value={formData.departmentCode}
                       onChange={(e) => setFormData({ ...formData, departmentCode: e.target.value.toUpperCase() })}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                      className="w-full rounded-lg border border-white/[0.12] px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
                       placeholder="Optional - e.g. IT"
                     />
                   </div>
@@ -571,24 +571,24 @@ export default function SettingsPage() {
               {activeTab === 'entities' && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                    <label className="block text-sm font-medium text-white/80 mb-1">Name *</label>
                     <input
                       type="text"
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                      className="w-full rounded-lg border border-white/[0.12] px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
                       placeholder="e.g. National Group India"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Code *</label>
+                    <label className="block text-sm font-medium text-white/80 mb-1">Code *</label>
                     <input
                       type="text"
                       required
                       value={formData.code}
                       onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                      className="w-full rounded-lg border border-white/[0.12] px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
                       placeholder="e.g. NGI"
                     />
                   </div>
@@ -598,45 +598,45 @@ export default function SettingsPage() {
               {activeTab === 'itemMasters' && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                    <label className="block text-sm font-medium text-white/80 mb-1">Name *</label>
                     <input
                       type="text"
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                      className="w-full rounded-lg border border-white/[0.12] px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
                       placeholder="e.g. Desktop Computer"
                     />
                   </div>
                   {editingItem && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Code</label>
+                      <label className="block text-sm font-medium text-white/80 mb-1">Code</label>
                       <input
                         type="text"
                         disabled
                         value={formData.code}
-                        className="w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-500"
+                        className="w-full rounded-lg border border-white/[0.12] bg-white/[0.06] px-3 py-2 text-sm text-white/50"
                       />
                     </div>
                   )}
                   {!editingItem && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Code</label>
+                      <label className="block text-sm font-medium text-white/80 mb-1">Code</label>
                       <input
                         type="text"
                         disabled
                         value="Auto-generated (ITEM-001, ITEM-002...)"
-                        className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-400 italic"
+                        className="w-full rounded-lg border border-white/[0.12] bg-white/[0.04] px-3 py-2 text-sm text-white/40 italic"
                       />
                     </div>
                   )}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <label className="block text-sm font-medium text-white/80 mb-1">Description</label>
                     <input
                       type="text"
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                      className="w-full rounded-lg border border-white/[0.12] px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
                       placeholder="Optional description"
                     />
                   </div>
@@ -646,35 +646,35 @@ export default function SettingsPage() {
               {activeTab === 'systemConfig' && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Key *</label>
+                    <label className="block text-sm font-medium text-white/80 mb-1">Key *</label>
                     <input
                       type="text"
                       required
                       disabled={!!editingItem}
                       value={formData.key}
                       onChange={(e) => setFormData({ ...formData, key: e.target.value })}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary disabled:bg-gray-100"
+                      className="w-full rounded-lg border border-white/[0.12] px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary disabled:bg-white/[0.06]"
                       placeholder="e.g. SLA_HOURS"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Value *</label>
+                    <label className="block text-sm font-medium text-white/80 mb-1">Value *</label>
                     <input
                       type="text"
                       required
                       value={formData.value}
                       onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                      className="w-full rounded-lg border border-white/[0.12] px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
                       placeholder="e.g. 48"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <label className="block text-sm font-medium text-white/80 mb-1">Description</label>
                     <input
                       type="text"
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                      className="w-full rounded-lg border border-white/[0.12] px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
                       placeholder="Optional description"
                     />
                   </div>
@@ -685,7 +685,7 @@ export default function SettingsPage() {
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="rounded-lg border border-white/[0.12] px-4 py-2 text-sm font-medium text-white/80 hover:bg-white/[0.06]"
                 >
                   Cancel
                 </button>
@@ -716,7 +716,7 @@ function StatusBadge({ active }: { active: boolean }) {
   return (
     <span
       className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-        active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+        active ? 'bg-emerald-500/20 text-emerald-300' : 'bg-white/[0.06] text-white/50'
       }`}
     >
       {active ? 'Active' : 'Inactive'}
@@ -726,7 +726,7 @@ function StatusBadge({ active }: { active: boolean }) {
 
 function EmptyState({ label }: { label: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+    <div className="flex flex-col items-center justify-center py-12 text-white/40">
       <Settings2 className="h-10 w-10 mb-2" />
       <p className="text-sm">No {label} found</p>
     </div>
@@ -747,7 +747,7 @@ function DepartmentsTable({
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+          <tr className="border-b bg-white/[0.04] text-left text-xs font-medium uppercase tracking-wider text-white/50">
             <th className="px-6 py-3">Name</th>
             <th className="px-6 py-3">Code</th>
             <th className="px-6 py-3">Status</th>
@@ -756,10 +756,10 @@ function DepartmentsTable({
         </thead>
         <tbody className="divide-y">
           {items.map((item) => (
-            <tr key={item.id} className="hover:bg-gray-50">
-              <td className="px-6 py-4 font-medium text-gray-900">{item.name}</td>
+            <tr key={item.id} className="hover:bg-white/[0.06]">
+              <td className="px-6 py-4 font-medium text-white">{item.name}</td>
               <td className="px-6 py-4">
-                <code className="rounded bg-gray-100 px-2 py-0.5 text-xs">{item.code}</code>
+                <code className="rounded bg-white/[0.06] px-2 py-0.5 text-xs">{item.code}</code>
               </td>
               <td className="px-6 py-4">
                 <StatusBadge active={item.isActive} />
@@ -768,7 +768,7 @@ function DepartmentsTable({
                 <div className="flex items-center justify-end gap-2">
                   <button
                     onClick={() => onEdit(item)}
-                    className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                    className="rounded-lg p-1.5 text-white/40 hover:bg-white/[0.08] hover:text-white/60"
                     title="Edit"
                   >
                     <Pencil className="h-4 w-4" />
@@ -777,8 +777,8 @@ function DepartmentsTable({
                     onClick={() => onToggle(item.id, item.isActive)}
                     className={`rounded-lg p-1.5 ${
                       item.isActive
-                        ? 'text-green-500 hover:bg-green-50 hover:text-green-700'
-                        : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+                        ? 'text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300'
+                        : 'text-white/40 hover:bg-white/[0.08] hover:text-white/60'
                     }`}
                     title={item.isActive ? 'Deactivate' : 'Activate'}
                   >
@@ -816,7 +816,7 @@ function CostCentersTable({
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+          <tr className="border-b bg-white/[0.04] text-left text-xs font-medium uppercase tracking-wider text-white/50">
             <th className="px-6 py-3">Name</th>
             <th className="px-6 py-3">Code</th>
             <th className="px-6 py-3">Department</th>
@@ -826,12 +826,12 @@ function CostCentersTable({
         </thead>
         <tbody className="divide-y">
           {items.map((item) => (
-            <tr key={item.id} className="hover:bg-gray-50">
-              <td className="px-6 py-4 font-medium text-gray-900">{item.name}</td>
+            <tr key={item.id} className="hover:bg-white/[0.06]">
+              <td className="px-6 py-4 font-medium text-white">{item.name}</td>
               <td className="px-6 py-4">
-                <code className="rounded bg-gray-100 px-2 py-0.5 text-xs">{item.code}</code>
+                <code className="rounded bg-white/[0.06] px-2 py-0.5 text-xs">{item.code}</code>
               </td>
-              <td className="px-6 py-4 text-gray-600">{getDeptName(item.departmentCode)}</td>
+              <td className="px-6 py-4 text-white/60">{getDeptName(item.departmentCode)}</td>
               <td className="px-6 py-4">
                 <StatusBadge active={item.isActive} />
               </td>
@@ -839,7 +839,7 @@ function CostCentersTable({
                 <div className="flex items-center justify-end gap-2">
                   <button
                     onClick={() => onEdit(item)}
-                    className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                    className="rounded-lg p-1.5 text-white/40 hover:bg-white/[0.08] hover:text-white/60"
                     title="Edit"
                   >
                     <Pencil className="h-4 w-4" />
@@ -848,8 +848,8 @@ function CostCentersTable({
                     onClick={() => onToggle(item.id, item.isActive)}
                     className={`rounded-lg p-1.5 ${
                       item.isActive
-                        ? 'text-green-500 hover:bg-green-50 hover:text-green-700'
-                        : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+                        ? 'text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300'
+                        : 'text-white/40 hover:bg-white/[0.08] hover:text-white/60'
                     }`}
                     title={item.isActive ? 'Deactivate' : 'Activate'}
                   >
@@ -879,7 +879,7 @@ function EntitiesTable({
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+          <tr className="border-b bg-white/[0.04] text-left text-xs font-medium uppercase tracking-wider text-white/50">
             <th className="px-6 py-3">Name</th>
             <th className="px-6 py-3">Code</th>
             <th className="px-6 py-3">Status</th>
@@ -888,10 +888,10 @@ function EntitiesTable({
         </thead>
         <tbody className="divide-y">
           {items.map((item) => (
-            <tr key={item.id} className="hover:bg-gray-50">
-              <td className="px-6 py-4 font-medium text-gray-900">{item.name}</td>
+            <tr key={item.id} className="hover:bg-white/[0.06]">
+              <td className="px-6 py-4 font-medium text-white">{item.name}</td>
               <td className="px-6 py-4">
-                <code className="rounded bg-gray-100 px-2 py-0.5 text-xs">{item.code}</code>
+                <code className="rounded bg-white/[0.06] px-2 py-0.5 text-xs">{item.code}</code>
               </td>
               <td className="px-6 py-4">
                 <StatusBadge active={item.isActive} />
@@ -900,7 +900,7 @@ function EntitiesTable({
                 <div className="flex items-center justify-end gap-2">
                   <button
                     onClick={() => onEdit(item)}
-                    className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                    className="rounded-lg p-1.5 text-white/40 hover:bg-white/[0.08] hover:text-white/60"
                     title="Edit"
                   >
                     <Pencil className="h-4 w-4" />
@@ -909,8 +909,8 @@ function EntitiesTable({
                     onClick={() => onToggle(item.id, item.isActive)}
                     className={`rounded-lg p-1.5 ${
                       item.isActive
-                        ? 'text-green-500 hover:bg-green-50 hover:text-green-700'
-                        : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+                        ? 'text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300'
+                        : 'text-white/40 hover:bg-white/[0.08] hover:text-white/60'
                     }`}
                     title={item.isActive ? 'Deactivate' : 'Activate'}
                   >
@@ -940,7 +940,7 @@ function ItemMastersTable({
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+          <tr className="border-b bg-white/[0.04] text-left text-xs font-medium uppercase tracking-wider text-white/50">
             <th className="px-6 py-3">Name</th>
             <th className="px-6 py-3">Code</th>
             <th className="px-6 py-3">Description</th>
@@ -950,12 +950,12 @@ function ItemMastersTable({
         </thead>
         <tbody className="divide-y">
           {items.map((item) => (
-            <tr key={item.id} className="hover:bg-gray-50">
-              <td className="px-6 py-4 font-medium text-gray-900">{item.name}</td>
+            <tr key={item.id} className="hover:bg-white/[0.06]">
+              <td className="px-6 py-4 font-medium text-white">{item.name}</td>
               <td className="px-6 py-4">
-                <code className="rounded bg-gray-100 px-2 py-0.5 text-xs">{item.code}</code>
+                <code className="rounded bg-white/[0.06] px-2 py-0.5 text-xs">{item.code}</code>
               </td>
-              <td className="px-6 py-4 text-gray-500">{item.description || '—'}</td>
+              <td className="px-6 py-4 text-white/50">{item.description || '—'}</td>
               <td className="px-6 py-4">
                 <StatusBadge active={item.isActive} />
               </td>
@@ -963,7 +963,7 @@ function ItemMastersTable({
                 <div className="flex items-center justify-end gap-2">
                   <button
                     onClick={() => onEdit(item)}
-                    className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                    className="rounded-lg p-1.5 text-white/40 hover:bg-white/[0.08] hover:text-white/60"
                     title="Edit"
                   >
                     <Pencil className="h-4 w-4" />
@@ -972,8 +972,8 @@ function ItemMastersTable({
                     onClick={() => onToggle(item.id, item.isActive)}
                     className={`rounded-lg p-1.5 ${
                       item.isActive
-                        ? 'text-green-500 hover:bg-green-50 hover:text-green-700'
-                        : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+                        ? 'text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300'
+                        : 'text-white/40 hover:bg-white/[0.08] hover:text-white/60'
                     }`}
                     title={item.isActive ? 'Deactivate' : 'Activate'}
                   >
@@ -1054,17 +1054,17 @@ function EmailConfigPanel({
       {/* Section 1: SMTP Configuration */}
       <div>
         <div className="flex items-start gap-3 mb-6">
-          <div className="rounded-lg bg-blue-50 p-2.5">
-            <Mail className="h-5 w-5 text-blue-600" />
+          <div className="rounded-lg bg-blue-500/10 p-2.5">
+            <Mail className="h-5 w-5 text-blue-400" />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-gray-900">Email Configuration</h3>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <h3 className="text-base font-semibold text-white">Email Configuration</h3>
+            <p className="text-sm text-white/50 mt-0.5">
               Configure SMTP settings to enable email notifications. Choose your email provider and enter your app password.
             </p>
           </div>
           {config.configured && (
-            <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
+            <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-medium text-emerald-300">
               <CheckCircle2 className="h-3.5 w-3.5" />
               Configured
             </span>
@@ -1074,7 +1074,7 @@ function EmailConfigPanel({
         <div className="space-y-5">
           {/* Provider Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Email Provider *</label>
+            <label className="block text-sm font-medium text-white/80 mb-1.5">Email Provider *</label>
             <div className="grid grid-cols-3 gap-3">
               {(['gmail', 'microsoft365', 'custom'] as const).map((p) => {
                 const info = providerInfo[p];
@@ -1087,13 +1087,13 @@ function EmailConfigPanel({
                     className={`flex flex-col items-start rounded-lg border-2 p-4 text-left transition-all ${
                       isSelected
                         ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                        : 'border-white/[0.1] hover:border-white/[0.12] hover:bg-white/[0.06]'
                     }`}
                   >
-                    <span className={`text-sm font-semibold ${isSelected ? 'text-primary' : 'text-gray-900'}`}>
+                    <span className={`text-sm font-semibold ${isSelected ? 'text-primary' : 'text-white'}`}>
                       {info.label}
                     </span>
-                    <span className="text-xs text-gray-500 mt-1 font-mono">{info.host}</span>
+                    <span className="text-xs text-white/50 mt-1 font-mono">{info.host}</span>
                   </button>
                 );
               })}
@@ -1104,25 +1104,25 @@ function EmailConfigPanel({
           {config.provider === 'custom' && (
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">SMTP Host *</label>
+                <label className="block text-sm font-medium text-white/80 mb-1.5">SMTP Host *</label>
                 <input
                   type="text"
                   required
                   value={config.host}
                   onChange={(e) => setConfig({ ...config, host: e.target.value })}
                   placeholder="smtp.mailgun.org"
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary font-mono"
+                  className="w-full rounded-lg border border-white/[0.12] px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary font-mono"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">SMTP Port *</label>
+                <label className="block text-sm font-medium text-white/80 mb-1.5">SMTP Port *</label>
                 <input
                   type="text"
                   required
                   value={config.port}
                   onChange={(e) => setConfig({ ...config, port: e.target.value })}
                   placeholder="587"
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary font-mono"
+                  className="w-full rounded-lg border border-white/[0.12] px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary font-mono"
                 />
               </div>
             </div>
@@ -1130,21 +1130,21 @@ function EmailConfigPanel({
 
           {/* Email Address */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">{config.provider === 'custom' ? 'SMTP Username *' : 'Email Address *'}</label>
+            <label className="block text-sm font-medium text-white/80 mb-1.5">{config.provider === 'custom' ? 'SMTP Username *' : 'Email Address *'}</label>
             <input
               type={config.provider === 'custom' ? 'text' : 'email'}
               required
               value={config.user}
               onChange={(e) => setConfig({ ...config, user: e.target.value })}
               placeholder={config.provider === 'custom' ? 'admin@mailer.example.com' : config.provider === 'microsoft365' ? 'your-email@company.com' : 'your-email@gmail.com'}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+              className="w-full rounded-lg border border-white/[0.12] px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
             />
-            <p className="text-xs text-gray-400 mt-1">{config.provider === 'custom' ? 'SMTP login username provided by your email service.' : 'This will also be used as the "From" address unless overridden below.'}</p>
+            <p className="text-xs text-white/40 mt-1">{config.provider === 'custom' ? 'SMTP login username provided by your email service.' : 'This will also be used as the "From" address unless overridden below.'}</p>
           </div>
 
           {/* App Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">{config.provider === 'custom' ? 'SMTP Password *' : 'App Password *'}</label>
+            <label className="block text-sm font-medium text-white/80 mb-1.5">{config.provider === 'custom' ? 'SMTP Password *' : 'App Password *'}</label>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -1152,26 +1152,26 @@ function EmailConfigPanel({
                 value={config.password}
                 onChange={(e) => setConfig({ ...config, password: e.target.value })}
                 placeholder={config.hasPassword ? 'Enter new password to change' : config.provider === 'custom' ? 'Enter your SMTP password' : 'Paste your app password here'}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2.5 pr-20 text-sm focus:border-primary focus:ring-1 focus:ring-primary font-mono"
+                className="w-full rounded-lg border border-white/[0.12] px-3 py-2.5 pr-20 text-sm focus:border-primary focus:ring-1 focus:ring-primary font-mono"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-2 py-1 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-2 py-1 text-xs font-medium text-white/50 hover:text-white/80 hover:bg-white/[0.08]"
               >
                 {showPassword ? 'Hide' : 'Show'}
               </button>
             </div>
             {config.provider !== 'custom' && (
-              <div className="mt-2 rounded-lg border border-blue-100 bg-blue-50 p-3">
-                <p className="text-xs text-blue-700">
+              <div className="mt-2 rounded-lg border border-blue-500/20 bg-blue-500/10 p-3">
+                <p className="text-xs text-blue-300">
                   <strong>How to get an App Password:</strong> {currentProvider.helpText}
                 </p>
                 <a
                   href={currentProvider.helpUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 mt-1.5 text-xs font-medium text-blue-600 hover:text-blue-800 underline"
+                  className="inline-flex items-center gap-1 mt-1.5 text-xs font-medium text-blue-400 hover:text-blue-300 underline"
                 >
                   Open {currentProvider.label} App Passwords
                   <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
@@ -1183,23 +1183,23 @@ function EmailConfigPanel({
           {/* Optional From overrides */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">From Name <span className="text-gray-400 font-normal">(optional)</span></label>
+              <label className="block text-sm font-medium text-white/80 mb-1.5">From Name <span className="text-white/40 font-normal">(optional)</span></label>
               <input
                 type="text"
                 value={config.fromName}
                 onChange={(e) => setConfig({ ...config, fromName: e.target.value })}
                 placeholder="Finance Approval System"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                className="w-full rounded-lg border border-white/[0.12] px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">From Email <span className="text-gray-400 font-normal">(optional)</span></label>
+              <label className="block text-sm font-medium text-white/80 mb-1.5">From Email <span className="text-white/40 font-normal">(optional)</span></label>
               <input
                 type="email"
                 value={config.fromEmail}
                 onChange={(e) => setConfig({ ...config, fromEmail: e.target.value })}
                 placeholder="Same as email address"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                className="w-full rounded-lg border border-white/[0.12] px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
               />
             </div>
           </div>
@@ -1220,7 +1220,7 @@ function EmailConfigPanel({
             </button>
             {configResult && (
               <span className={`inline-flex items-center gap-1.5 text-sm font-medium ${
-                configResult.success ? 'text-green-600' : 'text-red-600'
+                configResult.success ? 'text-emerald-400' : 'text-red-400'
               }`}>
                 {configResult.success ? (
                   <CheckCircle2 className="h-4 w-4" />
@@ -1235,25 +1235,25 @@ function EmailConfigPanel({
       </div>
 
       {/* Divider */}
-      <hr className="border-gray-200" />
+      <hr className="border-white/[0.1]" />
 
       {/* Section 2: Test Email */}
       <div>
         <div className="flex items-start gap-3 mb-4">
-          <div className="rounded-lg bg-green-50 p-2.5">
-            <Send className="h-5 w-5 text-green-600" />
+          <div className="rounded-lg bg-emerald-500/10 p-2.5">
+            <Send className="h-5 w-5 text-emerald-400" />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-gray-900">Send Test Email</h3>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <h3 className="text-base font-semibold text-white">Send Test Email</h3>
+            <p className="text-sm text-white/50 mt-0.5">
               Verify your configuration by sending a test email.
             </p>
           </div>
         </div>
 
         {!config.configured ? (
-          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
-            <p className="text-sm text-amber-800">
+          <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
+            <p className="text-sm text-amber-300">
               <strong>Note:</strong> Save your email configuration above first before sending a test email.
             </p>
           </div>
@@ -1266,7 +1266,7 @@ function EmailConfigPanel({
                 value={testEmail}
                 onChange={(e) => setTestEmail(e.target.value)}
                 placeholder="Enter recipient email address"
-                className="flex-1 rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                className="flex-1 rounded-lg border border-white/[0.12] px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
               />
               <button
                 onClick={onSendTest}
@@ -1286,14 +1286,14 @@ function EmailConfigPanel({
               <div
                 className={`flex items-start gap-3 rounded-lg border p-4 ${
                   testResult.success
-                    ? 'bg-green-50 border-green-200 text-green-800'
-                    : 'bg-red-50 border-red-200 text-red-800'
+                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                    : 'bg-red-500/10 border-red-500/30 text-red-300'
                 }`}
               >
                 {testResult.success ? (
-                  <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <CheckCircle2 className="h-5 w-5 text-emerald-400 flex-shrink-0 mt-0.5" />
                 ) : (
-                  <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
                 )}
                 <div>
                   <p className="text-sm font-medium">{testResult.success ? 'Success' : 'Error'}</p>
@@ -1322,7 +1322,7 @@ function SystemConfigTable({
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+          <tr className="border-b bg-white/[0.04] text-left text-xs font-medium uppercase tracking-wider text-white/50">
             <th className="px-6 py-3">Key</th>
             <th className="px-6 py-3">Value</th>
             <th className="px-6 py-3">Description</th>
@@ -1331,24 +1331,24 @@ function SystemConfigTable({
         </thead>
         <tbody className="divide-y">
           {items.map((item) => (
-            <tr key={item.id} className="hover:bg-gray-50">
+            <tr key={item.id} className="hover:bg-white/[0.06]">
               <td className="px-6 py-4">
-                <code className="rounded bg-blue-50 px-2 py-0.5 text-xs text-blue-700">{item.key}</code>
+                <code className="rounded bg-blue-500/10 px-2 py-0.5 text-xs text-blue-300">{item.key}</code>
               </td>
-              <td className="px-6 py-4 font-medium text-gray-900">{item.value}</td>
-              <td className="px-6 py-4 text-gray-500">{item.description || '—'}</td>
+              <td className="px-6 py-4 font-medium text-white">{item.value}</td>
+              <td className="px-6 py-4 text-white/50">{item.description || '—'}</td>
               <td className="px-6 py-4 text-right">
                 <div className="flex items-center justify-end gap-2">
                   <button
                     onClick={() => onEdit(item)}
-                    className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                    className="rounded-lg p-1.5 text-white/40 hover:bg-white/[0.08] hover:text-white/60"
                     title="Edit"
                   >
                     <Pencil className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => onDelete(item.id)}
-                    className="rounded-lg p-1.5 text-red-400 hover:bg-red-50 hover:text-red-600"
+                    className="rounded-lg p-1.5 text-red-400 hover:bg-red-500/20 hover:text-red-400"
                     title="Delete"
                   >
                     <Trash2 className="h-4 w-4" />

@@ -94,17 +94,17 @@ interface Ticket {
 }
 
 const statusConfig = {
-  OPEN: { label: 'Open', color: 'bg-blue-100 text-blue-700', icon: AlertCircle },
-  IN_PROGRESS: { label: 'In Progress', color: 'bg-amber-100 text-amber-700', icon: Clock },
-  RESOLVED: { label: 'Resolved', color: 'bg-green-100 text-green-700', icon: CheckCircle },
-  CLOSED: { label: 'Closed', color: 'bg-gray-100 text-gray-700', icon: CheckCircle },
+  OPEN: { label: 'Open', color: 'bg-blue-500/20 text-blue-300', icon: AlertCircle },
+  IN_PROGRESS: { label: 'In Progress', color: 'bg-amber-500/20 text-amber-300', icon: Clock },
+  RESOLVED: { label: 'Resolved', color: 'bg-emerald-500/20 text-emerald-300', icon: CheckCircle },
+  CLOSED: { label: 'Closed', color: 'bg-white/[0.06] text-white/80', icon: CheckCircle },
 }
 
 const priorityConfig = {
-  LOW: { label: 'Low', color: 'bg-gray-100 text-gray-600' },
-  MEDIUM: { label: 'Medium', color: 'bg-blue-100 text-blue-600' },
-  HIGH: { label: 'High', color: 'bg-orange-100 text-orange-600' },
-  URGENT: { label: 'Urgent', color: 'bg-red-100 text-red-600' },
+  LOW: { label: 'Low', color: 'bg-white/[0.06] text-white/60' },
+  MEDIUM: { label: 'Medium', color: 'bg-blue-500/20 text-blue-400' },
+  HIGH: { label: 'High', color: 'bg-orange-500/20 text-orange-400' },
+  URGENT: { label: 'Urgent', color: 'bg-red-500/20 text-red-400' },
 }
 
 export default function SupportPage() {
@@ -315,7 +315,7 @@ export default function SupportPage() {
         </div>
         <Dialog open={showNewTicketDialog} onOpenChange={setShowNewTicketDialog}>
           <DialogTrigger asChild>
-            <Button className="bg-orange-500 hover:bg-orange-600">
+            <Button className="bg-orange-500/100 hover:bg-orange-600">
               <Plus className="h-4 w-4 mr-2" />
               New Ticket
             </Button>
@@ -395,7 +395,7 @@ export default function SupportPage() {
                 <Button variant="outline" onClick={() => setShowNewTicketDialog(false)}>
                   Cancel
                 </Button>
-                <Button onClick={handleCreateTicket} disabled={creating} className="bg-orange-500 hover:bg-orange-600">
+                <Button onClick={handleCreateTicket} disabled={creating} className="bg-orange-500/100 hover:bg-orange-600">
                   {creating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   Create Ticket
                 </Button>
@@ -418,8 +418,8 @@ export default function SupportPage() {
                 className={cn(
                   "px-3 py-1.5 text-sm rounded-full transition-colors",
                   activeFilter === tab.key
-                    ? "bg-orange-500 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    ? "bg-orange-500/100 text-white"
+                    : "bg-white/[0.06] text-white/60 hover:bg-white/[0.12]"
                 )}
               >
                 {tab.label} ({counts[tab.key as keyof typeof counts] || 0})
@@ -447,8 +447,8 @@ export default function SupportPage() {
                       key={ticket.id}
                       onClick={() => fetchTicketDetail(ticket.id)}
                       className={cn(
-                        "w-full p-4 text-left hover:bg-gray-50 transition-colors",
-                        selectedTicket?.id === ticket.id && "bg-orange-50 border-l-4 border-orange-500"
+                        "w-full p-4 text-left hover:bg-white/[0.06] transition-colors",
+                        selectedTicket?.id === ticket.id && "bg-orange-500/10 border-l-4 border-orange-500"
                       )}
                     >
                       <div className="flex items-start justify-between gap-2">
@@ -546,7 +546,7 @@ export default function SupportPage() {
                 </div>
 
                 {/* Initial Description */}
-                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                <div className="mt-4 p-3 bg-white/[0.04] rounded-lg">
                   <p className="text-sm whitespace-pre-wrap">{selectedTicket.description}</p>
                   {selectedTicket.attachments.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-2">
@@ -556,7 +556,7 @@ export default function SupportPage() {
                           href={att.fileUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline bg-blue-50 px-2 py-1 rounded"
+                          className="inline-flex items-center gap-1 text-xs text-blue-400 hover:underline bg-blue-500/10 px-2 py-1 rounded"
                         >
                           <Paperclip className="h-3 w-3" />
                           {att.fileName}
@@ -584,15 +584,15 @@ export default function SupportPage() {
                     >
                       <div className={cn(
                         "w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-white text-sm font-medium",
-                        msg.isStaffReply ? "bg-orange-500" : "bg-blue-500"
+                        msg.isStaffReply ? "bg-orange-500/100" : "bg-blue-500/100"
                       )}>
                         {msg.sender.name.charAt(0).toUpperCase()}
                       </div>
                       <div className={cn(
                         "max-w-[70%] rounded-lg p-3",
                         isMe
-                          ? "bg-orange-500 text-white"
-                          : "bg-gray-100"
+                          ? "bg-orange-500/100 text-white"
+                          : "bg-white/[0.06]"
                       )}>
                         <p className={cn(
                           "text-xs font-medium mb-1",
@@ -612,7 +612,7 @@ export default function SupportPage() {
                                 rel="noopener noreferrer"
                                 className={cn(
                                   "flex items-center gap-1 text-xs hover:underline",
-                                  isMe ? "text-orange-100" : "text-blue-600"
+                                  isMe ? "text-orange-100" : "text-blue-400"
                                 )}
                               >
                                 <Paperclip className="h-3 w-3" />
@@ -640,7 +640,7 @@ export default function SupportPage() {
                   {messageFiles.length > 0 && (
                     <div className="mb-2 flex flex-wrap gap-2">
                       {messageFiles.map((f, i) => (
-                        <div key={i} className="text-xs flex items-center gap-1 bg-gray-100 px-2 py-1 rounded">
+                        <div key={i} className="text-xs flex items-center gap-1 bg-white/[0.06] px-2 py-1 rounded">
                           <File className="h-3 w-3" />
                           {f.name}
                           <button onClick={() => setMessageFiles(messageFiles.filter((_, j) => j !== i))}>
@@ -681,7 +681,7 @@ export default function SupportPage() {
                     <Button
                       onClick={handleSendMessage}
                       disabled={sending || !newMessage.trim()}
-                      className="bg-orange-500 hover:bg-orange-600"
+                      className="bg-orange-500/100 hover:bg-orange-600"
                     >
                       {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                     </Button>
@@ -690,7 +690,7 @@ export default function SupportPage() {
               )}
 
               {selectedTicket.status === 'CLOSED' && (
-                <div className="p-4 border-t bg-gray-50 text-center text-sm text-muted-foreground">
+                <div className="p-4 border-t bg-white/[0.04] text-center text-sm text-muted-foreground">
                   This ticket is closed. Create a new ticket if you need further assistance.
                 </div>
               )}
