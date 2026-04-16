@@ -65,7 +65,7 @@ export function ApprovalTimeline({ steps, currentLevel, requestType, className }
                 <div
                   className={cn(
                     "absolute left-4 top-8 h-full w-0.5 -translate-x-1/2",
-                    isCompleted ? "bg-emerald-500" : "bg-gray-100"
+                    isCompleted ? "bg-emerald-500" : "bg-white/40"
                   )}
                 />
               )}
@@ -79,8 +79,8 @@ export function ApprovalTimeline({ steps, currentLevel, requestType, className }
                   isSentBack && "border-amber-500 bg-amber-500 text-white",
                   isCurrent && isPending && "border-blue-500 bg-blue-50 text-blue-500",
                   isCurrent && isPending && isOverdue && "border-red-500 bg-red-50 text-red-600",
-                  !step && "border-gray-300 bg-gray-50 text-gray-400",
-                  isPending && !isCurrent && "border-gray-300 bg-gray-50 text-gray-400"
+                  !step && "border-gray-300 bg-white/40 text-gray-400",
+                  isPending && !isCurrent && "border-gray-300 bg-white/40 text-gray-400"
                 )}
               >
                 {isCompleted && <Check className="h-4 w-4" />}
@@ -136,7 +136,7 @@ export function ApprovalTimeline({ steps, currentLevel, requestType, className }
                 )}
 
                 {step?.comments && (
-                  <div className="mt-2 rounded-md bg-gray-50 p-3 text-sm text-gray-600">
+                  <div className="mt-2 rounded-md bg-white/40 p-3 text-sm text-gray-600">
                     <p className="font-medium text-gray-700">Comments:</p>
                     <p className="mt-1">{step.comments}</p>
                   </div>

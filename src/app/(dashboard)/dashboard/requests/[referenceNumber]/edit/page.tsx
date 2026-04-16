@@ -440,7 +440,7 @@ export default function EditRequestPage() {
             {sentBackComments.length > 0 ? (
               <div className="space-y-3">
                 {sentBackComments.map((comment, index) => (
-                  <div key={index} className="rounded-lg border border-amber-500/30 bg-white p-3">
+                  <div key={index} className="rounded-lg border border-amber-500/30 bg-white/70 backdrop-blur-sm p-3">
                     <div className="flex items-start gap-2">
                       <MessageSquare className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
                       <div>
@@ -532,7 +532,7 @@ export default function EditRequestPage() {
                           className={`flex items-center gap-3 rounded-lg border-2 p-4 text-left transition-all ${
                             isSelected
                               ? 'border-amber-400/60 bg-amber-50 ring-1 ring-amber-200'
-                              : 'border-gray-200 hover:border-gray-200 hover:bg-gray-50'
+                              : 'border-white/60 hover:border-white/60 hover:bg-white/50'
                           }`}
                         >
                           <div className={`rounded-lg p-2 ${isSelected ? 'bg-amber-100' : 'bg-white'}`}>
@@ -865,7 +865,7 @@ export default function EditRequestPage() {
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-2">
                 <Label className="text-muted-foreground text-xs">Amount</Label>
-                <div className="rounded-lg border bg-gray-50 px-4 py-3">
+                <div className="rounded-lg border bg-white/40 px-4 py-3">
                   <p className="text-lg font-semibold">
                     ₹{baseAmountINR.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
@@ -877,7 +877,7 @@ export default function EditRequestPage() {
                   {isGSTApplicable && gstPercentage ? ` (GST ${gstPercentage}%)` : ""}
                   {isTDSApplicable && tdsPercentage ? ` (TDS ${tdsPercentage}%)` : ""}
                 </Label>
-                <div className="rounded-lg border bg-gray-50 px-4 py-3">
+                <div className="rounded-lg border bg-white/40 px-4 py-3">
                   <p className="text-lg font-semibold">
                     {gstAmount - tdsAmount >= 0 ? "+" : "-"} ₹{Math.abs(gstAmount - tdsAmount).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
@@ -1053,10 +1053,10 @@ export default function EditRequestPage() {
                     const isImage = attachment.fileUrl?.startsWith('data:image/') || /\.(jpg|jpeg|png|gif|webp)$/i.test(attachment.fileName)
                     const isPdf = attachment.fileUrl?.startsWith('data:application/pdf') || /\.pdf$/i.test(attachment.fileName)
                     return (
-                      <div key={attachment.id} className="relative flex items-start gap-3 rounded-lg border bg-white p-3">
-                        <div className="flex-shrink-0 h-14 w-14 rounded-md overflow-hidden bg-white flex items-center justify-center">
+                      <div key={attachment.id} className="relative flex items-start gap-3 rounded-lg border bg-white/70 backdrop-blur-sm p-3">
+                        <div className="flex-shrink-0 h-14 w-14 rounded-md overflow-hidden bg-white/70 backdrop-blur-sm flex items-center justify-center">
                           {isImage ? (
-                            <img src={attachment.fileUrl} alt={attachment.fileName} className="h-full w-full object-cover cursor-pointer"
+                            <img src={attachment.fileUrl}alt={attachment.fileName} className="h-full w-full object-cover cursor-pointer"
                               onClick={() => setPreviewFile({ url: attachment.fileUrl, type: 'image', name: attachment.fileName })} />
                           ) : isPdf ? (
                             <FileText className="h-7 w-7 text-red-600" />
@@ -1087,7 +1087,7 @@ export default function EditRequestPage() {
             )}
 
             {/* Drop zone for new files */}
-            <div className="relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 p-8 transition-colors hover:border-primary/50 hover:bg-gray-100 cursor-pointer"
+            <div className="relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-white/60 bg-white/40 p-8 transition-colors hover:border-primary/50 hover:bg-white/60 cursor-pointer"
               onDragOver={(e) => e.preventDefault()} onDrop={handleDrop} onClick={() => fileInputRef.current?.click()}>
               <Upload className="h-10 w-10 text-gray-400 mb-3" />
               <p className="text-sm font-medium text-gray-700">Drag & drop files here, or click to browse</p>
@@ -1102,8 +1102,8 @@ export default function EditRequestPage() {
                 <p className="text-sm font-medium text-gray-700">{filePreviews.length} new file{filePreviews.length > 1 ? 's' : ''} to upload</p>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {filePreviews.map((item, index) => (
-                    <div key={index} className="group relative flex items-start gap-3 rounded-lg border bg-white p-3 hover:shadow-sm transition-shadow">
-                      <div className="flex-shrink-0 h-14 w-14 rounded-md overflow-hidden bg-white flex items-center justify-center">
+                    <div key={index} className="group relative flex items-start gap-3 rounded-lg border bg-white/70 backdrop-blur-sm p-3 hover:shadow-sm transition-shadow">
+                      <div className="flex-shrink-0 h-14 w-14 rounded-md overflow-hidden bg-white/70 backdrop-blur-sm flex items-center justify-center">
                         {item.type.startsWith('image/') && item.preview ? (
                           <img src={item.preview} alt={item.file.name} className="h-full w-full object-cover cursor-pointer"
                             onClick={(e) => { e.stopPropagation(); setPreviewFile({ url: item.preview, type: item.type, name: item.file.name }) }} />
@@ -1132,10 +1132,10 @@ export default function EditRequestPage() {
         {/* Preview Modal */}
         {previewFile && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setPreviewFile(null)}>
-            <div className="relative max-h-[90vh] max-w-[90vw] bg-white rounded-xl overflow-hidden shadow-lg" onClick={(e) => e.stopPropagation()}>
+            <div className="relative max-h-[90vh] max-w-[90vw] bg-white/70 backdrop-blur-sm rounded-xl overflow-hidden shadow-lg" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between border-b px-4 py-3">
                 <p className="text-sm font-medium truncate max-w-md">{previewFile.name}</p>
-                <button type="button" className="rounded-full p-1 hover:bg-gray-100" onClick={() => setPreviewFile(null)}>
+                <button type="button" className="rounded-full p-1 hover:bg-white/60" onClick={() => setPreviewFile(null)}>
                   <X className="h-5 w-5" />
                 </button>
               </div>

@@ -97,11 +97,11 @@ const statusConfig = {
   OPEN: { label: 'Open', color: 'bg-blue-100 text-blue-700', icon: AlertCircle },
   IN_PROGRESS: { label: 'In Progress', color: 'bg-amber-100 text-amber-700', icon: Clock },
   RESOLVED: { label: 'Resolved', color: 'bg-emerald-100 text-emerald-700', icon: CheckCircle },
-  CLOSED: { label: 'Closed', color: 'bg-white text-gray-700', icon: CheckCircle },
+  CLOSED: { label: 'Closed', color: 'bg-white/70 text-gray-700', icon: CheckCircle },
 }
 
 const priorityConfig = {
-  LOW: { label: 'Low', color: 'bg-white text-gray-600' },
+  LOW: { label: 'Low', color: 'bg-white/70 text-gray-600' },
   MEDIUM: { label: 'Medium', color: 'bg-blue-100 text-blue-600' },
   HIGH: { label: 'High', color: 'bg-orange-100 text-orange-600' },
   URGENT: { label: 'Urgent', color: 'bg-red-100 text-red-600' },
@@ -419,7 +419,7 @@ export default function SupportPage() {
                   "px-3 py-1.5 text-sm rounded-full transition-colors",
                   activeFilter === tab.key
                     ? "bg-orange-500 text-white"
-                    : "bg-white text-gray-600 hover:bg-gray-200"
+                    : "bg-white/70 text-gray-600 hover:bg-white/60"
                 )}
               >
                 {tab.label} ({counts[tab.key as keyof typeof counts] || 0})
@@ -447,7 +447,7 @@ export default function SupportPage() {
                       key={ticket.id}
                       onClick={() => fetchTicketDetail(ticket.id)}
                       className={cn(
-                        "w-full p-4 text-left hover:bg-gray-50 transition-colors",
+                        "w-full p-4 text-left hover:bg-white/50 transition-colors",
                         selectedTicket?.id === ticket.id && "bg-orange-50 border-l-4 border-orange-500"
                       )}
                     >
@@ -546,7 +546,7 @@ export default function SupportPage() {
                 </div>
 
                 {/* Initial Description */}
-                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                <div className="mt-4 p-3 bg-white/40 rounded-lg">
                   <p className="text-sm whitespace-pre-wrap">{selectedTicket.description}</p>
                   {selectedTicket.attachments.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-2">
@@ -640,7 +640,7 @@ export default function SupportPage() {
                   {messageFiles.length > 0 && (
                     <div className="mb-2 flex flex-wrap gap-2">
                       {messageFiles.map((f, i) => (
-                        <div key={i} className="text-xs flex items-center gap-1 bg-white px-2 py-1 rounded">
+                        <div key={i} className="text-xs flex items-center gap-1 bg-white/70 px-2 py-1 rounded">
                           <File className="h-3 w-3" />
                           {f.name}
                           <button onClick={() => setMessageFiles(messageFiles.filter((_, j) => j !== i))}>
@@ -690,7 +690,7 @@ export default function SupportPage() {
               )}
 
               {selectedTicket.status === 'CLOSED' && (
-                <div className="p-4 border-t bg-gray-50 text-center text-sm text-muted-foreground">
+                <div className="p-4 border-t bg-white/40 text-center text-sm text-muted-foreground">
                   This ticket is closed. Create a new ticket if you need further assistance.
                 </div>
               )}

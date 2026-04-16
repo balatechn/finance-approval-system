@@ -63,13 +63,13 @@ export default function ApprovalsPage() {
   if (loading) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div><div className="h-7 w-48 rounded bg-gray-100 mb-2" /><div className="h-4 w-72 rounded bg-gray-100" /></div>
+        <div><div className="h-7 w-48 rounded bg-white/40 mb-2" /><div className="h-4 w-72 rounded bg-white/40" /></div>
         <div className="grid gap-4 sm:grid-cols-3">
           {[...Array(3)].map((_, i) => (
-            <Card key={i}><CardContent className="p-6"><div className="flex items-center justify-between"><div><div className="h-4 w-20 rounded bg-gray-100 mb-2" /><div className="h-7 w-16 rounded bg-gray-100" /></div><div className="h-11 w-11 rounded-full bg-gray-100" /></div></CardContent></Card>
+            <Card key={i}><CardContent className="p-6"><div className="flex items-center justify-between"><div><div className="h-4 w-20 rounded bg-white/40 mb-2" /><div className="h-7 w-16 rounded bg-white/40" /></div><div className="h-11 w-11 rounded-full bg-white/40" /></div></CardContent></Card>
           ))}
         </div>
-        <Card><CardContent className="p-6"><div className="space-y-3">{[...Array(5)].map((_, i) => (<div key={i} className="flex gap-4 items-center"><div className="h-4 w-28 rounded bg-gray-100" /><div className="h-4 flex-1 rounded bg-gray-100" /><div className="h-4 w-20 rounded bg-gray-100" /><div className="h-6 w-16 rounded bg-gray-100" /></div>))}</div></CardContent></Card>
+        <Card><CardContent className="p-6"><div className="space-y-3">{[...Array(5)].map((_, i) => (<div key={i} className="flex gap-4 items-center"><div className="h-4 w-28 rounded bg-white/40" /><div className="h-4 flex-1 rounded bg-white/40" /><div className="h-4 w-20 rounded bg-white/40" /><div className="h-6 w-16 rounded bg-white/40" /></div>))}</div></CardContent></Card>
       </div>
     )
   }

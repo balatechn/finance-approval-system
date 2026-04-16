@@ -113,12 +113,12 @@ export default function ForecastPage() {
   if (loading) {
     return (
       <div className="space-y-6 p-6">
-        <div className="h-8 w-48 bg-gray-100 animate-pulse rounded" />
+        <div className="h-8 w-48 bg-white/40 animate-pulse rounded" />
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
             <Card key={i}>
               <CardContent className="p-6">
-                <div className="h-20 bg-gray-100 animate-pulse rounded" />
+                <div className="h-20 bg-white/40 animate-pulse rounded" />
               </CardContent>
             </Card>
           ))}
@@ -198,7 +198,7 @@ export default function ForecastPage() {
               <CalendarDays className="h-5 w-5 text-blue-600" />
               <CardTitle className="text-xl text-blue-600">{forecast.nextMonth} Projection</CardTitle>
             </div>
-            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border">
+            <div className="flex items-center gap-2 bg-white/70 px-3 py-1.5 rounded-full border">
               {forecast.trend.direction === 'up' && (
                 <>
                   <ArrowUpRight className="h-4 w-4 text-red-600" />
@@ -221,7 +221,7 @@ export default function ForecastPage() {
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {/* Projected Expenses */}
-            <div className="bg-white rounded-xl p-5 border border-blue-500/20 shadow-sm">
+            <div className="bg-white/70 backdrop-blur-sm rounded-xl p-5 border border-blue-500/20 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
                 <div className="p-2 bg-blue-100 rounded-lg">
                   <TrendingUp className="h-5 w-5 text-blue-600" />
@@ -233,9 +233,9 @@ export default function ForecastPage() {
             </div>
 
             {/* Monthly Average */}
-            <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
+            <div className="bg-white/70 backdrop-blur-sm rounded-xl p-5 border border-white/60 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
-                <div className="p-2 bg-white rounded-lg">
+                <div className="p-2 bg-white/60 rounded-lg">
                   <PiggyBank className="h-5 w-5 text-gray-600" />
                 </div>
                 <span className="text-sm font-medium text-gray-700">3-Month Average</span>
@@ -245,7 +245,7 @@ export default function ForecastPage() {
             </div>
 
             {/* Pending Pipeline */}
-            <div className="bg-white rounded-xl p-5 border border-amber-500/20 shadow-sm">
+            <div className="bg-white/70 backdrop-blur-sm rounded-xl p-5 border border-amber-500/20 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
                 <div className="p-2 bg-amber-100 rounded-lg">
                   <Clock className="h-5 w-5 text-amber-600" />
@@ -257,7 +257,7 @@ export default function ForecastPage() {
             </div>
 
             {/* Approved Awaiting */}
-            <div className="bg-white rounded-xl p-5 border border-emerald-500/20 shadow-sm">
+            <div className="bg-white/70 backdrop-blur-sm rounded-xl p-5 border border-emerald-500/20 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
                 <div className="p-2 bg-emerald-100 rounded-lg">
                   <CheckCircle className="h-5 w-5 text-emerald-600" />

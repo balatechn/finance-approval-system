@@ -383,7 +383,7 @@ export default function ApprovalDetailPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="rounded-lg bg-white border border-blue-500/30 p-3">
+            <div className="rounded-lg bg-white/70 backdrop-blur-sm border border-blue-500/30 p-3">
               <p className="text-sm font-medium text-blue-600 mb-1">
                 {request.requester.name} responded:
               </p>

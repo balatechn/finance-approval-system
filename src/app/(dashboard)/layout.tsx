@@ -222,11 +222,16 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className="flex h-screen overflow-hidden">
+      <div className="flex h-screen overflow-hidden relative">
+        {/* Decorative background orbs */}
+        <div className="bg-orb bg-orb-1" />
+        <div className="bg-orb bg-orb-2" />
+        <div className="bg-orb bg-orb-3" />
+
         {/* Mobile sidebar backdrop */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+            className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm lg:hidden"
             onClick={() => setSidebarOpen(false)}
           />
         )}
@@ -234,7 +239,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         {/* Sidebar */}
         <aside
           className={cn(
-            "fixed inset-y-0 left-0 z-50 transform bg-white shadow-lg border-r border-gray-200 transition-all duration-200 lg:static lg:translate-x-0",
+            "fixed inset-y-0 left-0 z-50 transform glass-sidebar transition-all duration-200 lg:static lg:translate-x-0",
             sidebarOpen ? "translate-x-0 w-64" : "-translate-x-full",
             sidebarCollapsed ? "lg:w-[68px]" : "lg:w-64"
           )}
@@ -242,7 +247,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           <div className="flex h-full flex-col">
             {/* Logo */}
             <div className={cn(
-              "flex h-16 items-center border-b border-gray-200",
+              "flex h-16 items-center border-b border-gray-200/50",
               sidebarCollapsed ? "justify-center px-2" : "justify-between px-4"
             )}>
               <Link href="/dashboard" className={cn(
@@ -290,11 +295,11 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                       sidebarCollapsed ? "justify-center p-3" : "gap-3 px-3 py-2",
                       isActive
                         ? isHighlight
-                          ? "bg-orange-500 text-white"
-                          : "bg-blue-600 text-white shadow-sm"
+                          ? "bg-orange-500 text-white shadow-md"
+                          : "bg-blue-600/90 text-white shadow-md backdrop-blur-sm"
                         : isHighlight
-                          ? "bg-orange-50 text-orange-700 hover:bg-orange-100"
-                          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                          ? "bg-orange-50/80 text-orange-700 hover:bg-orange-100/80"
+                          : "text-gray-600 hover:bg-white/50 hover:text-gray-900"
                     )}
                   >
                     <item.icon className="h-5 w-5 flex-shrink-0" />
@@ -321,7 +326,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
             {/* Collapse toggle (desktop only) */}
             <div className={cn(
-              "hidden lg:flex border-t border-gray-200",
+              "hidden lg:flex border-t border-gray-200/50",
               sidebarCollapsed ? "justify-center p-2" : "px-4 py-2"
             )}>
               <Tooltip>
@@ -329,7 +334,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                   <button
                     onClick={toggleSidebar}
                     className={cn(
-                      "flex items-center rounded-lg text-sm text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors",
+                      "flex items-center rounded-lg text-sm text-gray-400 hover:bg-white/50 hover:text-gray-600 transition-colors",
                       sidebarCollapsed ? "p-3 justify-center" : "gap-3 px-3 py-2 w-full"
                     )}
                   >
@@ -351,13 +356,13 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
             {/* User info at bottom */}
             <div className={cn(
-              "border-t border-gray-200",
-              sidebarCollapsed ? "p-2" : "p-4"
+              "border-t border-gray-200/50",
+              sidebarCollapsed ? "p-3 flex justify-center" : "p-4"
             )}>
               {sidebarCollapsed ? (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="flex justify-center">
+                    <div className="cursor-pointer">
                       <Avatar className="h-9 w-9">
                         <AvatarFallback className="bg-blue-600 text-white">
                           {userInitials}
@@ -392,12 +397,12 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         {/* Main content */}
         <div className="flex flex-1 flex-col overflow-hidden">
           {/* Top header */}
-          <header className="flex h-16 items-center justify-between bg-white border-b border-gray-200 shadow-sm px-4 lg:px-6">
+          <header className="flex h-16 items-center justify-between glass-header px-4 lg:px-6 relative z-10">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="rounded-md p-2 hover:bg-gray-100 text-gray-600 lg:hidden"
+              className="rounded-md p-2 hover:bg-white/50 text-gray-600 lg:hidden"
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-6 w-6" />
             </button>
 
             <div className="flex items-center gap-4 ml-auto">
@@ -406,7 +411,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                 <div className="relative">
                   <button
                     onClick={() => setShowOnlineDropdown(!showOnlineDropdown)}
-                    className="flex items-center gap-2 rounded-full px-3 py-1.5 hover:bg-gray-100 transition-colors"
+                    className="flex items-center gap-2 rounded-full px-3 py-1.5 hover:bg-white/50 transition-colors"
                     title="Online users"
                   >
                     <Circle className="h-2.5 w-2.5 fill-green-500 text-green-500" />
@@ -417,7 +422,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                   {showOnlineDropdown && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setShowOnlineDropdown(false)} />
-                      <div className="absolute right-0 top-full mt-2 z-50 w-72 rounded-xl bg-white border border-gray-200 shadow-lg">
+                      <div className="absolute right-0 top-full mt-2 z-50 w-72 glass-dropdown">
                         <div className="border-b border-gray-200 px-4 py-3">
                           <p className="text-sm font-semibold text-gray-900">Online Users</p>
                           <p className="text-xs text-gray-500">{onlineUsers.count} user{onlineUsers.count !== 1 ? 's' : ''} active now</p>
@@ -427,7 +432,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                             <p className="px-4 py-3 text-sm text-gray-400">No users online</p>
                           ) : (
                             onlineUsers.users.map((u) => (
-                              <div key={u.id} className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100">
+                              <div key={u.id} className="flex items-center gap-3 px-4 py-2 hover:bg-white/40 rounded-lg mx-1">
                                 <div className="relative">
                                   <Avatar className="h-8 w-8">
                                     <AvatarFallback className="bg-blue-100 text-blue-600 text-xs">
@@ -454,7 +459,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
               {unreadDiscussionCount > 0 && (
                 <div className="relative">
                   <button
-                    className="relative rounded-full p-2 hover:bg-gray-100"
+                    className="relative rounded-full p-2 hover:bg-white/50"
                     onClick={() => { setShowNotifications(true); setShowOnlineDropdown(false) }}
                     title="New discussion messages"
                   >
@@ -469,7 +474,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
               {/* Notifications */}
               <div className="relative" data-notifications>
                 <button
-                  className="relative rounded-full p-2 hover:bg-gray-100"
+                  className="relative rounded-full p-2 hover:bg-white/50"
                   onClick={() => { setShowNotifications(!showNotifications); setShowOnlineDropdown(false) }}
                 >
                   <Bell className="h-5 w-5 text-gray-600" />
@@ -481,7 +486,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                 </button>
 
                 {showNotifications && (
-                  <div className="absolute right-0 top-12 z-50 w-80 rounded-xl bg-white border border-gray-200 shadow-lg">
+                  <div className="absolute right-0 top-12 z-50 w-80 glass-dropdown">
                     <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
                       <h3 className="font-semibold text-sm text-gray-900">Notifications</h3>
                       {unreadCount > 0 && (
@@ -548,7 +553,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
               {/* User menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 rounded-full p-1 hover:bg-gray-100">
+                  <button className="flex items-center gap-2 rounded-full p-1 hover:bg-white/50">
                     <Avatar className="h-8 w-8">
                       <AvatarFallback className="bg-blue-600 text-white text-sm">
                         {userInitials}
@@ -603,7 +608,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Mobile Bottom Navigation */}
-        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] lg:hidden">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden" style={{ background: 'rgba(255,255,255,0.78)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderTop: '1px solid rgba(255,255,255,0.9)', boxShadow: '0 -4px 30px rgba(0,0,0,0.04)' }}>
           <div className="flex items-center justify-around h-16">
             {[
               { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },

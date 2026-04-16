@@ -323,7 +323,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-white/60">
         <nav className="-mb-px flex gap-6 overflow-x-auto" aria-label="Tabs">
           {tabs.map((tab) => {
             const Icon = tab.icon;
@@ -335,7 +335,7 @@ export default function SettingsPage() {
                 className={`flex items-center gap-2 whitespace-nowrap border-b-2 px-1 py-3 text-sm font-medium transition-colors ${
                   isActive
                     ? 'border-primary text-primary'
-                    : 'border-transparent text-gray-500 hover:border-gray-200 hover:text-gray-700'
+                    : 'border-transparent text-gray-500 hover:border-white/60 hover:text-gray-700'
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -343,7 +343,7 @@ export default function SettingsPage() {
                 {'count' in tab && tab.count !== undefined && (
                   <span
                     className={`ml-1 rounded-full px-2 py-0.5 text-xs ${
-                      isActive ? 'bg-primary/10 text-primary' : 'bg-white text-gray-600'
+                      isActive ? 'bg-primary/10 text-primary' : 'bg-white/70 text-gray-600'
                     }`}
                   >
                     {tab.count}
@@ -356,7 +356,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Content */}
-      <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+      <div className="rounded-lg border border-white/60 bg-white/70 backdrop-blur-sm shadow-sm">
         {activeTab === 'departments' && (
           <DepartmentsTable
             items={data.departments}
@@ -468,7 +468,7 @@ export default function SettingsPage() {
       {/* Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-xl bg-white shadow-lg">
+          <div className="w-full max-w-md rounded-xl bg-white/70 backdrop-blur-sm shadow-lg">
             <div className="flex items-center justify-between border-b px-6 py-4">
               <h2 className="text-lg font-semibold text-gray-900">
                 {editingItem ? 'Edit' : 'Add New'}{' '}
@@ -685,7 +685,7 @@ export default function SettingsPage() {
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="rounded-lg border border-white/60 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-white/50"
                 >
                   Cancel
                 </button>
@@ -716,7 +716,7 @@ function StatusBadge({ active }: { active: boolean }) {
   return (
     <span
       className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-        active ? 'bg-emerald-100 text-emerald-700' : 'bg-white text-gray-500'
+        active ? 'bg-emerald-100 text-emerald-700' : 'bg-white/70 text-gray-500'
       }`}
     >
       {active ? 'Active' : 'Inactive'}
@@ -747,7 +747,7 @@ function DepartmentsTable({
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+          <tr className="border-b bg-white/60 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
             <th className="px-6 py-3">Name</th>
             <th className="px-6 py-3">Code</th>
             <th className="px-6 py-3">Status</th>
@@ -756,10 +756,10 @@ function DepartmentsTable({
         </thead>
         <tbody className="divide-y">
           {items.map((item) => (
-            <tr key={item.id} className="hover:bg-gray-50">
+            <tr key={item.id} className="hover:bg-white/50">
               <td className="px-6 py-4 font-medium text-gray-900">{item.name}</td>
               <td className="px-6 py-4">
-                <code className="rounded bg-white px-2 py-0.5 text-xs">{item.code}</code>
+                <code className="rounded bg-white/70 px-2 py-0.5 text-xs">{item.code}</code>
               </td>
               <td className="px-6 py-4">
                 <StatusBadge active={item.isActive} />
@@ -768,7 +768,7 @@ function DepartmentsTable({
                 <div className="flex items-center justify-end gap-2">
                   <button
                     onClick={() => onEdit(item)}
-                    className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                    className="rounded-lg p-1.5 text-gray-400 hover:bg-white/60 hover:text-gray-600"
                     title="Edit"
                   >
                     <Pencil className="h-4 w-4" />
@@ -778,7 +778,7 @@ function DepartmentsTable({
                     className={`rounded-lg p-1.5 ${
                       item.isActive
                         ? 'text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700'
-                        : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+                        : 'text-gray-400 hover:bg-white/60 hover:text-gray-600'
                     }`}
                     title={item.isActive ? 'Deactivate' : 'Activate'}
                   >
@@ -816,7 +816,7 @@ function CostCentersTable({
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+          <tr className="border-b bg-white/60 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
             <th className="px-6 py-3">Name</th>
             <th className="px-6 py-3">Code</th>
             <th className="px-6 py-3">Department</th>
@@ -826,10 +826,10 @@ function CostCentersTable({
         </thead>
         <tbody className="divide-y">
           {items.map((item) => (
-            <tr key={item.id} className="hover:bg-gray-50">
+            <tr key={item.id} className="hover:bg-white/50">
               <td className="px-6 py-4 font-medium text-gray-900">{item.name}</td>
               <td className="px-6 py-4">
-                <code className="rounded bg-white px-2 py-0.5 text-xs">{item.code}</code>
+                <code className="rounded bg-white/70 px-2 py-0.5 text-xs">{item.code}</code>
               </td>
               <td className="px-6 py-4 text-gray-600">{getDeptName(item.departmentCode)}</td>
               <td className="px-6 py-4">
@@ -839,7 +839,7 @@ function CostCentersTable({
                 <div className="flex items-center justify-end gap-2">
                   <button
                     onClick={() => onEdit(item)}
-                    className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                    className="rounded-lg p-1.5 text-gray-400 hover:bg-white/60 hover:text-gray-600"
                     title="Edit"
                   >
                     <Pencil className="h-4 w-4" />
@@ -849,7 +849,7 @@ function CostCentersTable({
                     className={`rounded-lg p-1.5 ${
                       item.isActive
                         ? 'text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700'
-                        : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+                        : 'text-gray-400 hover:bg-white/60 hover:text-gray-600'
                     }`}
                     title={item.isActive ? 'Deactivate' : 'Activate'}
                   >
@@ -879,7 +879,7 @@ function EntitiesTable({
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+          <tr className="border-b bg-white/60 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
             <th className="px-6 py-3">Name</th>
             <th className="px-6 py-3">Code</th>
             <th className="px-6 py-3">Status</th>
@@ -888,10 +888,10 @@ function EntitiesTable({
         </thead>
         <tbody className="divide-y">
           {items.map((item) => (
-            <tr key={item.id} className="hover:bg-gray-50">
+            <tr key={item.id} className="hover:bg-white/50">
               <td className="px-6 py-4 font-medium text-gray-900">{item.name}</td>
               <td className="px-6 py-4">
-                <code className="rounded bg-white px-2 py-0.5 text-xs">{item.code}</code>
+                <code className="rounded bg-white/70 px-2 py-0.5 text-xs">{item.code}</code>
               </td>
               <td className="px-6 py-4">
                 <StatusBadge active={item.isActive} />
@@ -900,7 +900,7 @@ function EntitiesTable({
                 <div className="flex items-center justify-end gap-2">
                   <button
                     onClick={() => onEdit(item)}
-                    className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                    className="rounded-lg p-1.5 text-gray-400 hover:bg-white/60 hover:text-gray-600"
                     title="Edit"
                   >
                     <Pencil className="h-4 w-4" />
@@ -910,7 +910,7 @@ function EntitiesTable({
                     className={`rounded-lg p-1.5 ${
                       item.isActive
                         ? 'text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700'
-                        : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+                        : 'text-gray-400 hover:bg-white/60 hover:text-gray-600'
                     }`}
                     title={item.isActive ? 'Deactivate' : 'Activate'}
                   >
@@ -940,7 +940,7 @@ function ItemMastersTable({
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+          <tr className="border-b bg-white/60 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
             <th className="px-6 py-3">Name</th>
             <th className="px-6 py-3">Code</th>
             <th className="px-6 py-3">Description</th>
@@ -950,10 +950,10 @@ function ItemMastersTable({
         </thead>
         <tbody className="divide-y">
           {items.map((item) => (
-            <tr key={item.id} className="hover:bg-gray-50">
+            <tr key={item.id} className="hover:bg-white/50">
               <td className="px-6 py-4 font-medium text-gray-900">{item.name}</td>
               <td className="px-6 py-4">
-                <code className="rounded bg-white px-2 py-0.5 text-xs">{item.code}</code>
+                <code className="rounded bg-white/70 px-2 py-0.5 text-xs">{item.code}</code>
               </td>
               <td className="px-6 py-4 text-gray-500">{item.description || '—'}</td>
               <td className="px-6 py-4">
@@ -963,7 +963,7 @@ function ItemMastersTable({
                 <div className="flex items-center justify-end gap-2">
                   <button
                     onClick={() => onEdit(item)}
-                    className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                    className="rounded-lg p-1.5 text-gray-400 hover:bg-white/60 hover:text-gray-600"
                     title="Edit"
                   >
                     <Pencil className="h-4 w-4" />
@@ -973,7 +973,7 @@ function ItemMastersTable({
                     className={`rounded-lg p-1.5 ${
                       item.isActive
                         ? 'text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700'
-                        : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+                        : 'text-gray-400 hover:bg-white/60 hover:text-gray-600'
                     }`}
                     title={item.isActive ? 'Deactivate' : 'Activate'}
                   >
@@ -1087,7 +1087,7 @@ function EmailConfigPanel({
                     className={`flex flex-col items-start rounded-lg border-2 p-4 text-left transition-all ${
                       isSelected
                         ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
-                        : 'border-gray-200 hover:border-gray-200 hover:bg-gray-50'
+                        : 'border-white/60 hover:border-white/60 hover:bg-white/50'
                     }`}
                   >
                     <span className={`text-sm font-semibold ${isSelected ? 'text-primary' : 'text-gray-900'}`}>
@@ -1157,7 +1157,7 @@ function EmailConfigPanel({
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-2 py-1 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-2 py-1 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-white/60"
               >
                 {showPassword ? 'Hide' : 'Show'}
               </button>
@@ -1235,7 +1235,7 @@ function EmailConfigPanel({
       </div>
 
       {/* Divider */}
-      <hr className="border-gray-200" />
+      <hr className="border-white/60" />
 
       {/* Section 2: Test Email */}
       <div>
@@ -1322,7 +1322,7 @@ function SystemConfigTable({
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+          <tr className="border-b bg-white/60 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
             <th className="px-6 py-3">Key</th>
             <th className="px-6 py-3">Value</th>
             <th className="px-6 py-3">Description</th>
@@ -1331,7 +1331,7 @@ function SystemConfigTable({
         </thead>
         <tbody className="divide-y">
           {items.map((item) => (
-            <tr key={item.id} className="hover:bg-gray-50">
+            <tr key={item.id} className="hover:bg-white/50">
               <td className="px-6 py-4">
                 <code className="rounded bg-blue-50 px-2 py-0.5 text-xs text-blue-700">{item.key}</code>
               </td>
@@ -1341,7 +1341,7 @@ function SystemConfigTable({
                 <div className="flex items-center justify-end gap-2">
                   <button
                     onClick={() => onEdit(item)}
-                    className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                    className="rounded-lg p-1.5 text-gray-400 hover:bg-white/60 hover:text-gray-600"
                     title="Edit"
                   >
                     <Pencil className="h-4 w-4" />

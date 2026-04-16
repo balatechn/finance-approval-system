@@ -35,9 +35,9 @@ const DashboardCharts = dynamic(
     ssr: false,
     loading: () => (
       <div className="grid gap-4 lg:grid-cols-2 animate-pulse">
-        <div className="lg:col-span-2 rounded-lg border bg-white p-4"><div className="h-[200px] bg-white rounded" /></div>
-        <div className="rounded-lg border bg-white p-4"><div className="h-[200px] bg-white rounded" /></div>
-        <div className="rounded-lg border bg-white p-4"><div className="h-[200px] bg-white rounded" /></div>
+        <div className="lg:col-span-2 rounded-lg border bg-white/70 backdrop-blur-sm p-4"><div className="h-[200px] bg-white/40 rounded" /></div>
+        <div className="rounded-lg border bg-white/70 backdrop-blur-sm p-4"><div className="h-[200px] bg-white/40 rounded" /></div>
+        <div className="rounded-lg border bg-white/70 backdrop-blur-sm p-4"><div className="h-[200px] bg-white/40 rounded" /></div>
       </div>
     ),
   }
@@ -218,21 +218,21 @@ export default function DashboardPage() {
       <div className="space-y-6 animate-pulse">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="h-7 w-48 rounded bg-gray-100 mb-2" />
-            <div className="h-4 w-64 rounded bg-gray-100" />
+            <div className="h-7 w-48 rounded bg-white/40 mb-2" />
+            <div className="h-4 w-64 rounded bg-white/40" />
           </div>
-          <div className="h-10 w-32 rounded bg-gray-100" />
+          <div className="h-10 w-32 rounded bg-white/40" />
         </div>
-        <div className="h-16 rounded-lg bg-gray-100" />
+        <div className="h-16 rounded-lg bg-white/40" />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
-            <Card key={i}><CardContent className="p-6"><div className="flex items-center justify-between"><div><div className="h-4 w-24 rounded bg-gray-100 mb-2" /><div className="h-6 w-20 rounded bg-gray-100" /></div><div className="h-11 w-11 rounded-full bg-gray-100" /></div></CardContent></Card>
+            <Card key={i}><CardContent className="p-6"><div className="flex items-center justify-between"><div><div className="h-4 w-24 rounded bg-white/40 mb-2" /><div className="h-6 w-20 rounded bg-white/40" /></div><div className="h-11 w-11 rounded-full bg-white/40" /></div></CardContent></Card>
           ))}
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
-          <Card className="lg:col-span-2"><CardContent className="p-6"><div className="h-[200px] bg-white rounded" /></CardContent></Card>
-          <Card><CardContent className="p-6"><div className="h-[200px] bg-white rounded" /></CardContent></Card>
-          <Card><CardContent className="p-6"><div className="h-[200px] bg-white rounded" /></CardContent></Card>
+          <Card className="lg:col-span-2"><CardContent className="p-6"><div className="h-[200px] bg-white/40 rounded" /></CardContent></Card>
+          <Card><CardContent className="p-6"><div className="h-[200px] bg-white/40 rounded" /></CardContent></Card>
+          <Card><CardContent className="p-6"><div className="h-[200px] bg-white/40 rounded" /></CardContent></Card>
         </div>
       </div>
     )
@@ -409,7 +409,7 @@ export default function DashboardPage() {
                 <Link
                   key={alert.id}
                   href={`/dashboard/requests/${alert.referenceNumber}`}
-                  className="flex items-center justify-between rounded-lg bg-white p-3 hover:bg-gray-50"
+                  className="flex items-center justify-between rounded-lg bg-white/70 backdrop-blur-sm p-3 hover:bg-white/50"
                 >
                   <div>
                     <span className="font-medium">{alert.referenceNumber}</span>

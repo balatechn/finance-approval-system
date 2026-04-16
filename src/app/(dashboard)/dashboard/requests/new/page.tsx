@@ -306,7 +306,7 @@ export default function NewRequestPage() {
                           className={`flex items-center gap-3 rounded-lg border-2 p-4 text-left transition-all ${
                             isSelected
                               ? 'border-amber-400/60 bg-amber-50 ring-1 ring-amber-200'
-                              : 'border-gray-200 hover:border-gray-200 hover:bg-gray-50'
+                              : 'border-white/60 hover:border-white/60 hover:bg-white/50'
                           }`}
                         >
                           <div className={`rounded-lg p-2 ${isSelected ? 'bg-amber-100' : 'bg-white'}`}>
@@ -639,7 +639,7 @@ export default function NewRequestPage() {
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-2">
                 <Label className="text-muted-foreground text-xs">Amount</Label>
-                <div className="rounded-lg border bg-gray-50 px-4 py-3">
+                <div className="rounded-lg border bg-white/40 px-4 py-3">
                   <p className="text-lg font-semibold">
                     ₹{baseAmountINR.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
@@ -651,9 +651,9 @@ export default function NewRequestPage() {
                   {isGSTApplicable && gstPercentage ? ` (GST ${gstPercentage}%)` : ""}
                   {isTDSApplicable && tdsPercentage ? ` (TDS ${tdsPercentage}%)` : ""}
                 </Label>
-                <div className="rounded-lg border bg-gray-50 px-4 py-3">
+                <div className="rounded-lg border bg-white/40 px-4 py-3">
                   <p className="text-lg font-semibold">
-                    {gstAmount - tdsAmount >= 0 ? "+" : "-"} ₹{Math.abs(gstAmount - tdsAmount).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {gstAmount - tdsAmount >= 0 ? "+" : "-"}₹{Math.abs(gstAmount - tdsAmount).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                   {(gstAmount > 0 || tdsAmount > 0) && (
                     <div className="mt-1 space-y-0.5">
@@ -820,7 +820,7 @@ export default function NewRequestPage() {
           <CardContent className="space-y-4">
             {/* Drop zone */}
             <div
-              className="relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 p-8 transition-colors hover:border-primary/50 hover:bg-gray-100 cursor-pointer"
+              className="relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-white/60 bg-white/40 p-8 transition-colors hover:border-primary/50 hover:bg-white/60 cursor-pointer"
               onDragOver={(e) => e.preventDefault()}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
@@ -852,10 +852,10 @@ export default function NewRequestPage() {
                   {filePreviews.map((item, index) => (
                     <div
                       key={index}
-                      className="group relative flex items-start gap-3 rounded-lg border bg-white p-3 hover:shadow-sm transition-shadow"
+                      className="group relative flex items-start gap-3 rounded-lg border bg-white/70 backdrop-blur-sm p-3 hover:shadow-sm transition-shadow"
                     >
                       {/* Thumbnail */}
-                      <div className="flex-shrink-0 h-16 w-16 rounded-md overflow-hidden bg-white flex items-center justify-center">
+                      <div className="flex-shrink-0 h-16 w-16 rounded-md overflow-hidden bg-white/70 backdrop-blur-sm flex items-center justify-center">
                         {item.type.startsWith('image/') && item.preview ? (
                           <img
                             src={item.preview}
@@ -921,14 +921,14 @@ export default function NewRequestPage() {
             onClick={() => setPreviewFile(null)}
           >
             <div
-              className="relative max-h-[90vh] max-w-[90vw] bg-white rounded-xl overflow-hidden shadow-lg"
+              className="relative max-h-[90vh] max-w-[90vw] bg-white/70 backdrop-blur-sm rounded-xl overflow-hidden shadow-lg"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between border-b px-4 py-3">
                 <p className="text-sm font-medium truncate max-w-md">{previewFile.name}</p>
                 <button
                   type="button"
-                  className="rounded-full p-1 hover:bg-gray-100"
+                  className="rounded-full p-1 hover:bg-white/60"
                   onClick={() => setPreviewFile(null)}
                 >
                   <X className="h-5 w-5" />

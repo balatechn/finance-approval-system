@@ -154,7 +154,7 @@ export default function DashboardCharts({ monthlyTrend, departmentStats, topVend
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{vendor.vendor}</p>
                       <div className="flex items-center gap-2">
-                        <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="flex-1 h-2 bg-white/60 rounded-full overflow-hidden">
                           <div
                             className="h-full bg-orange-500 rounded-full"
                             style={{ width: `${Math.min(parseFloat(vendor.percentage), 100)}%` }}
@@ -331,7 +331,7 @@ export default function DashboardCharts({ monthlyTrend, departmentStats, topVend
                       </td>
                       <td className="py-3 text-center">
                         <div className="flex items-center justify-center gap-2">
-                          <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                          <div className="w-16 h-2 bg-white/60 rounded-full overflow-hidden">
                             <div
                               className="h-full bg-indigo-500 rounded-full"
                               style={{ width: `${Math.min(parseFloat(percentage), 100)}%` }}
@@ -358,7 +358,7 @@ export default function DashboardCharts({ monthlyTrend, departmentStats, topVend
                     );
                   })}
                   {/* Totals row */}
-                  <tr className="bg-gray-50 font-semibold">
+                  <tr className="bg-white/60 font-semibold">
                     <td className="py-3">Total</td>
                     <td className="py-3 text-right text-indigo-700">{formatCurrency(totalEntityAmount)}</td>
                     <td className="py-3 text-center">100%</td>

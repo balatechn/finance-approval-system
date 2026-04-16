@@ -276,9 +276,9 @@ export default function UsersPage() {
       DIRECTOR: "bg-blue-100 text-blue-700",
       FINANCE_PLANNER: "bg-cyan-100 text-cyan-700",
       FINANCE_TEAM: "bg-teal-100 text-teal-700",
-      EMPLOYEE: "bg-white text-gray-900",
+      EMPLOYEE: "bg-white/70 text-gray-900",
     };
-    return colors[role] || "bg-white text-gray-900";
+    return colors[role] || "bg-white/70 text-gray-900";
   };
 
   const startIndex = (pagination.page - 1) * pagination.limit + 1;
@@ -532,7 +532,7 @@ export default function UsersPage() {
       {/* Create / Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white/70 backdrop-blur-sm rounded-lg shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b">
               <h2 className="text-lg font-semibold">
                 {editingUser ? "Edit User" : "Add New User"}
@@ -680,7 +680,7 @@ export default function UsersPage() {
                       {entities.map((entity) => (
                         <label
                           key={entity.id}
-                          className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded"
+                          className="flex items-center gap-2 cursor-pointer hover:bg-white/50 p-1 rounded"
                         >
                           <input
                             type="checkbox"

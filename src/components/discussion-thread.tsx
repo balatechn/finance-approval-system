@@ -253,7 +253,7 @@ export function DiscussionThread({ requestId, referenceNumber }: DiscussionThrea
                     <div className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-900 text-sm font-medium ${
                       discussion.user.id === session?.user?.id
                         ? "bg-blue-600"
-                        : "bg-gray-200"
+                        : "bg-white/40"
                     }`}>
                       {discussion.user.name?.charAt(0).toUpperCase() || <User className="h-4 w-4" />}
                     </div>
@@ -264,7 +264,7 @@ export function DiscussionThread({ requestId, referenceNumber }: DiscussionThrea
                     className={`max-w-[75%] ${
                       discussion.user.id === session?.user?.id
                         ? "bg-blue-600 text-white rounded-l-lg rounded-br-lg"
-                        : "bg-gray-100 text-gray-900 rounded-r-lg rounded-bl-lg"
+                        : "bg-white/40 text-gray-900 rounded-r-lg rounded-bl-lg"
                     } px-4 py-2`}
                   >
                     <div className={`text-xs font-medium mb-1 ${
@@ -349,14 +349,14 @@ export function DiscussionThread({ requestId, referenceNumber }: DiscussionThrea
 
                 {/* Mention dropdown */}
                 {showMentionDropdown && mentionUsers.length > 0 && (
-                  <div className="absolute bottom-full left-0 mb-1 w-64 bg-white border rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
+                  <div className="absolute bottom-full left-0 mb-1 w-64 bg-white/70 backdrop-blur-sm border rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
                     {mentionUsers.map((user) => (
                       <button
                         key={user.id}
                         onClick={() => handleSelectMention(user)}
-                        className="w-full px-3 py-2 text-left hover:bg-gray-100 flex items-center gap-2"
+                        className="w-full px-3 py-2 text-left hover:bg-white/50 flex items-center gap-2"
                       >
-                        <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium">
+                        <div className="h-6 w-6 rounded-full bg-white/40 flex items-center justify-center text-xs font-medium">
                           {user.name?.charAt(0).toUpperCase()}
                         </div>
                         <div className="flex-1 min-w-0">

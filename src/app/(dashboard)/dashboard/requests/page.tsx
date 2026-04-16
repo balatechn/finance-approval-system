@@ -216,10 +216,10 @@ export default function RequestsPage() {
             <div className="space-y-3 animate-pulse">
               {[...Array(5)].map((_, i) => (
                 <div key={i} className="flex gap-4 items-center">
-                  <div className="h-4 w-28 rounded bg-gray-100" />
-                  <div className="h-4 flex-1 rounded bg-gray-100" />
-                  <div className="h-4 w-20 rounded bg-gray-100" />
-                  <div className="h-6 w-16 rounded bg-gray-100" />
+                  <div className="h-4 w-28 rounded bg-white/40" />
+                  <div className="h-4 flex-1 rounded bg-white/40" />
+                  <div className="h-4 w-20 rounded bg-white/40" />
+                  <div className="h-6 w-16 rounded bg-white/40" />
                 </div>
               ))}
             </div>

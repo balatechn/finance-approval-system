@@ -357,7 +357,7 @@ export default function RequestDetailPage() {
             {sentBackComments.length > 0 ? (
               <div className="space-y-3">
                 {sentBackComments.map((comment, index) => (
-                  <div key={index} className="rounded-lg border border-amber-500/30 bg-white p-3">
+                  <div key={index} className="rounded-lg border border-amber-500/30 bg-white/70 backdrop-blur-sm p-3">
                     <div className="flex items-start gap-2">
                       <MessageSquare className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
                       <div>
@@ -638,10 +638,10 @@ export default function RequestDetailPage() {
                     return (
                       <div
                         key={attachment.id}
-                        className="group relative flex items-start gap-3 rounded-lg border bg-white p-3 hover:shadow-sm transition-shadow"
+                        className="group relative flex items-start gap-3 rounded-lg border bg-white/70 backdrop-blur-sm p-3 hover:shadow-sm transition-shadow"
                       >
                         {/* Thumbnail */}
-                        <div className="flex-shrink-0 h-16 w-16 rounded-md overflow-hidden bg-white flex items-center justify-center">
+                        <div className="flex-shrink-0 h-16 w-16 rounded-md overflow-hidden bg-white/70 backdrop-blur-sm flex items-center justify-center">
                           {isImage ? (
                             <img
                               src={attachment.fileUrl}
@@ -699,13 +699,13 @@ export default function RequestDetailPage() {
               onClick={() => setPreviewFile(null)}
             >
               <div
-                className="relative max-h-[90vh] max-w-[90vw] bg-white rounded-xl overflow-hidden shadow-lg"
+                className="relative max-h-[90vh] max-w-[90vw] bg-white/70 backdrop-blur-sm rounded-xl overflow-hidden shadow-lg"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between border-b px-4 py-3">
                   <p className="text-sm font-medium truncate max-w-md">{previewFile.name}</p>
                   <button
-                    className="rounded-full p-1 hover:bg-gray-100"
+                    className="rounded-full p-1 hover:bg-white/60"
                     onClick={() => setPreviewFile(null)}
                   >
                     <X className="h-5 w-5" />
