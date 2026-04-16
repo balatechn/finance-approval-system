@@ -75,8 +75,6 @@ const ROLES = [
   { value: "EMPLOYEE", label: "Employee" },
   { value: "FINANCE_TEAM", label: "Finance Team" },
   { value: "FINANCE_PLANNER", label: "Finance Planner" },
-  { value: "FINANCE_CONTROLLER", label: "Finance Controller" },
-  { value: "FINANCE_COORDINATOR", label: "Finance Co-Ordinator" },
   { value: "DIRECTOR", label: "Director" },
   { value: "MD", label: "Managing Director" },
   { value: "ADMIN", label: "Administrator" },
@@ -273,15 +271,14 @@ export default function UsersPage() {
 
   const getRoleBadgeColor = (role: string) => {
     const colors: Record<string, string> = {
-      ADMIN: "bg-red-500/20 text-red-300",
-      MD: "bg-purple-500/20 text-purple-300",
-      DIRECTOR: "bg-blue-500/20 text-blue-300",
-      FINANCE_CONTROLLER: "bg-indigo-500/20 text-indigo-300",
-      FINANCE_PLANNER: "bg-cyan-500/20 text-cyan-300",
-      FINANCE_TEAM: "bg-teal-500/20 text-teal-300",
-      EMPLOYEE: "bg-white/[0.06] text-white",
+      ADMIN: "bg-red-100 text-red-700",
+      MD: "bg-purple-100 text-purple-700",
+      DIRECTOR: "bg-blue-100 text-blue-700",
+      FINANCE_PLANNER: "bg-cyan-100 text-cyan-700",
+      FINANCE_TEAM: "bg-teal-100 text-teal-700",
+      EMPLOYEE: "bg-white text-gray-900",
     };
-    return colors[role] || "bg-white/[0.06] text-white";
+    return colors[role] || "bg-white text-gray-900";
   };
 
   const startIndex = (pagination.page - 1) * pagination.limit + 1;
@@ -295,8 +292,8 @@ export default function UsersPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">User Management</h1>
-          <p className="text-sm text-white/50 mt-1">
+          <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
+          <p className="text-sm text-gray-500 mt-1">
             Manage system users, roles, and access
           </p>
         </div>
@@ -311,7 +308,7 @@ export default function UsersPage() {
         <CardContent className="pt-6">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 placeholder="Search by name, email, employee ID, or department..."
                 value={search}
@@ -375,7 +372,7 @@ export default function UsersPage() {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
             </div>
           ) : users.length === 0 ? (
-            <div className="text-center py-12 text-white/50">
+            <div className="text-center py-12 text-gray-500">
               No users found
             </div>
           ) : (
@@ -402,7 +399,7 @@ export default function UsersPage() {
                         <TableCell className="font-medium">
                           {user.name}
                         </TableCell>
-                        <TableCell className="text-sm text-white/60">
+                        <TableCell className="text-sm text-gray-600">
                           {user.email}
                         </TableCell>
                         <TableCell>
@@ -414,19 +411,19 @@ export default function UsersPage() {
                             {getRoleLabel(user.role as any)}
                           </span>
                         </TableCell>
-                        <TableCell className="text-sm text-white/60">
+                        <TableCell className="text-sm text-gray-600">
                           {user.department || "—"}
                         </TableCell>
-                        <TableCell className="text-sm text-white/60">
+                        <TableCell className="text-sm text-gray-600">
                           {user.employeeId || "—"}
                         </TableCell>
-                        <TableCell className="text-sm text-white/60">
+                        <TableCell className="text-sm text-gray-600">
                           {user.assignedEntities && user.assignedEntities.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
                               {user.assignedEntities.map((e) => (
                                 <span
                                   key={e.id}
-                                  className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/20 text-blue-300"
+                                  className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700"
                                 >
                                   {e.name}
                                 </span>
@@ -440,17 +437,17 @@ export default function UsersPage() {
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                               user.isActive
-                                ? "bg-emerald-500/20 text-emerald-300"
-                                : "bg-red-500/20 text-red-300"
+                                ? "bg-emerald-100 text-emerald-700"
+                                : "bg-red-100 text-red-700"
                             }`}
                           >
                             {user.isActive ? "Active" : "Inactive"}
                           </span>
                         </TableCell>
-                        <TableCell className="text-sm text-white/60">
+                        <TableCell className="text-sm text-gray-600">
                           {user._count.financeRequests}
                         </TableCell>
-                        <TableCell className="text-sm text-white/60">
+                        <TableCell className="text-sm text-gray-600">
                           {formatDate(user.createdAt)}
                         </TableCell>
                         <TableCell className="text-right">
@@ -476,8 +473,8 @@ export default function UsersPage() {
                               }
                               className={
                                 user.isActive
-                                  ? "text-red-400 hover:text-red-300"
-                                  : "text-emerald-400 hover:text-emerald-300"
+                                  ? "text-red-600 hover:text-red-700"
+                                  : "text-emerald-600 hover:text-emerald-700"
                               }
                             >
                               {user.isActive ? (
@@ -497,7 +494,7 @@ export default function UsersPage() {
               {/* Pagination */}
               {pagination.totalPages > 1 && (
                 <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                  <p className="text-sm text-white/60">
+                  <p className="text-sm text-gray-600">
                     Showing {startIndex} to {endIndex} of {pagination.total}{" "}
                     users
                   </p>
@@ -535,7 +532,7 @@ export default function UsersPage() {
       {/* Create / Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white/[0.06] backdrop-blur-xl rounded-lg shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b">
               <h2 className="text-lg font-semibold">
                 {editingUser ? "Edit User" : "Add New User"}
@@ -551,13 +548,13 @@ export default function UsersPage() {
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               {formError && (
-                <div className="bg-red-500/10 border border-red-500/30 text-red-300 px-4 py-3 rounded-lg text-sm">
+                <div className="bg-red-50 border border-red-500/30 text-red-700 px-4 py-3 rounded-lg text-sm">
                   {formError}
                 </div>
               )}
 
               <div>
-                <label className="block text-sm font-medium text-white/80 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Full Name *
                 </label>
                 <Input
@@ -571,7 +568,7 @@ export default function UsersPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white/80 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Email *
                 </label>
                 <Input
@@ -586,7 +583,7 @@ export default function UsersPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white/80 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   {editingUser ? "New Password (leave blank to keep)" : "Password *"}
                 </label>
                 <div className="relative">
@@ -603,7 +600,7 @@ export default function UsersPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/60"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
                     {showPassword ? (
                       <EyeOff className="h-4 w-4" />
@@ -615,7 +612,7 @@ export default function UsersPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white/80 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Role *
                 </label>
                 <Select
@@ -638,7 +635,7 @@ export default function UsersPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white/80 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Department
                 </label>
                 <Input
@@ -651,7 +648,7 @@ export default function UsersPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-white/80 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Employee ID
                 </label>
                 <Input
@@ -665,17 +662,17 @@ export default function UsersPage() {
 
               {/* Entity assignment */}
               <div>
-                <label className="block text-sm font-medium text-white/80 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   <div className="flex items-center gap-1.5">
                     <Building2 className="h-4 w-4" />
                     Assigned Entities
                   </div>
                 </label>
-                <p className="text-xs text-white/50 mb-2">
+                <p className="text-xs text-gray-500 mb-2">
                   Select entities this user is associated with
                 </p>
                   {entities.length === 0 ? (
-                    <p className="text-sm text-amber-400">
+                    <p className="text-sm text-amber-600">
                       No entities configured. Add entities in Settings first.
                     </p>
                   ) : (
@@ -683,7 +680,7 @@ export default function UsersPage() {
                       {entities.map((entity) => (
                         <label
                           key={entity.id}
-                          className="flex items-center gap-2 cursor-pointer hover:bg-white/[0.06] p-1 rounded"
+                          className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded"
                         >
                           <input
                             type="checkbox"
@@ -697,18 +694,18 @@ export default function UsersPage() {
                                 );
                               }
                             }}
-                            className="rounded border-white/[0.12] text-blue-400 focus:ring-white/25"
+                            className="rounded border-gray-200 text-blue-600 focus:ring-blue-500"
                           />
                           <span className="text-sm">
                             {entity.name}{" "}
-                            <span className="text-white/40">({entity.code})</span>
+                            <span className="text-gray-400">({entity.code})</span>
                           </span>
                         </label>
                       ))}
                     </div>
                   )}
                   {selectedEntityIds.length > 0 && (
-                    <p className="text-xs text-white/50 mt-1">
+                    <p className="text-xs text-gray-500 mt-1">
                       {selectedEntityIds.length} entit{selectedEntityIds.length === 1 ? "y" : "ies"} selected
                     </p>
                   )}

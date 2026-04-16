@@ -12,7 +12,6 @@ const statusConfig: Record<string, { label: string; variant: "default" | "second
   SUBMITTED: { label: "Submitted", variant: "info" },
   PENDING_FINANCE_VETTING: { label: "Pending Vetting", variant: "pending" },
   PENDING_FINANCE_PLANNER: { label: "Pending Finance Planner", variant: "pending" },
-  PENDING_FINANCE_CONTROLLER: { label: "Pending Finance Controller", variant: "pending" },
   PENDING_DIRECTOR: { label: "Pending Director", variant: "pending" },
   PENDING_MD: { label: "Pending MD", variant: "pending" },
   PENDING_ADMIN_REVIEW: { label: "Admin Review Required", variant: "destructive" },
@@ -39,18 +38,16 @@ interface ApprovalLevelBadgeProps {
 }
 
 const levelConfig: Record<string, { label: string; color: string }> = {
-  FINANCE_VETTING: { label: "Finance Vetting", color: "bg-orange-500/20 text-orange-300" },
-  FINANCE_PLANNER: { label: "Finance Planner", color: "bg-cyan-500/20 text-cyan-300" },
-  FINANCE_CONTROLLER: { label: "Finance Controller", color: "bg-blue-500/20 text-blue-300" },
-  FINANCE_COORDINATOR: { label: "Finance Co-Ordinator", color: "bg-teal-500/20 text-teal-300" },
-  DIRECTOR: { label: "Director", color: "bg-purple-500/20 text-purple-300" },
-  MD: { label: "Managing Director", color: "bg-indigo-500/20 text-indigo-300" },
-  ADMIN: { label: "Admin Review", color: "bg-red-500/20 text-red-300" },
-  DISBURSEMENT: { label: "Disbursement", color: "bg-emerald-500/20 text-emerald-300" },
+  FINANCE_VETTING: { label: "Finance Vetting", color: "bg-orange-100 text-orange-700" },
+  FINANCE_PLANNER: { label: "Finance Planner", color: "bg-cyan-100 text-cyan-700" },
+  DIRECTOR: { label: "Director", color: "bg-purple-100 text-purple-700" },
+  MD: { label: "Managing Director", color: "bg-indigo-100 text-indigo-700" },
+  ADMIN: { label: "Admin Review", color: "bg-red-100 text-red-700" },
+  DISBURSEMENT: { label: "Disbursement", color: "bg-emerald-100 text-emerald-700" },
 }
 
 export function ApprovalLevelBadge({ level, className }: ApprovalLevelBadgeProps) {
-  const config = levelConfig[level] || { label: level, color: "bg-white/[0.06] text-white" }
+  const config = levelConfig[level] || { label: level, color: "bg-gray-100 text-gray-700" }
   
   return (
     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${config.color} ${className || ""}`}>

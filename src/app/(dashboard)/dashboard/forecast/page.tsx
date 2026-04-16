@@ -113,12 +113,12 @@ export default function ForecastPage() {
   if (loading) {
     return (
       <div className="space-y-6 p-6">
-        <div className="h-8 w-48 bg-white/[0.1] animate-pulse rounded" />
+        <div className="h-8 w-48 bg-gray-100 animate-pulse rounded" />
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
             <Card key={i}>
               <CardContent className="p-6">
-                <div className="h-20 bg-white/[0.1] animate-pulse rounded" />
+                <div className="h-20 bg-gray-100 animate-pulse rounded" />
               </CardContent>
             </Card>
           ))}
@@ -172,7 +172,7 @@ export default function ForecastPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Target className="h-6 w-6 text-blue-400" />
+            <Target className="h-6 w-6 text-blue-600" />
             Financial Forecast
           </h1>
           <p className="text-muted-foreground mt-1">
@@ -195,24 +195,24 @@ export default function ForecastPage() {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <CalendarDays className="h-5 w-5 text-blue-400" />
-              <CardTitle className="text-xl text-blue-200">{forecast.nextMonth} Projection</CardTitle>
+              <CalendarDays className="h-5 w-5 text-blue-600" />
+              <CardTitle className="text-xl text-blue-600">{forecast.nextMonth} Projection</CardTitle>
             </div>
-            <div className="flex items-center gap-2 bg-white/[0.06] backdrop-blur-xl px-3 py-1.5 rounded-full border">
+            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border">
               {forecast.trend.direction === 'up' && (
                 <>
-                  <ArrowUpRight className="h-4 w-4 text-red-400" />
-                  <span className="text-red-400 font-semibold">+{forecast.trend.percent.toFixed(1)}%</span>
+                  <ArrowUpRight className="h-4 w-4 text-red-600" />
+                  <span className="text-red-600 font-semibold">+{forecast.trend.percent.toFixed(1)}%</span>
                 </>
               )}
               {forecast.trend.direction === 'down' && (
                 <>
-                  <ArrowDownRight className="h-4 w-4 text-emerald-400" />
-                  <span className="text-emerald-400 font-semibold">-{Math.abs(forecast.trend.percent).toFixed(1)}%</span>
+                  <ArrowDownRight className="h-4 w-4 text-emerald-600" />
+                  <span className="text-emerald-600 font-semibold">-{Math.abs(forecast.trend.percent).toFixed(1)}%</span>
                 </>
               )}
               {forecast.trend.direction === 'stable' && (
-                <span className="text-white/60 font-medium">Stable</span>
+                <span className="text-gray-600 font-medium">Stable</span>
               )}
               <span className="text-muted-foreground text-sm">vs last month</span>
             </div>
@@ -221,48 +221,48 @@ export default function ForecastPage() {
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {/* Projected Expenses */}
-            <div className="bg-white/[0.06] backdrop-blur-xl rounded-xl p-5 border border-blue-500/20 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
+            <div className="bg-white rounded-xl p-5 border border-blue-500/20 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
-                <div className="p-2 bg-blue-500/20 rounded-lg">
-                  <TrendingUp className="h-5 w-5 text-blue-400" />
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <TrendingUp className="h-5 w-5 text-blue-600" />
                 </div>
-                <span className="text-sm font-medium text-blue-300">Projected Expenses</span>
+                <span className="text-sm font-medium text-blue-700">Projected Expenses</span>
               </div>
-              <p className="text-3xl font-bold text-blue-200">{formatCurrency(forecast.projectedAmount)}</p>
+              <p className="text-3xl font-bold text-blue-600">{formatCurrency(forecast.projectedAmount)}</p>
               <p className="text-xs text-muted-foreground mt-2">Based on 3-month average + 70% of pipeline</p>
             </div>
 
             {/* Monthly Average */}
-            <div className="bg-white/[0.06] backdrop-blur-xl rounded-xl p-5 border border-white/[0.06] shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
+            <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
-                <div className="p-2 bg-white/[0.06] rounded-lg">
-                  <PiggyBank className="h-5 w-5 text-white/60" />
+                <div className="p-2 bg-white rounded-lg">
+                  <PiggyBank className="h-5 w-5 text-gray-600" />
                 </div>
-                <span className="text-sm font-medium text-white/80">3-Month Average</span>
+                <span className="text-sm font-medium text-gray-700">3-Month Average</span>
               </div>
-              <p className="text-3xl font-bold text-white">{formatCurrency(forecast.monthlyAverage)}</p>
+              <p className="text-3xl font-bold text-gray-900">{formatCurrency(forecast.monthlyAverage)}</p>
               <p className="text-xs text-muted-foreground mt-2">Historical disbursement average</p>
             </div>
 
             {/* Pending Pipeline */}
-            <div className="bg-white/[0.06] backdrop-blur-xl rounded-xl p-5 border border-amber-500/20 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
+            <div className="bg-white rounded-xl p-5 border border-amber-500/20 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
-                <div className="p-2 bg-amber-500/20 rounded-lg">
-                  <Clock className="h-5 w-5 text-amber-400" />
+                <div className="p-2 bg-amber-100 rounded-lg">
+                  <Clock className="h-5 w-5 text-amber-600" />
                 </div>
-                <span className="text-sm font-medium text-amber-300">Pending Pipeline</span>
+                <span className="text-sm font-medium text-amber-700">Pending Pipeline</span>
               </div>
               <p className="text-3xl font-bold text-amber-200">{formatCurrency(forecast.pendingPipeline.amount)}</p>
               <p className="text-xs text-muted-foreground mt-2">{forecast.pendingPipeline.count} requests under review</p>
             </div>
 
             {/* Approved Awaiting */}
-            <div className="bg-white/[0.06] backdrop-blur-xl rounded-xl p-5 border border-emerald-500/20 shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
+            <div className="bg-white rounded-xl p-5 border border-emerald-500/20 shadow-sm">
               <div className="flex items-center gap-2 mb-3">
-                <div className="p-2 bg-emerald-500/20 rounded-lg">
-                  <CheckCircle className="h-5 w-5 text-emerald-400" />
+                <div className="p-2 bg-emerald-100 rounded-lg">
+                  <CheckCircle className="h-5 w-5 text-emerald-600" />
                 </div>
-                <span className="text-sm font-medium text-emerald-300">Ready to Disburse</span>
+                <span className="text-sm font-medium text-emerald-700">Ready to Disburse</span>
               </div>
               <p className="text-3xl font-bold text-emerald-200">{formatCurrency(forecast.approvedAwaiting.amount)}</p>
               <p className="text-xs text-muted-foreground mt-2">{forecast.approvedAwaiting.count} requests approved</p>
@@ -277,7 +277,7 @@ export default function ForecastPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-blue-400" />
+              <TrendingUp className="h-4 w-4 text-blue-600" />
               Expense Trend & Forecast
             </CardTitle>
             <CardDescription>Historical vs projected expenses</CardDescription>
@@ -323,7 +323,7 @@ export default function ForecastPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <Wallet className="h-4 w-4 text-amber-400" />
+              <Wallet className="h-4 w-4 text-amber-600" />
               Pipeline Breakdown
             </CardTitle>
             <CardDescription>Total pipeline: {formatCurrency(totalPipeline)}</CardDescription>
@@ -364,7 +364,7 @@ export default function ForecastPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <CalendarDays className="h-4 w-4 text-indigo-400" />
+            <CalendarDays className="h-4 w-4 text-indigo-600" />
             Monthly Expense Breakdown
           </CardTitle>
           <CardDescription>Last 6 months comparison by status</CardDescription>
@@ -395,15 +395,15 @@ export default function ForecastPage() {
 
       {/* Insights */}
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="bg-blue-500/10 border-blue-500/30">
+        <Card className="bg-blue-50 border-blue-500/30">
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-500/20 rounded-lg">
-                <IndianRupee className="h-5 w-5 text-blue-400" />
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <IndianRupee className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-blue-300 font-medium">This Month So Far</p>
-                <p className="text-xl font-bold text-blue-200">
+                <p className="text-sm text-blue-700 font-medium">This Month So Far</p>
+                <p className="text-xl font-bold text-blue-600">
                   {formatCurrency(data.stats?.thisMonthAmount || 0)}
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -414,14 +414,14 @@ export default function ForecastPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-emerald-500/10 border-emerald-500/30">
+        <Card className="bg-emerald-50 border-emerald-500/30">
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-emerald-500/20 rounded-lg">
-                <CheckCircle className="h-5 w-5 text-emerald-400" />
+              <div className="p-2 bg-emerald-100 rounded-lg">
+                <CheckCircle className="h-5 w-5 text-emerald-600" />
               </div>
               <div>
-                <p className="text-sm text-emerald-300 font-medium">Approval Rate</p>
+                <p className="text-sm text-emerald-700 font-medium">Approval Rate</p>
                 <p className="text-xl font-bold text-emerald-200">
                   {approvalRate.toFixed(1)}%
                 </p>
@@ -433,14 +433,14 @@ export default function ForecastPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-amber-500/10 border-amber-500/30">
+        <Card className="bg-amber-50 border-amber-500/30">
           <CardContent className="p-5">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-amber-500/20 rounded-lg">
-                <AlertTriangle className="h-5 w-5 text-amber-400" />
+              <div className="p-2 bg-amber-100 rounded-lg">
+                <AlertTriangle className="h-5 w-5 text-amber-600" />
               </div>
               <div>
-                <p className="text-sm text-amber-300 font-medium">Total in Pipeline</p>
+                <p className="text-sm text-amber-700 font-medium">Total in Pipeline</p>
                 <p className="text-xl font-bold text-amber-200">
                   {formatCurrency(totalPipeline)}
                 </p>

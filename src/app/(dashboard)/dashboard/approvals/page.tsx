@@ -63,13 +63,13 @@ export default function ApprovalsPage() {
   if (loading) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div><div className="h-7 w-48 rounded bg-white/[0.1] mb-2" /><div className="h-4 w-72 rounded bg-white/[0.1]" /></div>
+        <div><div className="h-7 w-48 rounded bg-gray-100 mb-2" /><div className="h-4 w-72 rounded bg-gray-100" /></div>
         <div className="grid gap-4 sm:grid-cols-3">
           {[...Array(3)].map((_, i) => (
-            <Card key={i}><CardContent className="p-6"><div className="flex items-center justify-between"><div><div className="h-4 w-20 rounded bg-white/[0.1] mb-2" /><div className="h-7 w-16 rounded bg-white/[0.1]" /></div><div className="h-11 w-11 rounded-full bg-white/[0.1]" /></div></CardContent></Card>
+            <Card key={i}><CardContent className="p-6"><div className="flex items-center justify-between"><div><div className="h-4 w-20 rounded bg-gray-100 mb-2" /><div className="h-7 w-16 rounded bg-gray-100" /></div><div className="h-11 w-11 rounded-full bg-gray-100" /></div></CardContent></Card>
           ))}
         </div>
-        <Card><CardContent className="p-6"><div className="space-y-3">{[...Array(5)].map((_, i) => (<div key={i} className="flex gap-4 items-center"><div className="h-4 w-28 rounded bg-white/[0.1]" /><div className="h-4 flex-1 rounded bg-white/[0.1]" /><div className="h-4 w-20 rounded bg-white/[0.1]" /><div className="h-6 w-16 rounded bg-white/[0.1]" /></div>))}</div></CardContent></Card>
+        <Card><CardContent className="p-6"><div className="space-y-3">{[...Array(5)].map((_, i) => (<div key={i} className="flex gap-4 items-center"><div className="h-4 w-28 rounded bg-gray-100" /><div className="h-4 flex-1 rounded bg-gray-100" /><div className="h-4 w-20 rounded bg-gray-100" /><div className="h-6 w-16 rounded bg-gray-100" /></div>))}</div></CardContent></Card>
       </div>
     )
   }
@@ -78,7 +78,7 @@ export default function ApprovalsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-white">Pending Approvals</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Pending Approvals</h1>
         <p className="text-muted-foreground">
           Review and take action on requests awaiting your approval
         </p>
@@ -93,8 +93,8 @@ export default function ApprovalsPage() {
                 <p className="text-sm text-muted-foreground">Pending</p>
                 <p className="text-2xl font-bold">{pendingApprovals.length}</p>
               </div>
-              <div className="rounded-full bg-amber-500/20 p-3">
-                <Clock className="h-5 w-5 text-amber-400" />
+              <div className="rounded-full bg-amber-100 p-3">
+                <Clock className="h-5 w-5 text-amber-600" />
               </div>
             </div>
           </CardContent>
@@ -104,10 +104,10 @@ export default function ApprovalsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Overdue</p>
-                <p className="text-2xl font-bold text-red-400">{overdueCount}</p>
+                <p className="text-2xl font-bold text-red-600">{overdueCount}</p>
               </div>
-              <div className="rounded-full bg-red-500/20 p-3">
-                <AlertTriangle className="h-5 w-5 text-red-400" />
+              <div className="rounded-full bg-red-100 p-3">
+                <AlertTriangle className="h-5 w-5 text-red-600" />
               </div>
             </div>
           </CardContent>
@@ -123,8 +123,8 @@ export default function ApprovalsPage() {
                   )}
                 </p>
               </div>
-              <div className="rounded-full bg-blue-500/20 p-3">
-                <CheckCircle className="h-5 w-5 text-blue-400" />
+              <div className="rounded-full bg-blue-100 p-3">
+                <CheckCircle className="h-5 w-5 text-blue-600" />
               </div>
             </div>
           </CardContent>
@@ -133,15 +133,15 @@ export default function ApprovalsPage() {
 
       {/* Overdue Alert */}
       {overdueCount > 0 && (
-        <Card className="border-red-500/30 bg-red-500/10">
+        <Card className="border-red-500/30 bg-red-50">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <AlertTriangle className="h-5 w-5 text-red-400" />
+              <AlertTriangle className="h-5 w-5 text-red-600" />
               <div>
-                <p className="font-medium text-red-300">
+                <p className="font-medium text-red-700">
                   {overdueCount} request{overdueCount > 1 ? "s" : ""} overdue
                 </p>
-                <p className="text-sm text-red-300">
+                <p className="text-sm text-red-700">
                   Please review and take action on overdue requests to maintain SLA compliance.
                 </p>
               </div>
@@ -161,7 +161,7 @@ export default function ApprovalsPage() {
         <CardContent>
           {pendingApprovals.length === 0 ? (
             <div className="flex h-64 flex-col items-center justify-center text-center">
-              <CheckCircle className="h-12 w-12 text-emerald-400" />
+              <CheckCircle className="h-12 w-12 text-emerald-600" />
               <p className="mt-4 text-lg font-medium">All caught up!</p>
               <p className="text-muted-foreground">
                 You have no pending approvals at this time.
@@ -175,7 +175,7 @@ export default function ApprovalsPage() {
                   <Link
                     key={approval.id}
                     href={`/dashboard/approvals/${approval.referenceNumber}`}
-                    className={`block rounded-lg border p-4 hover:bg-muted/50 transition-colors ${approval.isOverdue ? 'border-red-500/30 bg-red-500/10' : ''}`}
+                    className={`block rounded-lg border p-4 hover:bg-muted/50 transition-colors ${approval.isOverdue ? 'border-red-500/30 bg-red-50' : ''}`}
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
@@ -184,7 +184,7 @@ export default function ApprovalsPage() {
                       </div>
                       <ApprovalLevelBadge level={approval.currentApprovalLevel as any} />
                     </div>
-                    <p className="text-sm text-white truncate">{approval.purpose}</p>
+                    <p className="text-sm text-gray-900 truncate">{approval.purpose}</p>
                     <div className="flex items-center justify-between mt-2">
                       <div>
                         <p className="text-xs text-muted-foreground">{approval.requester.name} • {approval.requester.department}</p>
@@ -217,7 +217,7 @@ export default function ApprovalsPage() {
                   {pendingApprovals.map((approval) => (
                     <TableRow
                       key={approval.id}
-                      className={approval.isOverdue ? "bg-red-500/10" : ""}
+                      className={approval.isOverdue ? "bg-red-50" : ""}
                     >
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
@@ -280,8 +280,8 @@ export default function ApprovalsPage() {
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="flex items-center gap-3">
-              <div className="rounded-full bg-emerald-500/20 p-2">
-                <CheckCircle className="h-4 w-4 text-emerald-400" />
+              <div className="rounded-full bg-emerald-100 p-2">
+                <CheckCircle className="h-4 w-4 text-emerald-600" />
               </div>
               <div>
                 <p className="font-medium">Approve</p>
@@ -291,8 +291,8 @@ export default function ApprovalsPage() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="rounded-full bg-red-500/20 p-2">
-                <XCircle className="h-4 w-4 text-red-400" />
+              <div className="rounded-full bg-red-100 p-2">
+                <XCircle className="h-4 w-4 text-red-600" />
               </div>
               <div>
                 <p className="font-medium">Reject</p>
@@ -302,8 +302,8 @@ export default function ApprovalsPage() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="rounded-full bg-amber-500/20 p-2">
-                <ArrowLeftCircle className="h-4 w-4 text-amber-400" />
+              <div className="rounded-full bg-amber-100 p-2">
+                <ArrowLeftCircle className="h-4 w-4 text-amber-600" />
               </div>
               <div>
                 <p className="font-medium">Send Back</p>

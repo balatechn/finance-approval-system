@@ -187,7 +187,6 @@ function requestInfoBox(data: { referenceNumber: string; amount?: string; purpos
 const LEVEL_LABELS: Record<string, string> = {
   FINANCE_VETTING: 'Finance Vetting',
   FINANCE_PLANNER: 'Finance Planner',
-  FINANCE_CONTROLLER: 'Finance Controller',
   DIRECTOR: 'Director',
   MD: 'Managing Director',
   DISBURSEMENT: 'Disbursement',
@@ -559,7 +558,6 @@ export async function getApproversForLevel(
   const roleMap: Record<string, string[]> = {
     FINANCE_VETTING: ['FINANCE_TEAM'],
     FINANCE_PLANNER: ['FINANCE_PLANNER'],
-    FINANCE_CONTROLLER: ['FINANCE_CONTROLLER'],
     DIRECTOR: ['DIRECTOR'],
     MD: ['MD'],
     DISBURSEMENT: ['FINANCE_TEAM'],
@@ -612,7 +610,6 @@ const ROLE_LABELS: Record<string, string> = {
   EMPLOYEE: 'Employee',
   FINANCE_TEAM: 'Finance Team',
   FINANCE_PLANNER: 'Finance Planner',
-  FINANCE_CONTROLLER: 'Finance Controller',
   DIRECTOR: 'Director',
   MD: 'Managing Director',
   ADMIN: 'Administrator',

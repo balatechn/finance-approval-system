@@ -110,10 +110,6 @@ async function getDashboardStats(user: any, userEntityIdentifiers: string[] = []
     };
   } else if (user.role === 'FINANCE_PLANNER') {
     myPendingWhere = { status: 'PENDING_FINANCE_PLANNER', isDeleted: false };
-  } else if (user.role === 'FINANCE_CONTROLLER') {
-    myPendingWhere = { status: 'PENDING_FINANCE_CONTROLLER', isDeleted: false };
-  } else if (user.role === 'FINANCE_COORDINATOR') {
-    myPendingWhere = { status: 'PENDING_FINANCE_COORDINATOR', isDeleted: false };
   } else if (user.role === 'DIRECTOR') {
     myPendingWhere = { status: 'PENDING_DIRECTOR', isDeleted: false };
   } else if (user.role === 'MD') {
@@ -137,7 +133,6 @@ async function getDashboardStats(user: any, userEntityIdentifiers: string[] = []
             'SUBMITTED',
             'PENDING_FINANCE_VETTING',
             'PENDING_FINANCE_PLANNER',
-            'PENDING_FINANCE_CONTROLLER',
             'PENDING_DIRECTOR',
             'PENDING_MD',
           ],
@@ -182,7 +177,7 @@ async function getDashboardStats(user: any, userEntityIdentifiers: string[] = []
       where: {
         ...baseWhere,
         status: {
-          in: ['SUBMITTED', 'PENDING_FINANCE_VETTING', 'PENDING_FINANCE_PLANNER', 'PENDING_FINANCE_CONTROLLER', 'PENDING_FINANCE_COORDINATOR', 'PENDING_DIRECTOR', 'PENDING_MD'],
+          in: ['SUBMITTED', 'PENDING_FINANCE_VETTING', 'PENDING_FINANCE_PLANNER', 'PENDING_DIRECTOR', 'PENDING_MD'],
         },
       },
       _sum: { totalAmount: true },
@@ -283,7 +278,7 @@ async function getEntityWiseStats(user: any, dateRange?: { gte?: Date; lte?: Dat
 
   const pendingStatuses = [
     'SUBMITTED', 'PENDING_FINANCE_VETTING', 'PENDING_FINANCE_PLANNER',
-    'PENDING_FINANCE_CONTROLLER', 'PENDING_FINANCE_COORDINATOR', 'PENDING_DIRECTOR', 'PENDING_MD',
+    'PENDING_DIRECTOR', 'PENDING_MD',
   ];
 
   for (const s of statusBreakdown) {
@@ -350,9 +345,6 @@ async function getPendingApprovals(user: any, userEntityIdentifiers: string[] = 
     case 'FINANCE_PLANNER':
       whereClause.status = 'PENDING_FINANCE_PLANNER';
       break;
-    case 'FINANCE_CONTROLLER':
-      whereClause.status = 'PENDING_FINANCE_CONTROLLER';
-      break;
     case 'DIRECTOR':
       whereClause.status = 'PENDING_DIRECTOR';
       break;
@@ -364,7 +356,6 @@ async function getPendingApprovals(user: any, userEntityIdentifiers: string[] = 
         in: [
           'PENDING_FINANCE_VETTING',
           'PENDING_FINANCE_PLANNER',
-          'PENDING_FINANCE_CONTROLLER',
           'PENDING_DIRECTOR',
           'PENDING_MD',
           'APPROVED',
@@ -429,7 +420,7 @@ async function getSLAAlerts(user: any) {
   };
 
   // Apply role-based filtering
-  if (user.role !== 'ADMIN' && user.role !== 'FINANCE_CONTROLLER' && user.role !== 'FINANCE_COORDINATOR' && user.role !== 'FINANCE_TEAM' && user.role !== 'DIRECTOR' && user.role !== 'MD') {
+  if (user.role !== 'ADMIN' && user.role !== 'FINANCE_TEAM' && user.role !== 'DIRECTOR' && user.role !== 'MD') {
     return [];
   }
 
@@ -493,7 +484,7 @@ async function getMonthlyTrend(user: any, dateRange?: { gte?: Date; lte?: Date }
   // Group by month
   const monthlyData: Record<string, { month: string; total: number; approved: number; pending: number; disbursed: number }> = {};
 
-  const pendingStatuses = ['SUBMITTED', 'PENDING_FINANCE_VETTING', 'PENDING_FINANCE_PLANNER', 'PENDING_FINANCE_CONTROLLER', 'PENDING_FINANCE_COORDINATOR', 'PENDING_DIRECTOR', 'PENDING_MD'];
+  const pendingStatuses = ['SUBMITTED', 'PENDING_FINANCE_VETTING', 'PENDING_FINANCE_PLANNER', 'PENDING_DIRECTOR', 'PENDING_MD'];
 
   for (const req of requests) {
     const date = new Date(req.createdAt);
@@ -624,7 +615,7 @@ async function getForecast(user: any) {
       where: {
         ...baseWhere,
         status: {
-          in: ['SUBMITTED', 'PENDING_FINANCE_VETTING', 'PENDING_FINANCE_PLANNER', 'PENDING_FINANCE_CONTROLLER', 'PENDING_FINANCE_COORDINATOR', 'PENDING_DIRECTOR', 'PENDING_MD'],
+          in: ['SUBMITTED', 'PENDING_FINANCE_VETTING', 'PENDING_FINANCE_PLANNER', 'PENDING_DIRECTOR', 'PENDING_MD'],
         },
       },
       _sum: { totalAmount: true },

@@ -8,7 +8,7 @@ export default withAuth(
 
     // Check role-based access for specific routes
     if (path.startsWith("/dashboard/reports")) {
-      const allowedRoles = ["FINANCE_TEAM", "FINANCE_PLANNER", "FINANCE_CONTROLLER", "FINANCE_COORDINATOR", "DIRECTOR", "MD", "ADMIN"]
+      const allowedRoles = ["FINANCE_TEAM", "FINANCE_PLANNER", "DIRECTOR", "MD", "ADMIN"]
       if (!token?.role || !allowedRoles.includes(token.role as string)) {
         return NextResponse.redirect(new URL("/dashboard", req.url))
       }

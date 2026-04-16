@@ -36,8 +36,6 @@ const roleDisplayNames: Record<string, string> = {
   ADMIN: "Admin",
   MD: "Managing Director",
   DIRECTOR: "Director",
-  FINANCE_COORDINATOR: "Finance Co-Ordinator",
-  FINANCE_CONTROLLER: "Finance Controller",
   FINANCE_PLANNER: "Finance Planner",
   FINANCE_TEAM: "Finance Team",
   EMPLOYEE: "Employee",
@@ -214,10 +212,10 @@ export function DiscussionThread({ requestId, referenceNumber }: DiscussionThrea
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <CardTitle className="flex items-center gap-2 text-lg">
-          <MessageSquare className="h-5 w-5 text-blue-400" />
+          <MessageSquare className="h-5 w-5 text-blue-600" />
           Discussion
           {discussions.length > 0 && (
-            <span className="ml-auto bg-red-500/100 text-white text-xs font-bold px-2.5 py-1 rounded-full animate-pulse shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
+            <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full animate-pulse shadow-sm">
               {discussions.length}
             </span>
           )}
@@ -252,10 +250,10 @@ export function DiscussionThread({ requestId, referenceNumber }: DiscussionThrea
                 >
                   {/* Avatar */}
                   <div className="flex-shrink-0">
-                    <div className={`h-8 w-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${
+                    <div className={`h-8 w-8 rounded-full flex items-center justify-center text-gray-900 text-sm font-medium ${
                       discussion.user.id === session?.user?.id
                         ? "bg-blue-600"
-                        : "bg-white/30"
+                        : "bg-gray-200"
                     }`}>
                       {discussion.user.name?.charAt(0).toUpperCase() || <User className="h-4 w-4" />}
                     </div>
@@ -266,13 +264,13 @@ export function DiscussionThread({ requestId, referenceNumber }: DiscussionThrea
                     className={`max-w-[75%] ${
                       discussion.user.id === session?.user?.id
                         ? "bg-blue-600 text-white rounded-l-lg rounded-br-lg"
-                        : "bg-white/[0.06] text-white rounded-r-lg rounded-bl-lg"
+                        : "bg-gray-100 text-gray-900 rounded-r-lg rounded-bl-lg"
                     } px-4 py-2`}
                   >
                     <div className={`text-xs font-medium mb-1 ${
                       discussion.user.id === session?.user?.id
-                        ? "text-blue-200"
-                        : "text-white/60"
+                        ? "text-blue-600"
+                        : "text-gray-600"
                     }`}>
                       {discussion.user.name}
                       <span className="ml-1 opacity-75">
@@ -289,8 +287,8 @@ export function DiscussionThread({ requestId, referenceNumber }: DiscussionThrea
                         rel="noopener noreferrer"
                         className={`inline-flex items-center gap-1 text-xs mt-2 underline ${
                           discussion.user.id === session?.user?.id
-                            ? "text-blue-200"
-                            : "text-blue-400"
+                            ? "text-blue-600"
+                            : "text-blue-600"
                         }`}
                       >
                         <Paperclip className="h-3 w-3" />
@@ -299,8 +297,8 @@ export function DiscussionThread({ requestId, referenceNumber }: DiscussionThrea
                     )}
                     <div className={`text-xs mt-1 ${
                       discussion.user.id === session?.user?.id
-                        ? "text-blue-200"
-                        : "text-white/50"
+                        ? "text-blue-600"
+                        : "text-gray-500"
                     }`}>
                       {formatDateTime(discussion.createdAt)}
                     </div>
@@ -317,12 +315,12 @@ export function DiscussionThread({ requestId, referenceNumber }: DiscussionThrea
               {selectedMentions.map((user) => (
                 <span
                   key={user.id}
-                  className="inline-flex items-center gap-1 bg-blue-500/20 text-blue-300 text-xs px-2 py-1 rounded-full"
+                  className="inline-flex items-center gap-1 bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full"
                 >
                   @{user.name}
                   <button
                     onClick={() => removeMention(user.id)}
-                    className="hover:bg-blue-200 rounded-full p-0.5"
+                    className="hover:bg-blue-100 rounded-full p-0.5"
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -351,19 +349,19 @@ export function DiscussionThread({ requestId, referenceNumber }: DiscussionThrea
 
                 {/* Mention dropdown */}
                 {showMentionDropdown && mentionUsers.length > 0 && (
-                  <div className="absolute bottom-full left-0 mb-1 w-64 bg-white/[0.06] backdrop-blur-xl border rounded-lg shadow-[0_8px_32px_rgba(0,0,0,0.3)] z-10 max-h-48 overflow-y-auto">
+                  <div className="absolute bottom-full left-0 mb-1 w-64 bg-white border rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
                     {mentionUsers.map((user) => (
                       <button
                         key={user.id}
                         onClick={() => handleSelectMention(user)}
-                        className="w-full px-3 py-2 text-left hover:bg-white/[0.08] flex items-center gap-2"
+                        className="w-full px-3 py-2 text-left hover:bg-gray-100 flex items-center gap-2"
                       >
-                        <div className="h-6 w-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-medium">
+                        <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium">
                           {user.name?.charAt(0).toUpperCase()}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-medium truncate">{user.name}</div>
-                          <div className="text-xs text-white/50 truncate">
+                          <div className="text-xs text-gray-500 truncate">
                             {roleDisplayNames[user.role || "EMPLOYEE"]}
                           </div>
                         </div>

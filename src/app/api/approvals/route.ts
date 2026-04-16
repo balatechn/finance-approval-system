@@ -42,12 +42,6 @@ export async function GET(request: NextRequest) {
       case 'FINANCE_PLANNER':
         whereClause.status = 'PENDING_FINANCE_PLANNER';
         break;
-      case 'FINANCE_CONTROLLER':
-        whereClause.status = 'PENDING_FINANCE_CONTROLLER';
-        break;
-      case 'FINANCE_COORDINATOR':
-        whereClause.status = 'PENDING_FINANCE_COORDINATOR';
-        break;
       case 'DIRECTOR':
         whereClause.status = 'PENDING_DIRECTOR';
         break;
@@ -58,7 +52,6 @@ export async function GET(request: NextRequest) {
         whereClause.status = {
           in: [
             'PENDING_FINANCE_VETTING', 'PENDING_FINANCE_PLANNER',
-            'PENDING_FINANCE_CONTROLLER', 'PENDING_FINANCE_COORDINATOR',
             'PENDING_DIRECTOR', 'PENDING_MD', 'APPROVED',
           ],
         };

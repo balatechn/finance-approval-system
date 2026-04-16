@@ -37,7 +37,7 @@ export default function DashboardCharts({ monthlyTrend, departmentStats, topVend
         <Card className="lg:col-span-2">
           <CardHeader className="p-4 pb-1">
             <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-blue-400" />
+              <TrendingUp className="h-4 w-4 text-blue-600" />
               <CardTitle className="text-sm font-semibold">Monthly Expense Trend</CardTitle>
             </div>
           </CardHeader>
@@ -94,7 +94,7 @@ export default function DashboardCharts({ monthlyTrend, departmentStats, topVend
         <Card>
           <CardHeader className="p-4 pb-1">
             <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-purple-400" />
+              <Users className="h-4 w-4 text-purple-600" />
               <CardTitle className="text-sm font-semibold">Department-wise Expenses</CardTitle>
             </div>
           </CardHeader>
@@ -139,7 +139,7 @@ export default function DashboardCharts({ monthlyTrend, departmentStats, topVend
         <Card>
           <CardHeader className="p-4 pb-1">
             <div className="flex items-center gap-2">
-              <Store className="h-4 w-4 text-orange-400" />
+              <Store className="h-4 w-4 text-orange-600" />
               <CardTitle className="text-sm font-semibold">Top Vendors by Spend</CardTitle>
             </div>
           </CardHeader>
@@ -148,15 +148,15 @@ export default function DashboardCharts({ monthlyTrend, departmentStats, topVend
               <div className="space-y-3">
                 {topVendors.map((vendor, index) => (
                   <div key={vendor.vendor} className="flex items-center gap-3">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-500/20 text-xs font-medium text-orange-300">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-100 text-xs font-medium text-orange-700">
                       {index + 1}
                     </span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{vendor.vendor}</p>
                       <div className="flex items-center gap-2">
-                        <div className="flex-1 h-2 bg-white/[0.06] rounded-full overflow-hidden">
+                        <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-orange-500/100 rounded-full"
+                            className="h-full bg-orange-500 rounded-full"
                             style={{ width: `${Math.min(parseFloat(vendor.percentage), 100)}%` }}
                           />
                         </div>
@@ -240,7 +240,7 @@ export default function DashboardCharts({ monthlyTrend, departmentStats, topVend
         <Card className="lg:col-span-2">
           <CardHeader className="p-4 pb-1">
             <div className="flex items-center gap-2">
-              <Building2 className="h-4 w-4 text-indigo-400" />
+              <Building2 className="h-4 w-4 text-indigo-600" />
               <CardTitle className="text-sm font-semibold">Entity-wise Expenses</CardTitle>
             </div>
           </CardHeader>
@@ -295,7 +295,7 @@ export default function DashboardCharts({ monthlyTrend, departmentStats, topVend
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-indigo-400" />
+              <Building2 className="h-5 w-5 text-indigo-600" />
               <CardTitle className="text-lg">Entity-wise Expense Summary</CardTitle>
             </div>
             <CardDescription>Cost breakdown by entity for selected period</CardDescription>
@@ -322,18 +322,18 @@ export default function DashboardCharts({ monthlyTrend, departmentStats, topVend
                     <tr key={es.entity} className="border-b last:border-0">
                       <td className="py-3 font-medium">
                         <div className="flex items-center gap-2">
-                          <span className="inline-flex h-2 w-2 rounded-full bg-indigo-500/100" />
+                          <span className="inline-flex h-2 w-2 rounded-full bg-indigo-500" />
                           {es.entity}
                         </div>
                       </td>
-                      <td className="py-3 text-right font-semibold text-indigo-300">
+                      <td className="py-3 text-right font-semibold text-indigo-700">
                         {formatCurrency(es.amount)}
                       </td>
                       <td className="py-3 text-center">
                         <div className="flex items-center justify-center gap-2">
-                          <div className="w-16 h-2 bg-white/[0.06] rounded-full overflow-hidden">
+                          <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-indigo-500/100 rounded-full"
+                              className="h-full bg-indigo-500 rounded-full"
                               style={{ width: `${Math.min(parseFloat(percentage), 100)}%` }}
                             />
                           </div>
@@ -345,12 +345,12 @@ export default function DashboardCharts({ monthlyTrend, departmentStats, topVend
                         {formatCurrency(avgPerRequest)}
                       </td>
                       <td className="py-3 text-center">
-                        <span className={es.pending > 0 ? "inline-flex items-center rounded-full bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-300" : "text-muted-foreground"}>
+                        <span className={es.pending > 0 ? "inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700" : "text-muted-foreground"}>
                           {es.pending}
                         </span>
                       </td>
                       <td className="py-3 text-center">
-                        <span className={es.disbursed > 0 ? "inline-flex items-center rounded-full bg-blue-500/20 px-2 py-0.5 text-xs font-medium text-blue-300" : "text-muted-foreground"}>
+                        <span className={es.disbursed > 0 ? "inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700" : "text-muted-foreground"}>
                           {es.disbursed}
                         </span>
                       </td>
@@ -358,9 +358,9 @@ export default function DashboardCharts({ monthlyTrend, departmentStats, topVend
                     );
                   })}
                   {/* Totals row */}
-                  <tr className="bg-white/[0.04] font-semibold">
+                  <tr className="bg-gray-50 font-semibold">
                     <td className="py-3">Total</td>
-                    <td className="py-3 text-right text-indigo-300">{formatCurrency(totalEntityAmount)}</td>
+                    <td className="py-3 text-right text-indigo-700">{formatCurrency(totalEntityAmount)}</td>
                     <td className="py-3 text-center">100%</td>
                     <td className="py-3 text-center">{entityStats.reduce((s, e) => s + e.count, 0)}</td>
                     <td className="py-3 text-right text-muted-foreground">

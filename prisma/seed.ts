@@ -134,22 +134,6 @@ async function main() {
   });
   console.log('✅ Director created');
 
-  // Create Finance Controller
-  const financeController = await prisma.user.upsert({
-    where: { email: 'farooq@nationalgroupindia.com' },
-    update: {},
-    create: {
-      email: 'farooq@nationalgroupindia.com',
-      name: 'Farooq',
-      password: hashedPassword,
-      role: Role.FINANCE_CONTROLLER,
-      department: 'Finance',
-      employeeId: 'EMP004',
-      isActive: true,
-    },
-  });
-  console.log('✅ Finance Controller created');
-
   // Create Finance Team Member (Vetting & Disbursement)
   const financeTeam = await prisma.user.upsert({
     where: { email: 'karthik@nationalgroupindia.com' },
@@ -203,8 +187,6 @@ async function main() {
     { key: 'SLA_FINANCE_VETTING_HOURS', value: '72', description: 'SLA hours for Finance vetting' },
     { key: 'SLA_FINANCE_VETTING_CRITICAL_HOURS', value: '24', description: 'SLA hours for Finance vetting (Critical)' },
     { key: 'SLA_FINANCE_PLANNER_HOURS', value: '24', description: 'SLA hours for Finance Planner approval' },
-    { key: 'SLA_FINANCE_CONTROLLER_HOURS', value: '24', description: 'SLA hours for Finance Controller approval' },
-    { key: 'SLA_FINANCE_COORDINATOR_HOURS', value: '24', description: 'SLA hours for Finance Co-Ordinator approval' },
     { key: 'SLA_DIRECTOR_HOURS', value: '24', description: 'SLA hours for Director approval' },
     { key: 'SLA_MD_HOURS', value: '24', description: 'SLA hours for MD approval' },
     { key: 'SLA_DISBURSEMENT_HOURS', value: '24', description: 'SLA hours for Disbursement processing' },
@@ -229,7 +211,6 @@ async function main() {
   console.log('Admin:              bala@nationalgroupindia.com');
   console.log('MD:                 shahil@nationalgroupindia.com');
   console.log('Director:           faisal@nationalgroupindia.com');
-  console.log('Finance Controller: farooq@nationalgroupindia.com');
   console.log('Finance (Vetting):  karthik@nationalgroupindia.com');
   console.log('Finance (Disbmnt):  prasanna@nationalgroupindia.com');
   console.log('Employee:           employee@nationalgroupindia.com');

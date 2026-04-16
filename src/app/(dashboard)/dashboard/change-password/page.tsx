@@ -86,11 +86,11 @@ export default function ChangePasswordPage() {
         <CardHeader className="text-center">
           {mustChange ? (
             <>
-              <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/20">
-                <ShieldAlert className="h-6 w-6 text-amber-400" />
+              <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
+                <ShieldAlert className="h-6 w-6 text-amber-600" />
               </div>
               <CardTitle>Change Your Password</CardTitle>
-              <CardDescription className="text-amber-400 font-medium">
+              <CardDescription className="text-amber-600 font-medium">
                 You must change your temporary password before continuing.
               </CardDescription>
             </>

@@ -33,8 +33,8 @@ The **Finance Approval System** is a web-based enterprise application built for 
 
 ### Core Features
 - **Finance Request Management** — Create, edit, submit, and track finance/purchase requests with auto-generated reference numbers.
-- **Multi-Level Approval Workflow** — 7-step approval pipeline: Finance Vetting → Finance Planner → Finance Controller → Finance Co-Ordinator → Director → Managing Director → Disbursement.
-- **Role-Based Access Control (RBAC)** — 8 roles with granular permissions (Employee, Finance Team, Finance Planner, Finance Controller, Finance Co-Ordinator, Director, MD, Admin).
+- **Multi-Level Approval Workflow** — 5-step approval pipeline: Finance Vetting → Finance Planner → Director → Managing Director → Disbursement.
+- **Role-Based Access Control (RBAC)** — 6 roles with granular permissions (Employee, Finance Team, Finance Planner, Director, MD, Admin).
 - **Real-Time Dashboard** — Role-specific dashboards with KPIs, charts (bar, donut), entity-wise summary, pending approvals, and recent requests.
 - **Dashboard Date Range Filter** — Filter all KPIs, charts, and entity summary by custom date range with quick presets (This Month, Last Month, This Year).
 - **Interactive Charts** — Status breakdown bar chart, status distribution donut chart, and entity-wise amounts bar chart (powered by Recharts).
@@ -148,8 +148,6 @@ The **Finance Approval System** is a web-based enterprise application built for 
 | **Employee** | 10 | Create/view own requests, respond to send-backs |
 | **Finance Team** | 60 | Finance vetting, disbursement processing, view all requests, reports |
 | **Finance Planner** | 65 | Finance planner approval, view all requests, dashboard, reports |
-| **Finance Controller** | 70 | Finance controller approval, view all requests, dashboard, reports |
-| **Finance Co-Ordinator** | 75 | Finance co-ordinator approval, view all requests, dashboard, reports |
 | **Director** | 80 | Director-level approval, view all requests, dashboard, reports |
 | **Managing Director** | 90 | Final approval authority, view all requests, dashboard, reports |
 | **Administrator** | 100 | Full system access, user management, settings, override approvals |
@@ -158,33 +156,26 @@ The **Finance Approval System** is a web-based enterprise application built for 
 
 ## Approval Workflow
 
-The system implements a **7-level sequential approval pipeline**:
+The system implements a **5-level sequential approval pipeline**:
 
 ```
-┌──────────────────┐     ┌──────────────────┐     ┌──────────────────────┐
-│  1. FINANCE      │     │  2. FINANCE      │     │  3. FINANCE          │
-│     VETTING      │────▶│     PLANNER      │────▶│     CONTROLLER       │
-│  (Finance Team)  │     │ (Finance Planner)│     │ (Finance Controller) │
-└──────────────────┘     └──────────────────┘     └──────────────────────┘
+┌──────────────────┐     ┌──────────────────┐     ┌──────────────────┐
+│  1. FINANCE      │     │  2. FINANCE      │     │  3. DIRECTOR     │
+│     VETTING      │────▶│     PLANNER      │────▶│     (Director)   │
+│  (Finance Team)  │     │ (Finance Planner)│     │                  │
+└──────────────────┘     └──────────────────┘     └──────────────────┘
                                                             │
                                                             ▼
-┌──────────────────┐     ┌──────────────────┐     ┌──────────────────────┐
-│  7. DISBURSEMENT │     │  6. MANAGING     │     │  5. DIRECTOR         │
-│  (Finance Team)  │◀────│     DIRECTOR     │◀────│     (Director)       │
-└──────────────────┘     └──────────────────┘     └──────────────────────┘
-                                  ▲
-                                  │
-                         ┌────────┴───────────┐
-                         │ 4. FINANCE         │
-                         │    CO-ORDINATOR    │
-                         │(Finance Co-Ordinator)│
-                         └────────────────────┘
+                         ┌──────────────────┐     ┌──────────────────┐
+                         │  5. DISBURSEMENT │     │  4. MANAGING     │
+                         │  (Finance Team)  │◀────│     DIRECTOR     │
+                         └──────────────────┘     └──────────────────┘
 ```
 
 ### Status Flow
 ```
 DRAFT → SUBMITTED → PENDING_FINANCE_VETTING → PENDING_FINANCE_PLANNER →
-PENDING_FINANCE_CONTROLLER → PENDING_FINANCE_COORDINATOR → PENDING_DIRECTOR → PENDING_MD → APPROVED → DISBURSED
+PENDING_DIRECTOR → PENDING_MD → APPROVED → DISBURSED
 ```
 
 ### Additional Statuses
@@ -196,8 +187,6 @@ PENDING_FINANCE_CONTROLLER → PENDING_FINANCE_COORDINATOR → PENDING_DIRECTOR 
 |---|---|---|
 | Finance Vetting | 24 hours | 72 hours |
 | Finance Planner | 24 hours | 24 hours |
-| Finance Controller | 24 hours | 24 hours |
-| Finance Co-Ordinator | 24 hours | 24 hours |
 | Director | 24 hours | 24 hours |
 | Managing Director | 24 hours | 24 hours |
 | Disbursement | 24 hours | 24 hours |
@@ -546,15 +535,15 @@ All reports support:
   - More content visible above the fold.
 
 ### v1.0.4 (February 2026)
-- **Finance Co-Ordinator Role** — New approval level (Level 4) between Finance Controller and Director.
-- **7-Level Approval Workflow** — Extended pipeline with Finance Co-Ordinator.
+- **Finance Co-Ordinator Role** — New approval level (Level 4) between Finance Controller and Director (removed in later version).
+- **7-Level Approval Workflow** — Extended pipeline with Finance Co-Ordinator (simplified to 5-level in later version).
 - **Performance Optimizations:**
   - Reduced API polling intervals (notifications: 30s→60s, heartbeat: 2min→5min).
   - Pause all polling when browser tab is hidden.
   - Database keep-alive ping every 1 hour to prevent cold starts.
   - Increased dashboard cache from 15s to 60s.
   - ~62% reduction in API calls per user.
-- **SLA Config** — Added SLA settings for Finance Planner and Finance Co-Ordinator.
+- **SLA Config** — Added SLA settings for Finance Planner.
 
 ### v1.0.3 (February 2026)
 - **Support Ticket System** — Full ticketing system with chat UI, attachments, and status management.

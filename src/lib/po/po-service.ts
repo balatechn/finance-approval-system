@@ -27,8 +27,6 @@ async function generatePONumber(): Promise<string> {
 const LEVEL_LABELS: Record<string, string> = {
   FINANCE_VETTING: 'Finance Vetting',
   FINANCE_PLANNER: 'Finance Planner',
-  FINANCE_CONTROLLER: 'Finance Controller',
-  FINANCE_COORDINATOR: 'Finance Coordinator',
   DIRECTOR: 'Director',
   MD: 'Managing Director',
 };

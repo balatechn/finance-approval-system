@@ -419,7 +419,6 @@ function checkViewPermission(user: any, request: any): boolean {
     case 'ADMIN':
     case 'MD':
     case 'DIRECTOR':
-    case 'FINANCE_CONTROLLER':
     case 'FINANCE_PLANNER':
     case 'FINANCE_TEAM':
       return true;
@@ -448,8 +447,6 @@ async function createApprovalStepsForRequest(
   const slaHours: Record<string, number> = {
     FINANCE_VETTING: paymentType === 'CRITICAL' ? 24 : 72,
     FINANCE_PLANNER: 24,
-    FINANCE_CONTROLLER: 24,
-    FINANCE_COORDINATOR: 24,
     DIRECTOR: 24,
     MD: 24,
     DISBURSEMENT: 24,
@@ -458,8 +455,6 @@ async function createApprovalStepsForRequest(
   const levels = [
     'FINANCE_VETTING',
     'FINANCE_PLANNER',
-    'FINANCE_CONTROLLER',
-    'FINANCE_COORDINATOR',
     'DIRECTOR',
     'MD',
     'DISBURSEMENT',
@@ -468,8 +463,6 @@ async function createApprovalStepsForRequest(
   const roleMapping: Record<string, string> = {
     FINANCE_VETTING: 'FINANCE_TEAM',
     FINANCE_PLANNER: 'FINANCE_PLANNER',
-    FINANCE_CONTROLLER: 'FINANCE_CONTROLLER',
-    FINANCE_COORDINATOR: 'FINANCE_COORDINATOR',
     DIRECTOR: 'DIRECTOR',
     MD: 'MD',
     DISBURSEMENT: 'FINANCE_TEAM',

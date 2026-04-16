@@ -46,16 +46,6 @@ export async function GET(request: NextRequest) {
           whereClause.status = 'PENDING_FINANCE_PLANNER';
         }
         break;
-      case 'FINANCE_CONTROLLER':
-        if (type === 'pending-approvals') {
-          whereClause.status = 'PENDING_FINANCE_CONTROLLER';
-        }
-        break;
-      case 'FINANCE_COORDINATOR':
-        if (type === 'pending-approvals') {
-          whereClause.status = 'PENDING_FINANCE_COORDINATOR';
-        }
-        break;
       case 'DIRECTOR':
         if (type === 'pending-approvals') {
           whereClause.status = 'PENDING_DIRECTOR';
@@ -75,7 +65,7 @@ export async function GET(request: NextRequest) {
     if (status) {
       whereClause.status = status;
     }
-    if (department && (user.role === 'ADMIN' || user.role === 'FINANCE_CONTROLLER' || user.role === 'FINANCE_TEAM')) {
+    if (department && (user.role === 'ADMIN' || user.role === 'FINANCE_TEAM')) {
       whereClause.department = department;
     }
     if (search) {
@@ -302,8 +292,6 @@ async function createApprovalSteps(
   const slaHours: Record<string, number> = {
     FINANCE_VETTING: paymentType === 'CRITICAL' ? 24 : 72,
     FINANCE_PLANNER: 24,
-    FINANCE_CONTROLLER: 24,
-    FINANCE_COORDINATOR: 24,
     DIRECTOR: 24,
     MD: 24,
     DISBURSEMENT: 24,
@@ -312,8 +300,6 @@ async function createApprovalSteps(
   const approvalLevels: ApprovalLevel[] = [
     'FINANCE_VETTING',
     'FINANCE_PLANNER',
-    'FINANCE_CONTROLLER',
-    'FINANCE_COORDINATOR',
     'DIRECTOR',
     'MD',
     'DISBURSEMENT',
@@ -322,8 +308,6 @@ async function createApprovalSteps(
   const roleMapping: Record<ApprovalLevel, Role> = {
     FINANCE_VETTING: 'FINANCE_TEAM',
     FINANCE_PLANNER: 'FINANCE_PLANNER',
-    FINANCE_CONTROLLER: 'FINANCE_CONTROLLER',
-    FINANCE_COORDINATOR: 'FINANCE_COORDINATOR',
     DIRECTOR: 'DIRECTOR',
     MD: 'MD',
     DISBURSEMENT: 'FINANCE_TEAM',

@@ -18,8 +18,6 @@ enum Role {
   EMPLOYEE
   FINANCE_TEAM
   FINANCE_PLANNER
-  FINANCE_CONTROLLER
-  FINANCE_COORDINATOR
   DIRECTOR
   MD
   ADMIN
@@ -30,8 +28,6 @@ enum RequestStatus {
   SUBMITTED
   PENDING_FINANCE_VETTING
   PENDING_FINANCE_PLANNER
-  PENDING_FINANCE_CONTROLLER
-  PENDING_FINANCE_COORDINATOR
   PENDING_DIRECTOR
   PENDING_MD
   PENDING_ADMIN_REVIEW
@@ -86,11 +82,9 @@ enum Currency {
 enum ApprovalLevel {
   FINANCE_VETTING       // Level 1: Finance Evaluate & Vetting on quote level
   FINANCE_PLANNER       // Level 2: Finance Planner review
-  FINANCE_CONTROLLER    // Level 3: Finance Controller on business requirement
-  FINANCE_COORDINATOR   // Level 4: Finance Co-Ordinator review
-  DIRECTOR              // Level 5: Director Final Checks
-  MD                    // Level 6: Managing Director Final Approval
-  DISBURSEMENT          // Level 7: Finance Disbursement Processing
+  DIRECTOR              // Level 3: Director Final Checks
+  MD                    // Level 4: Managing Director Final Approval
+  DISBURSEMENT          // Level 5: Finance Disbursement Processing
 }
 
 // ============================================================================

@@ -175,7 +175,7 @@ export default function ReportsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-white">Reports</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Reports</h1>
         <p className="text-muted-foreground">
           Generate and export finance request reports
         </p>
@@ -196,7 +196,7 @@ export default function ReportsPage() {
                 <div
                   className={`rounded-lg p-2 ${
                     selectedReport === report.id
-                      ? "bg-primary text-white"
+                      ? "bg-primary text-gray-900"
                       : "bg-muted text-muted-foreground"
                   }`}
                 >
@@ -415,7 +415,7 @@ export default function ReportsPage() {
                   <Card>
                     <CardContent className="p-4">
                       <p className="text-sm text-muted-foreground">Compliant</p>
-                      <p className="text-2xl font-bold text-emerald-400">
+                      <p className="text-2xl font-bold text-emerald-600">
                         {reportData.overallSLACompliance?.compliant || 0}
                       </p>
                     </CardContent>
@@ -423,7 +423,7 @@ export default function ReportsPage() {
                   <Card>
                     <CardContent className="p-4">
                       <p className="text-sm text-muted-foreground">Breached</p>
-                      <p className="text-2xl font-bold text-red-400">
+                      <p className="text-2xl font-bold text-red-600">
                         {reportData.overallSLACompliance?.breached || 0}
                       </p>
                     </CardContent>
@@ -460,7 +460,7 @@ export default function ReportsPage() {
                               <td className="py-2">{item.department}</td>
                               <td className="py-2">{item.level?.replace(/_/g, " ")}</td>
                               <td className="py-2 text-right">{item.expectedHours}</td>
-                              <td className="py-2 text-right text-red-400">
+                              <td className="py-2 text-right text-red-600">
                                 {item.actualHours?.toFixed(1)}
                               </td>
                             </tr>
@@ -619,10 +619,10 @@ export default function ReportsPage() {
                             <td className="py-2 text-right">{item.count}</td>
                             <td className="py-2 text-right">₹{item.totalAmount?.toLocaleString("en-IN") || 0}</td>
                             <td className="py-2 text-right">₹{item.avgAmount?.toLocaleString("en-IN") || 0}</td>
-                            <td className="py-2 text-right text-emerald-400">{item.approved || 0}</td>
-                            <td className="py-2 text-right text-amber-400">{item.pending || 0}</td>
-                            <td className="py-2 text-right text-red-400">{item.rejected || 0}</td>
-                            <td className="py-2 text-right text-blue-400">{item.disbursed || 0}</td>
+                            <td className="py-2 text-right text-emerald-600">{item.approved || 0}</td>
+                            <td className="py-2 text-right text-amber-600">{item.pending || 0}</td>
+                            <td className="py-2 text-right text-red-600">{item.rejected || 0}</td>
+                            <td className="py-2 text-right text-blue-600">{item.disbursed || 0}</td>
                           </tr>
                         ))}
                       </tbody>

@@ -340,7 +340,7 @@ export default function ApprovalDetailPage() {
           </Link>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-xl font-bold text-white">
+              <h1 className="text-xl font-bold text-gray-900">
                 {request.referenceNumber}
               </h1>
               <StatusBadge status={request.status as any} />
@@ -360,12 +360,12 @@ export default function ApprovalDetailPage() {
 
       {/* Overdue Alert */}
       {isOverdue && (
-        <Card className="border-red-500/30 bg-red-500/10">
+        <Card className="border-red-500/30 bg-red-50">
           <CardContent className="flex items-center gap-3 p-4">
-            <AlertTriangle className="h-5 w-5 text-red-400" />
+            <AlertTriangle className="h-5 w-5 text-red-600" />
             <div>
-              <p className="font-medium text-red-300">SLA Breached</p>
-              <p className="text-sm text-red-300">
+              <p className="font-medium text-red-700">SLA Breached</p>
+              <p className="text-sm text-red-700">
                 This request has exceeded the expected approval time. Please take action immediately.
               </p>
             </div>
@@ -375,19 +375,19 @@ export default function ApprovalDetailPage() {
 
       {/* Resubmission Comments Banner */}
       {request.resubmissionCount > 0 && request.lastResubmissionComments && (
-        <Card className="border-blue-500/30 bg-blue-500/10">
+        <Card className="border-blue-500/30 bg-blue-50">
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-blue-300 text-base">
+            <CardTitle className="flex items-center gap-2 text-blue-700 text-base">
               <RefreshCw className="h-4 w-4" />
               Resubmission #{request.resubmissionCount} - Requester&apos;s Response
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="rounded-lg bg-white/[0.06] backdrop-blur-xl border border-blue-500/30 p-3">
-              <p className="text-sm font-medium text-blue-200 mb-1">
+            <div className="rounded-lg bg-white border border-blue-500/30 p-3">
+              <p className="text-sm font-medium text-blue-600 mb-1">
                 {request.requester.name} responded:
               </p>
-              <p className="text-sm text-blue-300">{request.lastResubmissionComments}</p>
+              <p className="text-sm text-blue-700">{request.lastResubmissionComments}</p>
             </div>
           </CardContent>
         </Card>
@@ -408,8 +408,8 @@ export default function ApprovalDetailPage() {
         </CardHeader>
         <CardContent className="px-4 pb-4">
           {isPendingAdminReview && (
-            <div className="mb-4 rounded-lg bg-amber-500/10 border border-amber-500/30 p-3">
-              <div className="flex items-center gap-2 text-amber-300">
+            <div className="mb-4 rounded-lg bg-amber-50 border border-amber-500/30 p-3">
+              <div className="flex items-center gap-2 text-amber-700">
                 <AlertTriangle className="h-4 w-4" />
                 <span className="text-sm font-medium">
                   This request was sent back 2 times and requires admin decision.
@@ -430,7 +430,7 @@ export default function ApprovalDetailPage() {
                 <Button
                   onClick={() => openAdminReviewDialog("ALLOW_RESUBMISSION")}
                   variant="outline"
-                  className="border-blue-500 text-blue-400 hover:bg-blue-500/10"
+                  className="border-blue-500 text-blue-600 hover:bg-blue-50"
                 >
                   <RefreshCw className="mr-2 h-4 w-4" />
                   Allow Resubmission
@@ -467,7 +467,7 @@ export default function ApprovalDetailPage() {
                 <Button
                   onClick={() => openActionDialog("SENT_BACK")}
                   variant="outline"
-                  className="border-amber-500 text-amber-400 hover:bg-amber-500/10"
+                  className="border-amber-500 text-amber-600 hover:bg-amber-50"
                 >
                   <ArrowLeftCircle className="mr-2 h-4 w-4" />
                   Send Back
@@ -590,10 +590,10 @@ export default function ApprovalDetailPage() {
               )}
 
               {request.netPayableAmount && (
-                <div className="rounded-lg bg-emerald-500/10 p-3">
+                <div className="rounded-lg bg-emerald-50 p-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-emerald-300">Net Payable</span>
-                    <span className="text-lg font-bold text-emerald-300">
+                    <span className="text-sm font-medium text-emerald-700">Net Payable</span>
+                    <span className="text-lg font-bold text-emerald-700">
                       {formatCurrency(request.netPayableAmount)}
                     </span>
                   </div>
@@ -791,7 +791,7 @@ export default function ApprovalDetailPage() {
                 currentAction === "APPROVED"
                   ? "bg-green-600 hover:bg-green-700"
                   : currentAction === "SENT_BACK"
-                  ? "border-amber-500 text-amber-400 hover:bg-amber-500/10"
+                  ? "border-amber-500 text-amber-600 hover:bg-amber-50"
                   : ""
               }
             >
@@ -814,14 +814,14 @@ export default function ApprovalDetailPage() {
           </DialogHeader>
           <div className="space-y-4">
             {/* Amount Summary */}
-            <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/30 p-4">
+            <div className="rounded-lg bg-emerald-50 border border-emerald-500/30 p-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-emerald-300">Amount to Disburse</span>
-                <span className="text-xl font-bold text-emerald-300">
+                <span className="text-sm text-emerald-700">Amount to Disburse</span>
+                <span className="text-xl font-bold text-emerald-700">
                   {formatCurrency(request.netPayableAmount || request.totalAmountINR)}
                 </span>
               </div>
-              <div className="mt-1 text-xs text-emerald-400">
+              <div className="mt-1 text-xs text-emerald-600">
                 {request.vendorName} &bull; {request.referenceNumber}
               </div>
             </div>
@@ -833,7 +833,7 @@ export default function ApprovalDetailPage() {
                 id="disbursementPaymentMode"
                 value={disbursementPaymentMode}
                 onChange={(e) => setDisbursementPaymentMode(e.target.value)}
-                className="w-full rounded-lg border border-white/[0.12] px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
               >
                 <option value="">Select payment mode</option>
                 <option value="NEFT">NEFT</option>
@@ -915,14 +915,14 @@ export default function ApprovalDetailPage() {
           <div className="space-y-4">
             {/* Amount Summary for Approve */}
             {adminReviewAction === "APPROVE" && request && (
-              <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/30 p-4">
+              <div className="rounded-lg bg-emerald-50 border border-emerald-500/30 p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-emerald-300">Amount to Disburse</span>
-                  <span className="text-xl font-bold text-emerald-300">
+                  <span className="text-sm text-emerald-700">Amount to Disburse</span>
+                  <span className="text-xl font-bold text-emerald-700">
                     {formatCurrency(request.netPayableAmount || request.totalAmountINR)}
                   </span>
                 </div>
-                <div className="mt-1 text-xs text-emerald-400">
+                <div className="mt-1 text-xs text-emerald-600">
                   {request.vendorName} &bull; {request.referenceNumber}
                 </div>
               </div>
@@ -930,8 +930,8 @@ export default function ApprovalDetailPage() {
             
             {/* Warning for Reject */}
             {adminReviewAction === "REJECT" && (
-              <div className="rounded-lg bg-red-500/10 border border-red-500/30 p-4">
-                <div className="flex items-center gap-2 text-red-300">
+              <div className="rounded-lg bg-red-50 border border-red-500/30 p-4">
+                <div className="flex items-center gap-2 text-red-700">
                   <AlertTriangle className="h-4 w-4" />
                   <span className="text-sm font-medium">
                     This action cannot be undone. The request will be permanently rejected.
@@ -942,8 +942,8 @@ export default function ApprovalDetailPage() {
 
             {/* Info for Allow Resubmission */}
             {adminReviewAction === "ALLOW_RESUBMISSION" && (
-              <div className="rounded-lg bg-blue-500/10 border border-blue-500/30 p-4">
-                <div className="flex items-center gap-2 text-blue-300">
+              <div className="rounded-lg bg-blue-50 border border-blue-500/30 p-4">
+                <div className="flex items-center gap-2 text-blue-700">
                   <RefreshCw className="h-4 w-4" />
                   <span className="text-sm font-medium">
                     The resubmission counter will be reset to 0. The requester can edit and resubmit.

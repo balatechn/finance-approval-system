@@ -35,9 +35,9 @@ const DashboardCharts = dynamic(
     ssr: false,
     loading: () => (
       <div className="grid gap-4 lg:grid-cols-2 animate-pulse">
-        <div className="lg:col-span-2 rounded-lg border bg-white/[0.06] backdrop-blur-xl p-4"><div className="h-[200px] bg-white/[0.06] rounded" /></div>
-        <div className="rounded-lg border bg-white/[0.06] backdrop-blur-xl p-4"><div className="h-[200px] bg-white/[0.06] rounded" /></div>
-        <div className="rounded-lg border bg-white/[0.06] backdrop-blur-xl p-4"><div className="h-[200px] bg-white/[0.06] rounded" /></div>
+        <div className="lg:col-span-2 rounded-lg border bg-white p-4"><div className="h-[200px] bg-white rounded" /></div>
+        <div className="rounded-lg border bg-white p-4"><div className="h-[200px] bg-white rounded" /></div>
+        <div className="rounded-lg border bg-white p-4"><div className="h-[200px] bg-white rounded" /></div>
       </div>
     ),
   }
@@ -184,32 +184,32 @@ export default function DashboardPage() {
       value: formatCurrency(stats.totalAmount),
       subtext: `${stats.total} requests`,
       icon: IndianRupee,
-      color: "text-blue-400",
-      bgColor: "bg-blue-500/20",
+      color: "text-blue-600",
+      bgColor: "bg-blue-100",
     },
     {
       title: "Pending Approval",
       value: formatCurrency(stats.pendingAmount),
       subtext: `${stats.pending} requests`,
       icon: Clock,
-      color: "text-amber-400",
-      bgColor: "bg-amber-500/20",
+      color: "text-amber-600",
+      bgColor: "bg-amber-100",
     },
     {
       title: "Approved (Awaiting)",
       value: formatCurrency(stats.approvedAmount),
       subtext: `${stats.approved} requests`,
       icon: CheckCircle,
-      color: "text-emerald-400",
-      bgColor: "bg-emerald-500/20",
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-100",
     },
     {
       title: "Disbursed",
       value: formatCurrency(stats.disbursedAmount),
       subtext: `${stats.disbursed} requests`,
       icon: Wallet,
-      color: "text-indigo-400",
-      bgColor: "bg-indigo-500/20",
+      color: "text-indigo-600",
+      bgColor: "bg-indigo-100",
     },
   ], [stats])
 
@@ -218,21 +218,21 @@ export default function DashboardPage() {
       <div className="space-y-6 animate-pulse">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="h-7 w-48 rounded bg-white/[0.1] mb-2" />
-            <div className="h-4 w-64 rounded bg-white/[0.1]" />
+            <div className="h-7 w-48 rounded bg-gray-100 mb-2" />
+            <div className="h-4 w-64 rounded bg-gray-100" />
           </div>
-          <div className="h-10 w-32 rounded bg-white/[0.1]" />
+          <div className="h-10 w-32 rounded bg-gray-100" />
         </div>
-        <div className="h-16 rounded-lg bg-white/[0.1]" />
+        <div className="h-16 rounded-lg bg-gray-100" />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
-            <Card key={i}><CardContent className="p-6"><div className="flex items-center justify-between"><div><div className="h-4 w-24 rounded bg-white/[0.1] mb-2" /><div className="h-6 w-20 rounded bg-white/[0.1]" /></div><div className="h-11 w-11 rounded-full bg-white/[0.1]" /></div></CardContent></Card>
+            <Card key={i}><CardContent className="p-6"><div className="flex items-center justify-between"><div><div className="h-4 w-24 rounded bg-gray-100 mb-2" /><div className="h-6 w-20 rounded bg-gray-100" /></div><div className="h-11 w-11 rounded-full bg-gray-100" /></div></CardContent></Card>
           ))}
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
-          <Card className="lg:col-span-2"><CardContent className="p-6"><div className="h-[200px] bg-white/[0.06] rounded" /></CardContent></Card>
-          <Card><CardContent className="p-6"><div className="h-[200px] bg-white/[0.06] rounded" /></CardContent></Card>
-          <Card><CardContent className="p-6"><div className="h-[200px] bg-white/[0.06] rounded" /></CardContent></Card>
+          <Card className="lg:col-span-2"><CardContent className="p-6"><div className="h-[200px] bg-white rounded" /></CardContent></Card>
+          <Card><CardContent className="p-6"><div className="h-[200px] bg-white rounded" /></CardContent></Card>
+          <Card><CardContent className="p-6"><div className="h-[200px] bg-white rounded" /></CardContent></Card>
         </div>
       </div>
     )
@@ -249,7 +249,7 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">
+          <h1 className="text-2xl font-bold text-gray-900">
             Welcome back, {session?.user?.name?.split(" ")[0]}!
           </h1>
           <p className="text-muted-foreground">
@@ -268,7 +268,7 @@ export default function DashboardPage() {
       <Card>
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-white/80">
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
               <CalendarDays className="h-4 w-4" />
               Filters
             </div>
@@ -341,7 +341,7 @@ export default function DashboardPage() {
               <Button
                 variant="outline"
                 size="sm"
-                className="min-h-[44px] sm:min-h-0 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border-blue-500/30 text-blue-300 hover:from-blue-500/30 hover:to-indigo-500/30"
+                className="min-h-[44px] sm:min-h-0 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border-blue-500/30 text-blue-700 hover:from-blue-500/30 hover:to-indigo-500/30"
                 onClick={() => {
                   const t = new Date()
                   const f = new Date(t.getFullYear(), t.getMonth() + 1, 1)
@@ -393,13 +393,13 @@ export default function DashboardPage() {
 
       {/* SLA Alerts */}
       {data?.slaAlerts && data.slaAlerts.length > 0 && (
-        <Card className="border-amber-500/30 bg-amber-500/10">
+        <Card className="border-amber-500/30 bg-amber-50">
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-400" />
-              <CardTitle className="text-lg text-amber-300">SLA Alerts</CardTitle>
+              <AlertTriangle className="h-5 w-5 text-amber-600" />
+              <CardTitle className="text-lg text-amber-700">SLA Alerts</CardTitle>
             </div>
-            <CardDescription className="text-amber-300">
+            <CardDescription className="text-amber-700">
               These requests are approaching or have breached their SLA
             </CardDescription>
           </CardHeader>
@@ -409,7 +409,7 @@ export default function DashboardPage() {
                 <Link
                   key={alert.id}
                   href={`/dashboard/requests/${alert.referenceNumber}`}
-                  className="flex items-center justify-between rounded-lg bg-white/[0.06] backdrop-blur-xl p-3 hover:bg-white/[0.06]"
+                  className="flex items-center justify-between rounded-lg bg-white p-3 hover:bg-gray-50"
                 >
                   <div>
                     <span className="font-medium">{alert.referenceNumber}</span>
@@ -417,7 +417,7 @@ export default function DashboardPage() {
                       {alert.currentApprovalLevel?.replace("_", " ")}
                     </span>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-white/40" />
+                  <ArrowRight className="h-4 w-4 text-gray-400" />
                 </Link>
               ))}
             </div>

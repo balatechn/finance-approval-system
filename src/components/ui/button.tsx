@@ -4,21 +4,18 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25 disabled:pointer-events-none disabled:opacity-40",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-white/[0.15] text-white hover:bg-white/[0.25] backdrop-blur-sm border border-white/[0.15] shadow-lg",
-        destructive:
-          "bg-red-500/80 text-white hover:bg-red-500/90 backdrop-blur-sm border border-red-400/30",
-        outline:
-          "border border-white/[0.15] bg-white/[0.05] text-white hover:bg-white/[0.12] backdrop-blur-sm",
-        secondary:
-          "bg-white/[0.08] text-white/80 hover:bg-white/[0.15] hover:text-white backdrop-blur-sm border border-white/[0.1]",
-        ghost: "text-white/70 hover:bg-white/[0.08] hover:text-white",
-        link: "text-blue-300 underline-offset-4 hover:underline hover:text-blue-200",
-        success: "bg-emerald-500/80 text-white hover:bg-emerald-500/90 backdrop-blur-sm border border-emerald-400/30",
-        warning: "bg-amber-500/80 text-white hover:bg-amber-500/90 backdrop-blur-sm border border-amber-400/30",
+        default: "bg-blue-600 text-white hover:bg-blue-700 shadow-sm",
+        destructive: "bg-red-600 text-white hover:bg-red-700",
+        outline: "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50",
+        secondary: "bg-gray-100 text-gray-700 hover:bg-gray-200",
+        ghost: "text-gray-700 hover:bg-gray-100",
+        link: "text-blue-600 underline-offset-4 hover:underline",
+        success: "bg-emerald-600 text-white hover:bg-emerald-700",
+        warning: "bg-amber-500 text-white hover:bg-amber-600",
       },
       size: {
         default: "h-10 px-4 py-2",

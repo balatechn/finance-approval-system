@@ -79,7 +79,7 @@ export async function PATCH(
     }
 
     const ROLE_LABELS: Record<string, string> = {
-      EMPLOYEE: 'Employee', FINANCE_TEAM: 'Finance Team', FINANCE_CONTROLLER: 'Finance Controller',
+      EMPLOYEE: 'Employee', FINANCE_TEAM: 'Finance Team',
       DIRECTOR: 'Director', MD: 'Managing Director', ADMIN: 'Administrator',
     };
 

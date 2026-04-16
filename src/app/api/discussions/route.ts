@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     // Check view permission based on role
     const canView = 
       financeRequest.requestorId === user.id ||
-      ['ADMIN', 'MD', 'DIRECTOR', 'FINANCE_COORDINATOR', 'FINANCE_CONTROLLER', 'FINANCE_PLANNER', 'FINANCE_TEAM'].includes(user.role);
+      ['ADMIN', 'MD', 'DIRECTOR', 'FINANCE_PLANNER', 'FINANCE_TEAM'].includes(user.role);
 
     if (!canView) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
     // Check view permission based on role
     const canComment = 
       financeRequest.requestorId === user.id ||
-      ['ADMIN', 'MD', 'DIRECTOR', 'FINANCE_COORDINATOR', 'FINANCE_CONTROLLER', 'FINANCE_PLANNER', 'FINANCE_TEAM'].includes(user.role);
+      ['ADMIN', 'MD', 'DIRECTOR', 'FINANCE_PLANNER', 'FINANCE_TEAM'].includes(user.role);
 
     if (!canComment) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });

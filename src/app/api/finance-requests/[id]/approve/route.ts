@@ -235,8 +235,6 @@ async function processApproval(
   const levelSequence: ApprovalLevel[] = [
     'FINANCE_VETTING',
     'FINANCE_PLANNER',
-    'FINANCE_CONTROLLER',
-    'FINANCE_COORDINATOR',
     'DIRECTOR',
     'MD',
     'DISBURSEMENT',
@@ -244,9 +242,7 @@ async function processApproval(
 
   const statusMapping: Record<ApprovalLevel, RequestStatus> = {
     FINANCE_VETTING: 'PENDING_FINANCE_PLANNER',
-    FINANCE_PLANNER: 'PENDING_FINANCE_CONTROLLER',
-    FINANCE_CONTROLLER: 'PENDING_FINANCE_COORDINATOR',
-    FINANCE_COORDINATOR: 'PENDING_DIRECTOR',
+    FINANCE_PLANNER: 'PENDING_DIRECTOR',
     DIRECTOR: 'PENDING_MD',
     MD: 'APPROVED',
     DISBURSEMENT: 'DISBURSED',
@@ -307,8 +303,6 @@ async function processApproval(
   const slaHours: Record<string, number> = {
     FINANCE_VETTING: paymentType === 'CRITICAL' ? 24 : 72,
     FINANCE_PLANNER: 24,
-    FINANCE_CONTROLLER: 24,
-    FINANCE_COORDINATOR: 24,
     DIRECTOR: 24,
     MD: 24,
     DISBURSEMENT: 24,
