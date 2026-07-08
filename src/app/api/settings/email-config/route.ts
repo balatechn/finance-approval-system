@@ -1,23 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth/session';
-import { clearEmailConfigCache, getSmtpConfig } from '@/lib/email/email-service';
+import { clearEmailConfigCache } from '@/lib/email/email-service';
 
 export const dynamic = 'force-dynamic';
 
-// Keys we store in SystemConfig for email
 const EMAIL_KEYS = [
-  'EMAIL_PROVIDER',
-  'EMAIL_HOST',
-  'EMAIL_PORT',
-  'EMAIL_SECURE',
-  'EMAIL_USER',
-  'EMAIL_PASSWORD',
-  'EMAIL_FROM_ADDRESS',
+  'EMAIL_GRAPH_TENANT_ID',
+  'EMAIL_GRAPH_CLIENT_ID',
+  'EMAIL_GRAPH_CLIENT_SECRET',
+  'EMAIL_SENDER',
   'EMAIL_FROM_NAME',
 ] as const;
 
-// GET /api/settings/email-config — read current email config (password masked)
+// GET — read current Graph email config (secret masked)
 export async function GET() {
   try {
     const user = await getCurrentUser();
@@ -32,19 +28,15 @@ export async function GET() {
     for (const r of rows) cfg[r.key] = r.value;
 
     return NextResponse.json({
-      configured: !!(cfg.EMAIL_USER && cfg.EMAIL_PASSWORD),
-      provider: cfg.EMAIL_PROVIDER || '',
-      host: cfg.EMAIL_HOST || '',
-      port: cfg.EMAIL_PORT || '',
-      secure: cfg.EMAIL_SECURE || 'false',
-      user: cfg.EMAIL_USER || '',
-      // Mask password — only show last 4 chars
-      password: cfg.EMAIL_PASSWORD
-        ? '••••••••' + cfg.EMAIL_PASSWORD.slice(-4)
+      configured: !!(cfg.EMAIL_GRAPH_TENANT_ID && cfg.EMAIL_GRAPH_CLIENT_ID && cfg.EMAIL_GRAPH_CLIENT_SECRET),
+      tenantId: cfg.EMAIL_GRAPH_TENANT_ID || '',
+      clientId: cfg.EMAIL_GRAPH_CLIENT_ID || '',
+      clientSecret: cfg.EMAIL_GRAPH_CLIENT_SECRET
+        ? '••••••••' + cfg.EMAIL_GRAPH_CLIENT_SECRET.slice(-4)
         : '',
-      hasPassword: !!cfg.EMAIL_PASSWORD,
-      fromEmail: cfg.EMAIL_FROM_ADDRESS || '',
-      fromName: cfg.EMAIL_FROM_NAME || '',
+      hasSecret: !!cfg.EMAIL_GRAPH_CLIENT_SECRET,
+      senderEmail: cfg.EMAIL_SENDER || 'connect@nationalgroupindia.com',
+      fromName: cfg.EMAIL_FROM_NAME || 'Finance Approval System',
     });
   } catch (error) {
     console.error('Email config GET error:', error);
@@ -52,7 +44,7 @@ export async function GET() {
   }
 }
 
-// POST /api/settings/email-config — save email config
+// POST — save Graph email config
 export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser();
@@ -61,38 +53,24 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { provider, host: customHost, port: customPort, user: emailUser, password, fromEmail, fromName } = body;
+    const { tenantId, clientId, clientSecret, senderEmail, fromName } = body;
 
-    if (!provider || !emailUser) {
-      return NextResponse.json({ error: 'Provider and email address are required' }, { status: 400 });
+    if (!tenantId || !clientId) {
+      return NextResponse.json({ error: 'Tenant ID and Client ID are required' }, { status: 400 });
     }
 
-    // Determine host/port from provider (or use custom values)
-    const providerDefaults: Record<string, { host: string; port: string }> = {
-      gmail: { host: 'smtp.gmail.com', port: '587' },
-      microsoft365: { host: 'smtp.office365.com', port: '587' },
-    };
-    const defaults = provider === 'custom'
-      ? { host: customHost || 'smtp.mailgun.org', port: customPort || '587' }
-      : providerDefaults[provider] || providerDefaults.gmail;
-
-    // Build key–value pairs to upsert
     const pairs: { key: string; value: string; description: string }[] = [
-      { key: 'EMAIL_PROVIDER', value: provider, description: 'Email provider (gmail / microsoft365 / custom)' },
-      { key: 'EMAIL_HOST', value: defaults.host, description: 'SMTP host' },
-      { key: 'EMAIL_PORT', value: defaults.port, description: 'SMTP port' },
-      { key: 'EMAIL_SECURE', value: 'false', description: 'Use TLS (true for port 465)' },
-      { key: 'EMAIL_USER', value: emailUser, description: 'SMTP username / email address' },
-      { key: 'EMAIL_FROM_ADDRESS', value: fromEmail || emailUser, description: 'From email address' },
-      { key: 'EMAIL_FROM_NAME', value: fromName || 'Finance Approval System', description: 'From display name' },
+      { key: 'EMAIL_GRAPH_TENANT_ID', value: tenantId, description: 'Azure AD Tenant ID' },
+      { key: 'EMAIL_GRAPH_CLIENT_ID', value: clientId, description: 'Azure AD App Client ID' },
+      { key: 'EMAIL_SENDER', value: senderEmail || 'connect@nationalgroupindia.com', description: 'Sender mailbox (licensed M365 user)' },
+      { key: 'EMAIL_FROM_NAME', value: fromName || 'Finance Approval System', description: 'Display name for sent emails' },
     ];
 
-    // Only update password if a new one was provided (not the masked placeholder)
-    if (password && !password.startsWith('••••')) {
-      pairs.push({ key: 'EMAIL_PASSWORD', value: password, description: 'SMTP app password' });
+    // Only update secret if a new value was provided (not the masked placeholder)
+    if (clientSecret && !clientSecret.startsWith('••••')) {
+      pairs.push({ key: 'EMAIL_GRAPH_CLIENT_SECRET', value: clientSecret, description: 'Azure AD App Client Secret' });
     }
 
-    // Upsert all pairs
     for (const p of pairs) {
       await prisma.systemConfig.upsert({
         where: { key: p.key },
@@ -101,17 +79,16 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Clear cached config so the next email picks up the new values
     clearEmailConfigCache();
 
-    return NextResponse.json({ success: true, message: 'Email configuration saved successfully' });
+    return NextResponse.json({ success: true, message: 'Graph email configuration saved successfully' });
   } catch (error) {
     console.error('Email config POST error:', error);
     return NextResponse.json({ error: 'Failed to save email config' }, { status: 500 });
   }
 }
 
-// DELETE /api/settings/email-config — clear email config
+// DELETE — clear email config
 export async function DELETE() {
   try {
     const user = await getCurrentUser();
