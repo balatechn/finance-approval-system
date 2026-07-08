@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth/session';
-import { sendEmail, getSmtpConfig } from '@/lib/email/email-service';
+import { sendEmail, getGraphConfig } from '@/lib/email/email-service';
 
 export const dynamic = 'force-dynamic';
 
-// POST /api/settings/test-email - Send a test email
+// POST /api/settings/test-email - Send a test email via Microsoft Graph
 export async function POST(request: NextRequest) {
   try {
     const user = await getCurrentUser();
@@ -19,19 +19,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Valid email address is required' }, { status: 400 });
     }
 
-    // Load current config to show in the response
-    const cfg = await getSmtpConfig();
-    if (!cfg.user || !cfg.password) {
+    const cfg = await getGraphConfig();
+    if (!cfg.tenantId || !cfg.clientId || !cfg.clientSecret) {
       return NextResponse.json(
-        { error: 'Email is not configured yet. Go to Settings → Email Config to set up SMTP credentials.' },
+        { error: 'Microsoft Graph email is not configured yet. Go to Settings → Email Config to set up credentials.' },
         { status: 400 }
       );
     }
 
     const emailSubject = subject || 'Finance Approval System - Test Email';
-    const emailMessage = message || 'This is a test email to verify that your email configuration is working correctly.';
-
-    const providerLabel = cfg.provider === 'microsoft365' ? 'Microsoft 365' : cfg.provider === 'gmail' ? 'Gmail' : cfg.provider;
+    const emailMessage = message || 'This is a test email to verify that your Microsoft Graph email configuration is working correctly.';
 
     const html = `
       <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
@@ -42,10 +39,9 @@ export async function POST(request: NextRequest) {
           <h2 style="color: #1e40af; margin: 0 0 16px;">Email Configuration Test</h2>
           <p style="color: #374151; line-height: 1.6;">${emailMessage}</p>
           <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 16px; border-radius: 8px; margin: 16px 0;">
-            <p style="margin: 4px 0; color: #166534;"><strong>Status:</strong> Email is working correctly</p>
-            <p style="margin: 4px 0; color: #166534;"><strong>Provider:</strong> ${providerLabel}</p>
-            <p style="margin: 4px 0; color: #166534;"><strong>SMTP Host:</strong> ${cfg.host}:${cfg.port}</p>
-            <p style="margin: 4px 0; color: #166534;"><strong>From:</strong> ${cfg.fromName} &lt;${cfg.fromEmail}&gt;</p>
+            <p style="margin: 4px 0; color: #166534;"><strong>Status:</strong> ✅ Microsoft Graph email is working correctly</p>
+            <p style="margin: 4px 0; color: #166534;"><strong>Provider:</strong> Microsoft Graph API</p>
+            <p style="margin: 4px 0; color: #166534;"><strong>Sender:</strong> ${cfg.fromName} &lt;${cfg.senderEmail}&gt;</p>
             <p style="margin: 4px 0; color: #166534;"><strong>Sent by:</strong> ${user.name} (${user.email})</p>
             <p style="margin: 4px 0; color: #166534;"><strong>Sent at:</strong> ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
           </div>
@@ -57,29 +53,21 @@ export async function POST(request: NextRequest) {
       </div>
     `;
 
-    const success = await sendEmail({
-      to: recipientEmail,
-      subject: emailSubject,
-      html,
-      text: emailMessage,
-    });
+    const success = await sendEmail({ to: recipientEmail, subject: emailSubject, html, text: emailMessage });
 
     if (success) {
       return NextResponse.json({
-        message: `Test email sent successfully to ${recipientEmail} via ${providerLabel} (${cfg.host})`,
+        message: `Test email sent successfully to ${recipientEmail} via Microsoft Graph (${cfg.senderEmail})`,
         success: true,
       });
     } else {
       return NextResponse.json(
-        { error: `Failed to send email via ${providerLabel}. Please verify your email address and app password are correct.` },
+        { error: 'Failed to send email via Microsoft Graph. Check that Mail.Send permission is granted and the sender mailbox is licensed.' },
         { status: 500 }
       );
     }
   } catch (error: any) {
     console.error('Test email error:', error);
-    return NextResponse.json(
-      { error: error?.message || 'Failed to send test email' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: error?.message || 'Failed to send test email' }, { status: 500 });
   }
 }

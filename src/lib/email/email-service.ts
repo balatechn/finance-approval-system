@@ -323,7 +323,8 @@ export async function sendApprovalDecisionEmails(
   actorName: string,
   comments: string,
   nextLevel: string | null,
-  isFinalApproval: boolean
+  isFinalApproval: boolean,
+  requestType?: string
 ): Promise<void> {
   const decisionConfig: Record<string, { color: string; label: string; prefix: string }> = {
     APPROVED: { color: '#10b981', label: 'Approved', prefix: 'Approved' },
@@ -731,6 +732,39 @@ export async function sendDiscussionNotificationEmail(
     to: requestorEmail,
     subject: `New Comment: ${referenceNumber} - ${commenterName} commented`,
     html,
+  });
+}
+
+export async function sendPurchaseOrderEmail(
+  requestorEmail: string,
+  requestorName: string,
+  referenceNumber: string,
+  poNumber: string,
+  amount: string,
+  vendorName: string,
+  approvedByName: string,
+  pdfBytes: Buffer | Uint8Array
+): Promise<void> {
+  const html = emailWrapper(`
+    <h2 style="color: #10b981; margin-top: 0;">Purchase Order Generated</h2>
+    <p>Dear ${requestorName},</p>
+    <p>Your finance request has been approved and a Purchase Order has been generated.</p>
+    <div style="background: #f0fdf4; padding: 16px; border-radius: 8px; margin: 16px 0; border: 1px solid #bbf7d0;">
+      <p style="margin: 4px 0;"><strong>Reference:</strong> ${referenceNumber}</p>
+      <p style="margin: 4px 0;"><strong>PO Number:</strong> ${poNumber}</p>
+      <p style="margin: 4px 0;"><strong>Amount:</strong> ${amount}</p>
+      <p style="margin: 4px 0;"><strong>Vendor:</strong> ${vendorName}</p>
+      <p style="margin: 4px 0;"><strong>Approved By:</strong> ${approvedByName}</p>
+    </div>
+    <p>Please find the Purchase Order PDF attached to this email.</p>
+    ${actionButton(`${APP_URL}/dashboard/requests/${referenceNumber}`, 'View Request')}
+  `);
+
+  await sendEmail({
+    to: requestorEmail,
+    subject: `Purchase Order ${poNumber} - ${referenceNumber}`,
+    html,
+    attachments: [{ filename: `${poNumber}.pdf`, content: pdfBytes, contentType: 'application/pdf' }],
   });
 }
 
