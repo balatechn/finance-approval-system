@@ -203,12 +203,6 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     redirect("/login")
   }
 
-  // Force password change for new users
-  const mustChangePassword = (session.user as any)?.mustChangePassword === true
-  if (mustChangePassword && pathname !== "/dashboard/change-password") {
-    redirect("/dashboard/change-password")
-  }
-
   const filteredNavigation = navigation.filter((item) => {
     if (!item.roles) return true
     return userRole ? item.roles.includes(userRole) : false
