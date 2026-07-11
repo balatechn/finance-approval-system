@@ -161,7 +161,7 @@ export const authOptions: NextAuthOptions = {
             token.role = dbUser.role;
             token.department = dbUser.department;
             token.employeeId = dbUser.employeeId;
-            token.mustChangePassword = dbUser.mustChangePassword;
+            token.mustChangePassword = false; // SSO users never need to change a local password
           }
         } else {
           token.id = user.id;
