@@ -146,6 +146,13 @@ export const authOptions: NextAuthOptions = {
             },
           });
         }
+        // SSO users authenticate via Microsoft — clear any stale mustChangePassword flag
+        if (existingUser.mustChangePassword) {
+          await prisma.user.update({
+            where: { id: existingUser.id },
+            data: { mustChangePassword: false },
+          });
+        }
       }
       return true;
     },
