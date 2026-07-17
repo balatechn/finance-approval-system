@@ -92,6 +92,7 @@ interface EmailData {
   subject: string;
   html: string;
   text?: string;
+  cc?: string | string[];
   bcc?: string | string[];
   attachments?: Array<{
     filename: string;
@@ -115,6 +116,12 @@ export async function sendEmail(data: EmailData): Promise<boolean> {
       emailAddress: { address: addr },
     }));
 
+    const ccRecipients = data.cc
+      ? (Array.isArray(data.cc) ? data.cc : [data.cc]).map((addr) => ({
+          emailAddress: { address: addr },
+        }))
+      : [];
+
     const bccRecipients = data.bcc
       ? (Array.isArray(data.bcc) ? data.bcc : [data.bcc]).map((addr) => ({
           emailAddress: { address: addr },
@@ -127,6 +134,7 @@ export async function sendEmail(data: EmailData): Promise<boolean> {
       from: { emailAddress: { address: cfg.senderEmail, name: cfg.fromName } },
       toRecipients,
     };
+    if (ccRecipients.length > 0) message.ccRecipients = ccRecipients;
     if (bccRecipients.length > 0) message.bccRecipients = bccRecipients;
     if (data.attachments && data.attachments.length > 0) {
       message.attachments = data.attachments.map((a) => ({
