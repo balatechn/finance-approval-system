@@ -8,6 +8,16 @@ import {
   getApproversForLevel,
 } from '@/lib/email/email-service';
 
+const SLA_CC_DIRECTOR_LEVELS = ['FINANCE_VETTING', 'FINANCE_PLANNER'];
+
+async function getDirectorEmails(): Promise<string[]> {
+  const directors = await prisma.user.findMany({
+    where: { role: 'DIRECTOR' as any, isActive: true },
+    select: { email: true },
+  });
+  return directors.map((d) => d.email);
+}
+
 // POST /api/cron/check-sla - Check and update SLA breaches
 // This endpoint should be called by a cron job (e.g., every hour)
 // Secure with a cron secret in production
@@ -110,6 +120,7 @@ async function sendBreachedReminders() {
 
     // Get approvers for this level
     const approvers = await getApproversForLevel(step.level);
+    const cc = SLA_CC_DIRECTOR_LEVELS.includes(step.level) ? await getDirectorEmails() : undefined;
 
     for (const approver of approvers) {
       await sendSLAReminderEmail(
@@ -118,7 +129,8 @@ async function sendBreachedReminders() {
         step.financeRequest.referenceNumber,
         step.level,
         hoursOverdue,
-        reminderCount
+        reminderCount,
+        cc
       );
 
       remindersSent++;
@@ -195,6 +207,7 @@ async function checkSLABreaches() {
       const approvers = await getApproversForLevel(
         step.level
       );
+      const breachCc = SLA_CC_DIRECTOR_LEVELS.includes(step.level) ? await getDirectorEmails() : undefined;
 
       for (const approver of approvers) {
         const hoursOverdue = hoursElapsed - slaHours;
@@ -204,7 +217,8 @@ async function checkSLABreaches() {
           approver.name || 'Approver',
           step.financeRequest.referenceNumber,
           step.level,
-          hoursOverdue
+          hoursOverdue,
+          breachCc
         );
 
         await createNotification(

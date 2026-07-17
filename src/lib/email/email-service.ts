@@ -412,7 +412,8 @@ export async function sendSLABreachEmail(
   approverName: string,
   referenceNumber: string,
   level: string,
-  hoursOverdue: number
+  hoursOverdue: number,
+  cc?: string[]
 ): Promise<void> {
   const html = emailWrapper(`
     <h2 style="color: #ef4444; margin-top: 0;">SLA Breach Alert</h2>
@@ -427,7 +428,7 @@ export async function sendSLABreachEmail(
     ${actionButton(`${APP_URL}/dashboard/approvals/${referenceNumber}`, 'Review Now', '#ef4444')}
   `);
 
-  await sendEmail({ to: approverEmail, subject: `URGENT: SLA Breach - ${referenceNumber}`, html });
+  await sendEmail({ to: approverEmail, cc, subject: `URGENT: SLA Breach - ${referenceNumber}`, html });
 }
 
 export async function sendSLAReminderEmail(
@@ -436,7 +437,8 @@ export async function sendSLAReminderEmail(
   referenceNumber: string,
   level: string,
   hoursOverdue: number,
-  reminderCount: number
+  reminderCount: number,
+  cc?: string[]
 ): Promise<void> {
   const daysOverdue = Math.floor(hoursOverdue / 24);
   const remainingHours = Math.round(hoursOverdue % 24);
@@ -460,6 +462,7 @@ export async function sendSLAReminderEmail(
 
   await sendEmail({
     to: approverEmail,
+    cc,
     subject: `⏰ REMINDER #${reminderCount}: Pending Approval - ${referenceNumber} (Overdue ${overdueText})`,
     html,
   });

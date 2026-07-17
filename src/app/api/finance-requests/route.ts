@@ -290,7 +290,7 @@ async function createApprovalSteps(
   requestorId: string
 ) {
   const slaHours: Record<string, number> = {
-    FINANCE_VETTING: paymentType === 'CRITICAL' ? 24 : 72,
+    FINANCE_VETTING: 24,
     FINANCE_PLANNER: 24,
     DIRECTOR: 24,
     MD: 24,
