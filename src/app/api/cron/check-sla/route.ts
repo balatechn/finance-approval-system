@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check for reminder mode (send reminders twice daily at 9 AM and 3 PM IST)
+    // Check for reminder mode (send reminders once daily at 9 AM IST)
     const { searchParams } = new URL(request.url);
     const mode = searchParams.get('mode');
 
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
 
 /**
  * Send reminder emails for ALL currently breached/overdue requests
- * Called twice daily (9 AM and 3 PM IST)
+ * Called once daily (9 AM IST)
  */
 async function sendBreachedReminders() {
   const now = new Date();
@@ -114,8 +114,8 @@ async function sendBreachedReminders() {
     let reminderCount = 1;
     if (breachLog?.breachedAt) {
       const hoursSinceBreach = (now.getTime() - breachLog.breachedAt.getTime()) / (1000 * 60 * 60);
-      // 2 reminders per day = every 12 hours, +1 for initial breach email
-      reminderCount = Math.max(1, Math.floor(hoursSinceBreach / 12) + 1);
+      // 1 reminder per day = every 24 hours, +1 for initial breach email
+      reminderCount = Math.max(1, Math.floor(hoursSinceBreach / 24) + 1);
     }
 
     // Get approvers for this level
@@ -282,9 +282,9 @@ async function checkSLABreaches() {
   }
 
   // AUTOMATIC REMINDERS: Send reminders for all already-breached requests
-  // This runs every hour but only sends reminders every 4 hours to avoid spamming
+  // This runs daily and sends one reminder per day
   let remindersSent = 0;
-  const REMINDER_INTERVAL_HOURS = 4; // Send reminder every 4 hours
+  const REMINDER_INTERVAL_HOURS = 24; // Send reminder once per day
 
   const breachedSteps = await prisma.approvalStep.findMany({
     where: {
@@ -322,7 +322,7 @@ async function checkSLABreaches() {
     // Skip if breach just happened (within first interval - they got the breach email)
     if (hoursSinceBreach < REMINDER_INTERVAL_HOURS) continue;
 
-    // Only send reminder at 4-hour intervals (4, 8, 12, 16, 20, 24 hours, etc.)
+    // Only send one reminder per day (24, 48, 72 hours, etc.)
     // Check if we're at a reminder interval point (within 1 hour window)
     const intervalNumber = Math.floor(hoursSinceBreach / REMINDER_INTERVAL_HOURS);
     const hoursSinceLastInterval = hoursSinceBreach - (intervalNumber * REMINDER_INTERVAL_HOURS);
@@ -344,6 +344,11 @@ async function checkSLABreaches() {
 
     // Get approvers for this level
     const approvers = await getApproversForLevel(step.level);
+    const remReqEmail = step.financeRequest.requestor?.email;
+    const remCcBase = remReqEmail ? [remReqEmail] : [];
+    const remCc = SLA_CC_DIRECTOR_LEVELS.includes(step.level)
+      ? [...remCcBase, ...(await getDirectorEmails())]
+      : remCcBase.length > 0 ? remCcBase : undefined;
 
     for (const approver of approvers) {
       await sendSLAReminderEmail(
@@ -352,7 +357,8 @@ async function checkSLABreaches() {
         step.financeRequest.referenceNumber,
         step.level,
         hoursOverdue,
-        reminderCount
+        reminderCount,
+        remCc
       );
       remindersSent++;
     }
