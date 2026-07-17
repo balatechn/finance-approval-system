@@ -120,7 +120,11 @@ async function sendBreachedReminders() {
 
     // Get approvers for this level
     const approvers = await getApproversForLevel(step.level);
-    const cc = SLA_CC_DIRECTOR_LEVELS.includes(step.level) ? await getDirectorEmails() : undefined;
+    const requesterEmail = step.financeRequest.requestor?.email;
+    const ccBase = requesterEmail ? [requesterEmail] : [];
+    const cc = SLA_CC_DIRECTOR_LEVELS.includes(step.level)
+      ? [...ccBase, ...(await getDirectorEmails())]
+      : ccBase.length > 0 ? ccBase : undefined;
 
     for (const approver of approvers) {
       await sendSLAReminderEmail(
@@ -207,7 +211,11 @@ async function checkSLABreaches() {
       const approvers = await getApproversForLevel(
         step.level
       );
-      const breachCc = SLA_CC_DIRECTOR_LEVELS.includes(step.level) ? await getDirectorEmails() : undefined;
+      const breachRequesterEmail = step.financeRequest.requestor?.email;
+      const breachCcBase = breachRequesterEmail ? [breachRequesterEmail] : [];
+      const breachCc = SLA_CC_DIRECTOR_LEVELS.includes(step.level)
+        ? [...breachCcBase, ...(await getDirectorEmails())]
+        : breachCcBase.length > 0 ? breachCcBase : undefined;
 
       for (const approver of approvers) {
         const hoursOverdue = hoursElapsed - slaHours;
