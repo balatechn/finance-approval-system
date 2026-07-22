@@ -18,6 +18,22 @@ async function getDirectorEmails(): Promise<string[]> {
   return directors.map((d) => d.email);
 }
 
+async function getAdminEmails(): Promise<string[]> {
+  const admins = await prisma.user.findMany({
+    where: { role: 'ADMIN' as any, isActive: true },
+    select: { email: true },
+  });
+  return admins.map((a) => a.email);
+}
+
+async function buildCcList(level: string, requesterEmail?: string | null): Promise<string[]> {
+  const cc: string[] = [];
+  if (requesterEmail) cc.push(requesterEmail);
+  if (SLA_CC_DIRECTOR_LEVELS.includes(level)) cc.push(...(await getDirectorEmails()));
+  cc.push(...(await getAdminEmails()));
+  return Array.from(new Set(cc)); // deduplicate
+}
+
 // POST /api/cron/check-sla - Check and update SLA breaches
 // This endpoint should be called by a cron job (e.g., every hour)
 // Secure with a cron secret in production
@@ -100,31 +116,21 @@ async function sendBreachedReminders() {
 
     if (hoursOverdue <= 0) continue;
 
-    // Calculate reminder count (2 per day since breach)
-    // Use SLA logs to find when breach was first recorded
+    // Only send once per day — skip if breach happened less than 24h ago or not at a 24h boundary
     const breachLog = await prisma.sLALog.findFirst({
-      where: {
-        financeRequestId: step.financeRequestId,
-        level: step.level,
-        isBreached: true,
-      },
+      where: { financeRequestId: step.financeRequestId, level: step.level, isBreached: true },
       orderBy: { breachedAt: 'asc' },
     });
-
-    let reminderCount = 1;
-    if (breachLog?.breachedAt) {
-      const hoursSinceBreach = (now.getTime() - breachLog.breachedAt.getTime()) / (1000 * 60 * 60);
-      // 1 reminder per day = every 24 hours, +1 for initial breach email
-      reminderCount = Math.max(1, Math.floor(hoursSinceBreach / 24) + 1);
-    }
+    if (!breachLog?.breachedAt) continue;
+    const hoursSinceBreach = (now.getTime() - breachLog.breachedAt.getTime()) / (1000 * 60 * 60);
+    if (hoursSinceBreach < 24) continue; // still within initial breach window
+    const intervalNumber = Math.floor(hoursSinceBreach / 24);
+    if ((hoursSinceBreach - intervalNumber * 24) >= 1) continue; // not at a 24h boundary
+    const reminderCount = intervalNumber;
 
     // Get approvers for this level
     const approvers = await getApproversForLevel(step.level);
-    const requesterEmail = step.financeRequest.requestor?.email;
-    const ccBase = requesterEmail ? [requesterEmail] : [];
-    const cc = SLA_CC_DIRECTOR_LEVELS.includes(step.level)
-      ? [...ccBase, ...(await getDirectorEmails())]
-      : ccBase.length > 0 ? ccBase : undefined;
+    const cc = await buildCcList(step.level, step.financeRequest.requestor?.email);
 
     for (const approver of approvers) {
       await sendSLAReminderEmail(
@@ -211,11 +217,7 @@ async function checkSLABreaches() {
       const approvers = await getApproversForLevel(
         step.level
       );
-      const breachRequesterEmail = step.financeRequest.requestor?.email;
-      const breachCcBase = breachRequesterEmail ? [breachRequesterEmail] : [];
-      const breachCc = SLA_CC_DIRECTOR_LEVELS.includes(step.level)
-        ? [...breachCcBase, ...(await getDirectorEmails())]
-        : breachCcBase.length > 0 ? breachCcBase : undefined;
+      const breachCc = await buildCcList(step.level, step.financeRequest.requestor?.email);
 
       for (const approver of approvers) {
         const hoursOverdue = hoursElapsed - slaHours;
@@ -344,11 +346,7 @@ async function checkSLABreaches() {
 
     // Get approvers for this level
     const approvers = await getApproversForLevel(step.level);
-    const remReqEmail = step.financeRequest.requestor?.email;
-    const remCcBase = remReqEmail ? [remReqEmail] : [];
-    const remCc = SLA_CC_DIRECTOR_LEVELS.includes(step.level)
-      ? [...remCcBase, ...(await getDirectorEmails())]
-      : remCcBase.length > 0 ? remCcBase : undefined;
+    const remCc = await buildCcList(step.level, step.financeRequest.requestor?.email);
 
     for (const approver of approvers) {
       await sendSLAReminderEmail(
